@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { 
   LayoutDashboard, Package, Box, Warehouse, ShoppingCart, 
-  MapPin, Truck, Route, Map, BarChart3, Settings, Search, Bell, UserCircle, Menu, X
+  MapPin, Truck, Route, Map, BarChart3, Settings, Search, Bell, UserCircle, Menu, X, Compass
 } from 'lucide-react';
 
 const SidebarItem = ({ icon: Icon, label, to, onClick }: { icon: any, label: string, to: string, onClick?: () => void }) => (
@@ -53,6 +53,7 @@ export const Layout = () => {
         
         <div className="flex-1 overflow-y-auto py-4 space-y-1 custom-scrollbar">
           <SidebarItem onClick={handleNavClick} to="/" icon={LayoutDashboard} label="Dashboard" />
+          <SidebarItem onClick={handleNavClick} to="/map" icon={Compass} label="Logistics Map" />
           <SidebarItem onClick={handleNavClick} to="/products" icon={Package} label="Products" />
           <SidebarItem onClick={handleNavClick} to="/inventory" icon={Box} label="Inventory" />
           <SidebarItem onClick={handleNavClick} to="/warehouses" icon={Warehouse} label="Warehouses" />

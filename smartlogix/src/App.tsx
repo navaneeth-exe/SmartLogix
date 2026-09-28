@@ -1,6 +1,19 @@
-﻿import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { Dashboard } from './pages/Dashboard';
+import { Products } from './pages/Products';
+import { Warehouses } from './pages/Warehouses';
+import { InventoryPage } from './pages/Inventory';
+import { Locations } from './pages/Locations';
+import { Orders } from './pages/Orders';
+import { CreateOrder } from './pages/CreateOrder';
+import { Vehicles } from './pages/Vehicles';
+import { DistanceMatrix } from './pages/DistanceMatrix';
+import { Planning } from './pages/Planning';
+import { Reports } from './pages/Reports';
+import { Settings } from './pages/Settings';
+import { MapWorkspace } from './pages/MapWorkspace';
+import 'leaflet/dist/leaflet.css';
 
 function App() {
   return (
@@ -8,16 +21,18 @@ function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Dashboard />} />
-          <Route path="products" element={<div className="p-8"><h1 className="text-2xl font-bold">Products</h1></div>} />
-          <Route path="inventory" element={<div className="p-8"><h1 className="text-2xl font-bold">Inventory</h1></div>} />
-          <Route path="warehouses" element={<div className="p-8"><h1 className="text-2xl font-bold">Warehouses</h1></div>} />
-          <Route path="orders" element={<div className="p-8"><h1 className="text-2xl font-bold">Orders</h1></div>} />
-          <Route path="locations" element={<div className="p-8"><h1 className="text-2xl font-bold">Delivery Locations</h1></div>} />
-          <Route path="vehicles" element={<div className="p-8"><h1 className="text-2xl font-bold">Vehicles</h1></div>} />
-          <Route path="planning" element={<div className="p-8"><h1 className="text-2xl font-bold">Delivery Planning</h1></div>} />
-          <Route path="distance-matrix" element={<div className="p-8"><h1 className="text-2xl font-bold">Distance Matrix</h1></div>} />
-          <Route path="reports" element={<div className="p-8"><h1 className="text-2xl font-bold">Reports</h1></div>} />
-          <Route path="settings" element={<div className="p-8"><h1 className="text-2xl font-bold">Settings</h1></div>} />
+          <Route path="map" element={<MapWorkspace />} />
+          <Route path="products" element={<Products />} />
+          <Route path="inventory" element={<InventoryPage />} />
+          <Route path="warehouses" element={<Warehouses />} />
+          <Route path="locations" element={<Locations />} />
+          <Route path="orders" element={<Orders />} />
+          <Route path="orders/create" element={<CreateOrder />} />
+          <Route path="vehicles" element={<Vehicles />} />
+          <Route path="planning" element={<Planning />} />
+          <Route path="distance-matrix" element={<DistanceMatrix />} />
+          <Route path="reports" element={<Reports />} />
+          <Route path="settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
