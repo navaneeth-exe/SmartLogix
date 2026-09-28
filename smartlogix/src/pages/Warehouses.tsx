@@ -6,7 +6,7 @@ import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
 import { api } from '../services/api';
 import type { Warehouse } from '../types/database.types';
-import { Search, Plus, Edit2, Warehouse as WarehouseIcon } from 'lucide-react';
+import { Search, Plus, Edit2 } from 'lucide-react';
 import { MapLocationPicker } from '../components/MapLocationPicker';
 
 export const Warehouses = () => {

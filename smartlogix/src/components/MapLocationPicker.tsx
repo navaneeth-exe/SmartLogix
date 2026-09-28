@@ -78,7 +78,7 @@ function MapController({
   defaultCenter 
 }: { 
   coords: LocationCoordinates | null; 
-  defaultCenter: [number, number];
+  defaultCenter?: [number, number];
 }) {
   const map = useMap();
   const hasCenteredRef = useRef(false);
@@ -97,11 +97,15 @@ function MapController({
     if (coords && !hasCenteredRef.current) {
       map.setView([coords.latitude, coords.longitude], Math.max(map.getZoom(), 12));
       hasCenteredRef.current = true;
+    } else if (!coords && defaultCenter && !hasCenteredRef.current) {
+      map.setView(defaultCenter, map.getZoom());
     }
-  }, [map, coords]);
+  }, [map, coords, defaultCenter]);
 
   return null;
 }
+
+
 
 export const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
   value,

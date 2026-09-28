@@ -375,9 +375,11 @@ export const MapWorkspace: React.FC = () => {
         });
         setSelectedWarehouse(updatedWh);
         setWarehouses(prev => prev.map(w => w.id === updatedWh.id ? updatedWh : w));
+        const latText = updatedWh.latitude != null ? updatedWh.latitude.toFixed(4) : '';
+        const lngText = updatedWh.longitude != null ? updatedWh.longitude.toFixed(4) : '';
         setFeedback({ 
           type: 'success', 
-          text: `Warehouse "${updatedWh.name}" coordinates saved (${updatedWh.latitude.toFixed(4)}°, ${updatedWh.longitude.toFixed(4)}°).` 
+          text: `Warehouse "${updatedWh.name}" coordinates saved (${latText}°, ${lngText}°).` 
         });
       } else if (selectedLocation) {
         const updatedLoc = await api.locations.update(selectedLocation.id, {
@@ -386,9 +388,11 @@ export const MapWorkspace: React.FC = () => {
         });
         setSelectedLocation(updatedLoc);
         setLocations(prev => prev.map(l => l.id === updatedLoc.id ? updatedLoc : l));
+        const locLatText = updatedLoc.latitude != null ? updatedLoc.latitude.toFixed(4) : '';
+        const locLngText = updatedLoc.longitude != null ? updatedLoc.longitude.toFixed(4) : '';
         setFeedback({ 
           type: 'success', 
-          text: `Location "${updatedLoc.name}" coordinates saved (${updatedLoc.latitude.toFixed(4)}°, ${updatedLoc.longitude.toFixed(4)}°).` 
+          text: `Location "${updatedLoc.name}" coordinates saved (${locLatText}°, ${locLngText}°).` 
         });
       }
       setIsEditingPosition(false);

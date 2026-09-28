@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import { 
   Package, Box, Warehouse, ShoppingCart, Truck, 
   CheckCircle, ArrowRight, Route, ShieldCheck, TrendingUp, MapPin, Sparkles
@@ -9,13 +9,12 @@ import {
   PieChart, Pie, Cell, ResponsiveContainer, 
   Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid 
 } from 'recharts';
-import { CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { api } from '../services/api';
 import type { Vehicle, Order, Product, Warehouse as WarehouseType, DeliveryPlan } from '../types/database.types';
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -25,12 +24,12 @@ const containerVariants = {
   }
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 12 },
   visible: { 
     opacity: 1, 
     y: 0,
-    transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] }
+    transition: { duration: 0.35 }
   }
 };
 

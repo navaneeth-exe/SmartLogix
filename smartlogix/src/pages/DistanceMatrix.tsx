@@ -520,9 +520,14 @@ export const DistanceMatrix: React.FC = () => {
               <Badge variant={distanceSource === 'ORS_ROAD' ? 'success' : 'default'} className="text-[10px]">
                 Profile: {routingProfile}
               </Badge>
-              <Badge variant="outline" className="text-[10px]">
+              <Badge variant="default" className="text-[10px]">
                 {isSymmetric ? 'Symmetric (A↔B)' : 'Directional Asymmetric (A→B ≠ B→A)'}
               </Badge>
+              {unreachablePairs.length > 0 && (
+                <Badge variant="warning" className="text-[10px]">
+                  {unreachablePairs.length} unreachable pair(s) detected
+                </Badge>
+              )}
             </div>
             <p className="text-xs text-stone-600 mt-1">
               {distanceSource === 'ORS_ROAD'

@@ -9,7 +9,7 @@ import { api } from '../services/api';
 import type { DeliveryLocation } from '../types/database.types';
 import { 
   MapPin, Plus, Search, Edit2, CheckCircle2, 
-  XCircle, AlertCircle, Building2, MapPinOff, Trash2, Compass
+  XCircle, AlertCircle, Building2, Trash2, Compass
 } from 'lucide-react';
 import { MapLocationPicker } from '../components/MapLocationPicker';
 
