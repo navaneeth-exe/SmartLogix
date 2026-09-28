@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -10,7 +10,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, icon, className = '', ...props }, ref) => {
     return (
       <div className="w-full flex flex-col gap-1.5">
-        {label && <label className="text-sm font-medium text-brand-text">{label}</label>}
+        {label && <label className="text-xs font-semibold uppercase tracking-wider text-brand-text-secondary">{label}</label>}
         <div className="relative">
           {icon && (
             <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-brand-text-secondary">
@@ -19,11 +19,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           )}
           <input
             ref={ref}
-            className={`w-full bg-brand-surface border ${error ? 'border-red-500' : 'border-brand-border'} rounded-lg ${icon ? 'pl-10' : 'pl-3'} pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/50 text-brand-text transition-colors ${className}`}
+            className={`w-full bg-brand-surface/80 border ${error ? 'border-rose-400 focus:border-rose-500' : 'border-brand-border focus:border-brand-primary'} rounded-xl ${icon ? 'pl-10' : 'pl-3.5'} pr-3.5 py-2 text-sm focus:outline-none focus:ring-4 focus:ring-brand-primary/10 text-brand-text shadow-soft-inset transition-all ${className}`}
             {...props}
           />
         </div>
-        {error && <span className="text-xs text-red-500">{error}</span>}
+        {error && <span className="text-xs text-rose-500 font-medium">{error}</span>}
       </div>
     );
   }

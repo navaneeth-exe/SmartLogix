@@ -1,23 +1,35 @@
-﻿import React from 'react';
+import React from 'react';
 
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-  variant?: 'success' | 'warning' | 'danger' | 'info' | 'default';
+  variant?: 'success' | 'warning' | 'danger' | 'info' | 'lime' | 'default';
+  dot?: boolean;
 }
 
-export const Badge: React.FC<BadgeProps> = ({ children, variant = 'default', className = '', ...props }) => {
+export const Badge: React.FC<BadgeProps> = ({ children, variant = 'default', dot = false, className = '', ...props }) => {
   const variants = {
-    success: 'bg-green-100 text-green-800',
-    warning: 'bg-yellow-100 text-yellow-800',
-    danger: 'bg-red-100 text-red-800',
-    info: 'bg-blue-100 text-blue-800',
-    default: 'bg-gray-100 text-gray-800',
+    success: 'bg-emerald-50 text-emerald-800 border-emerald-200/80',
+    warning: 'bg-amber-50 text-amber-800 border-amber-200/80',
+    danger: 'bg-rose-50 text-rose-800 border-rose-200/80',
+    info: 'bg-sky-50 text-sky-800 border-sky-200/80',
+    lime: 'bg-brand-lime-soft text-lime-900 border-lime-300',
+    default: 'bg-brand-surface text-brand-text-secondary border-brand-border',
+  };
+
+  const dotColors = {
+    success: 'bg-emerald-500',
+    warning: 'bg-amber-500',
+    danger: 'bg-rose-500',
+    info: 'bg-sky-500',
+    lime: 'bg-brand-lime',
+    default: 'bg-brand-text-secondary',
   };
 
   return (
     <span 
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${variants[variant]} ${className}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border shadow-soft-sm tracking-wide ${variants[variant]} ${className}`}
       {...props}
     >
+      {dot && <span className={`w-1.5 h-1.5 rounded-full ${dotColors[variant]}`} />}
       {children}
     </span>
   );

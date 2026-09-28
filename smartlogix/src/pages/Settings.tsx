@@ -107,34 +107,44 @@ export const Settings: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          <div className="p-3.5 bg-brand-surface rounded-xl border border-brand-border/60 space-y-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="p-3.5 bg-brand-surface/90 rounded-xl border border-brand-border/70 shadow-soft-sm space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-brand-text">Supabase PostgreSQL</span>
-              <Badge variant="success">Active</Badge>
+              <Badge variant="success" dot>Active</Badge>
             </div>
             <p className="text-[11px] text-brand-text-secondary">
-              Relational core running PostgreSQL 15 with transactional atomic procedures.
+              Relational core running PostgreSQL with transactional atomic procedures.
             </p>
           </div>
 
-          <div className="p-3.5 bg-brand-surface rounded-xl border border-brand-border/60 space-y-1">
+          <div className="p-3.5 bg-brand-surface/90 rounded-xl border border-brand-border/70 shadow-soft-sm space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-brand-text">React Leaflet & OSM</span>
-              <Badge variant="success">Operational</Badge>
+              <span className="text-xs font-bold text-brand-text">OpenRouteService API</span>
+              <Badge variant="lime" dot>Active</Badge>
+            </div>
+            <p className="text-[11px] text-brand-text-secondary">
+              Edge Function (ors-matrix) with real driving road distance matrix.
+            </p>
+          </div>
+
+          <div className="p-3.5 bg-brand-surface/90 rounded-xl border border-brand-border/70 shadow-soft-sm space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-brand-text">Leaflet Map & OSM</span>
+              <Badge variant="success" dot>Operational</Badge>
             </div>
             <p className="text-[11px] text-brand-text-secondary">
               OpenStreetMap tile server active. Auto-fit viewport bounds enabled.
             </p>
           </div>
 
-          <div className="p-3.5 bg-brand-surface rounded-xl border border-brand-border/60 space-y-1">
+          <div className="p-3.5 bg-brand-surface/90 rounded-xl border border-brand-border/70 shadow-soft-sm space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-brand-text">Distance Matrix Table</span>
-              <Badge variant="success">Synchronized</Badge>
+              <Badge variant="success" dot>Synchronized</Badge>
             </div>
             <p className="text-[11px] text-brand-text-secondary">
-              Pairwise stable UUID distance lookups enforcing strict DAA matrix integrity.
+              Directional asymmetric distance lookups enforcing strict DAA matrix integrity.
             </p>
           </div>
         </div>

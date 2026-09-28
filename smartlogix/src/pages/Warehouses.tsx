@@ -145,39 +145,43 @@ export const Warehouses = () => {
           <div className="p-8 text-center text-brand-text-secondary">Loading warehouses...</div>
         ) : filtered.length === 0 ? (
           <div className="p-12 text-center text-brand-text-secondary flex flex-col items-center">
-            <WarehouseIcon className="w-12 h-12 mb-4 opacity-50" />
-            <p>No warehouses found.</p>
+            <div className="w-24 h-24 mb-3 rounded-2xl overflow-hidden soft-inset p-1 flex items-center justify-center shadow-soft-sm">
+              <img src="/images/smartlogix/warehouse-small.jpg" alt="No warehouses" className="w-full h-full object-cover rounded-xl" />
+            </div>
+            <h4 className="font-bold text-brand-text">No warehouses found</h4>
+            <p className="text-xs text-brand-text-secondary mt-1">Get started by creating your first regional distribution hub.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
             {filtered.map(warehouse => (
-              <Card key={warehouse.id} className="p-5 flex flex-col h-full border border-brand-border hover:border-brand-primary/50 transition-colors">
+              <Card key={warehouse.id} hoverable className="p-5 flex flex-col h-full border border-brand-border/80">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="font-bold text-lg text-brand-text">{warehouse.name}</h3>
-                    <p className="text-sm font-mono text-brand-text-secondary mt-1">{warehouse.code}</p>
+                    <h3 className="font-bold text-base text-brand-text">{warehouse.name}</h3>
+                    <p className="text-xs font-mono font-semibold text-brand-primary mt-0.5">{warehouse.code}</p>
                   </div>
-                  <Badge variant={warehouse.is_active ? 'success' : 'default'}>
+                  <Badge variant={warehouse.is_active ? 'success' : 'default'} dot>
                     {warehouse.is_active ? 'Active' : 'Inactive'}
                   </Badge>
                 </div>
                 
                 <div className="text-sm text-brand-text-secondary mb-4 flex-1">
                   {warehouse.address ? (
-                     <p className="mb-2 line-clamp-2">{warehouse.address}</p>
+                     <p className="mb-2 line-clamp-2 text-xs">{warehouse.address}</p>
                   ) : (
-                     <p className="mb-2 italic">No address provided</p>
+                     <p className="mb-2 italic text-xs">No address provided</p>
                   )}
                   {(warehouse.latitude !== null && warehouse.longitude !== null) && (
-                    <p className="font-mono text-xs opacity-75">
-                      {warehouse.latitude.toFixed(4)}, {warehouse.longitude.toFixed(4)}
-                    </p>
+                    <div className="text-[11px] font-mono bg-brand-surface/70 px-2 py-0.5 rounded border border-brand-border/60 inline-flex items-center gap-1 text-brand-text-secondary">
+                      <span>Coords:</span>
+                      <span className="text-brand-text font-medium">{warehouse.latitude.toFixed(4)}, {warehouse.longitude.toFixed(4)}</span>
+                    </div>
                   )}
                 </div>
                 
-                <div className="pt-4 border-t border-brand-border flex justify-end">
+                <div className="pt-3 border-t border-brand-border/60 flex justify-end">
                   <Button variant="outline" size="sm" onClick={() => openModal(warehouse)}>
-                    <Edit2 className="w-4 h-4 mr-2" />
+                    <Edit2 className="w-3.5 h-3.5 mr-1.5" />
                     Edit Details
                   </Button>
                 </div>
@@ -188,8 +192,8 @@ export const Warehouses = () => {
       </Card>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto shadow-glass rounded-2xl">
             <div className="p-6 border-b border-brand-border sticky top-0 bg-brand-card z-10">
               <h3 className="text-lg font-bold">{editingWarehouse ? 'Edit Warehouse' : 'Add New Warehouse'}</h3>
             </div>

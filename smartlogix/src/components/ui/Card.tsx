@@ -1,13 +1,25 @@
-﻿import React from 'react';
+import React from 'react';
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   noPadding?: boolean;
+  glass?: boolean;
+  hoverable?: boolean;
 }
 
-export const Card: React.FC<CardProps> = ({ children, className = '', noPadding = false, ...props }) => {
+export const Card: React.FC<CardProps> = ({ 
+  children, 
+  className = '', 
+  noPadding = false, 
+  glass = false,
+  hoverable = false,
+  ...props 
+}) => {
+  const surfaceClass = glass ? 'glass-panel' : 'soft-card';
+  const hoverClass = hoverable ? 'transition-all duration-200 hover:-translate-y-0.5 hover:shadow-soft-lg' : '';
+
   return (
     <div 
-      className={`bg-brand-card rounded-xl shadow-sm border border-brand-border overflow-hidden ${noPadding ? '' : 'p-6'} ${className}`}
+      className={`${surfaceClass} rounded-2xl ${noPadding ? '' : 'p-6'} ${hoverClass} ${className}`}
       {...props}
     >
       {children}

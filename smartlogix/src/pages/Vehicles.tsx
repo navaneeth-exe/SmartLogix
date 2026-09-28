@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -337,10 +337,16 @@ export const Vehicles = () => {
         {loading ? (
           <div className="p-12 text-center text-brand-text-secondary">Loading vehicles...</div>
         ) : filtered.length === 0 ? (
-          <div className="p-16 text-center text-brand-text-secondary flex flex-col items-center">
-            <Truck className="w-12 h-12 mb-4 opacity-40" />
-            <h3 className="font-semibold text-brand-text text-base">No vehicles found</h3>
-            <p className="text-sm mt-1 mb-4">No registered vehicle matches your current filter criteria.</p>
+          <div className="p-14 text-center text-brand-text-secondary flex flex-col items-center">
+            <div className="w-24 h-24 mb-4 rounded-2xl overflow-hidden soft-inset p-2 flex items-center justify-center shadow-soft-sm">
+              <img 
+                src="/images/smartlogix/smartlogix-3d-van.jpg" 
+                alt="No vehicles found" 
+                className="w-full h-full object-contain" 
+              />
+            </div>
+            <h3 className="font-bold text-brand-text text-base">No vehicles found</h3>
+            <p className="text-xs text-brand-text-secondary mt-1 mb-4 max-w-xs">No registered vehicle matches your current filter criteria.</p>
             <Button variant="primary" size="sm" onClick={() => openFormModal()}>
               <Plus className="w-4 h-4 mr-1" /> Add New Vehicle
             </Button>
@@ -403,8 +409,8 @@ export const Vehicles = () => {
 
       {/* Add / Edit Vehicle Modal */}
       {isFormModalOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-glass">
             <div className="p-6 border-b border-brand-border sticky top-0 bg-brand-card z-10 flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-brand-text">

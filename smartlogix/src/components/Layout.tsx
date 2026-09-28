@@ -10,19 +10,20 @@ const SidebarItem = ({ icon: Icon, label, to, onClick }: { icon: any, label: str
     to={to} 
     onClick={onClick}
     className={({ isActive }) => 
-      `flex items-center gap-3 px-4 py-3 mx-4 rounded-lg transition-colors duration-200 ${
-        isActive ? 'bg-brand-active text-white' : 'text-brand-soft hover:bg-brand-primary/50 text-brand-sage'
+      `flex items-center gap-3 px-4 py-2.5 mx-3 rounded-xl transition-all duration-200 group relative ${
+        isActive 
+          ? 'bg-gradient-to-r from-brand-active to-emerald-700 text-white font-semibold shadow-soft-sm border-l-2 border-brand-lime' 
+          : 'text-brand-soft/85 hover:text-white hover:bg-white/10'
       }`
     }
   >
-    <Icon className="w-5 h-5 flex-shrink-0" />
-    <span className="font-medium text-sm">{label}</span>
+    <Icon className="w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-110" />
+    <span className="text-xs font-medium tracking-wide">{label}</span>
   </NavLink>
 );
 
 export const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  
 
   // Close sidebar when route changes on mobile
   const handleNavClick = () => setSidebarOpen(false);
@@ -32,26 +33,32 @@ export const Layout = () => {
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-20 lg:hidden transition-opacity"
+          className="fixed inset-0 bg-black/50 z-20 lg:hidden backdrop-blur-xs transition-opacity"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed lg:static inset-y-0 left-0 w-64 bg-brand-sidebar flex flex-col h-full shadow-xl z-30 transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-        <div className="p-6 flex items-center justify-between lg:justify-start gap-3">
+      <aside className={`fixed lg:static inset-y-0 left-0 w-64 glass-sidebar flex flex-col h-full z-30 transition-transform duration-300 ease-in-out border-r border-emerald-900/30 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+        <div className="p-5 flex items-center justify-between lg:justify-start gap-3 border-b border-emerald-900/40">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-brand-active rounded flex items-center justify-center">
+            <div className="w-9 h-9 bg-brand-active/90 border border-emerald-500/30 rounded-xl flex items-center justify-center shadow-soft-sm">
               <Warehouse className="text-white w-5 h-5" />
             </div>
-            <span className="text-white font-bold text-xl tracking-wide">SmartLogix</span>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-white font-bold text-lg tracking-tight">SmartLogix</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-lime shadow-lime-glow animate-pulse"></span>
+              </div>
+              <p className="text-[10px] text-emerald-300/80 font-mono tracking-wider uppercase">Logistics Cloud</p>
+            </div>
           </div>
-          <button className="lg:hidden text-white" onClick={() => setSidebarOpen(false)}>
+          <button className="lg:hidden text-white/80 hover:text-white" onClick={() => setSidebarOpen(false)}>
             <X className="w-6 h-6" />
           </button>
         </div>
         
-        <div className="flex-1 overflow-y-auto py-4 space-y-1 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto py-3 space-y-1 custom-scrollbar">
           <SidebarItem onClick={handleNavClick} to="/" icon={LayoutDashboard} label="Dashboard" />
           <SidebarItem onClick={handleNavClick} to="/map" icon={Compass} label="Logistics Map" />
           <SidebarItem onClick={handleNavClick} to="/products" icon={Package} label="Products" />
@@ -65,7 +72,7 @@ export const Layout = () => {
           <SidebarItem onClick={handleNavClick} to="/reports" icon={BarChart3} label="Reports" />
         </div>
         
-        <div className="p-4 mt-auto">
+        <div className="p-3 mt-auto border-t border-emerald-900/40">
           <SidebarItem onClick={handleNavClick} to="/settings" icon={Settings} label="Settings" />
         </div>
       </aside>
@@ -73,35 +80,37 @@ export const Layout = () => {
       {/* Main Content */}
       <main className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
         {/* Top Navbar */}
-        <header className="h-16 bg-brand-card border-b border-brand-border flex items-center justify-between px-4 sm:px-8 flex-shrink-0 z-10 gap-4">
+        <header className="h-16 glass-header flex items-center justify-between px-4 sm:px-8 flex-shrink-0 z-10 gap-4">
           <div className="flex items-center gap-4 flex-1">
             <button className="lg:hidden text-brand-text-secondary hover:text-brand-text" onClick={() => setSidebarOpen(true)}>
               <Menu className="w-6 h-6" />
             </button>
             <div className="relative w-full max-w-md hidden sm:block">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-brand-text-secondary" />
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 transform -translate-y-1/2 text-brand-text-secondary" />
               <input 
                 type="text" 
-                placeholder="Search..." 
-                className="w-full bg-brand-surface border border-brand-border rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/50 text-brand-text"
+                placeholder="Search orders, warehouses, fleet, routes..." 
+                className="w-full bg-brand-surface/90 border border-brand-border/80 rounded-xl pl-10 pr-4 py-1.5 text-xs font-medium focus:outline-none focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary text-brand-text shadow-soft-inset transition-all"
               />
             </div>
           </div>
           
-          <div className="flex items-center gap-4 sm:gap-6 flex-shrink-0">
-            <button className="sm:hidden relative text-brand-text-secondary hover:text-brand-text transition-colors">
+          <div className="flex items-center gap-3 sm:gap-5 flex-shrink-0">
+            <button className="sm:hidden relative p-2 rounded-xl text-brand-text-secondary hover:text-brand-text hover:bg-brand-surface transition-all">
               <Search className="w-5 h-5" />
             </button>
-            <button className="relative text-brand-text-secondary hover:text-brand-text transition-colors">
-              <Bell className="w-5 h-5" />
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-brand-card"></span>
+            <button className="relative p-2 rounded-xl text-brand-text-secondary hover:text-brand-text hover:bg-brand-surface/80 border border-transparent hover:border-brand-border/70 transition-all shadow-soft-sm">
+              <Bell className="w-4 h-4" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-emerald-500 rounded-full border-2 border-white animate-pulse"></span>
             </button>
-            <div className="flex items-center gap-3 cursor-pointer group">
+            <div className="flex items-center gap-3 py-1 px-2.5 rounded-xl border border-brand-border/50 bg-white/60 shadow-soft-sm hover:border-brand-border transition-all cursor-pointer group">
               <div className="text-right hidden md:block">
-                <div className="text-sm font-semibold text-brand-text group-hover:text-brand-primary transition-colors">Administrator</div>
-                <div className="text-xs text-brand-text-secondary">Admin</div>
+                <div className="text-xs font-bold text-brand-text group-hover:text-brand-primary transition-colors">Operations Team</div>
+                <div className="text-[10px] text-brand-text-secondary font-mono">Dispatcher</div>
               </div>
-              <UserCircle className="w-8 h-8 text-brand-primary" />
+              <div className="w-8 h-8 rounded-lg bg-brand-soft border border-brand-primary/30 flex items-center justify-center text-brand-primary shadow-soft-sm">
+                <UserCircle className="w-6 h-6" />
+              </div>
             </div>
           </div>
         </header>

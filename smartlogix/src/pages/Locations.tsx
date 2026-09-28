@@ -259,10 +259,12 @@ export const Locations = () => {
         {loading ? (
           <div className="p-12 text-center text-brand-text-secondary">Loading delivery locations...</div>
         ) : filtered.length === 0 ? (
-          <div className="p-16 text-center text-brand-text-secondary flex flex-col items-center">
-            <MapPinOff className="w-12 h-12 mb-4 opacity-40" />
-            <h3 className="font-semibold text-brand-text text-base">No delivery locations found</h3>
-            <p className="text-sm mt-1">Try adjusting your search criteria or add a new delivery location.</p>
+          <div className="p-14 text-center text-brand-text-secondary flex flex-col items-center">
+            <div className="w-24 h-24 mb-3 rounded-2xl overflow-hidden soft-inset p-1 flex items-center justify-center shadow-soft-sm">
+              <img src="/images/smartlogix/location-pin.jpg" alt="No locations" className="w-full h-full object-cover rounded-xl" />
+            </div>
+            <h3 className="font-bold text-brand-text text-base">No delivery locations found</h3>
+            <p className="text-xs text-brand-text-secondary mt-1 max-w-xs">Try adjusting your search criteria or add a new delivery destination.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
@@ -350,8 +352,8 @@ export const Locations = () => {
 
       {/* Modal for Create / Edit */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-glass rounded-2xl">
             <div className="p-6 border-b border-brand-border sticky top-0 bg-brand-card z-10 flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-brand-text">
