@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-  variant?: 'success' | 'warning' | 'danger' | 'info' | 'lime' | 'default';
+  variant?: 'success' | 'warning' | 'danger' | 'info' | 'lime' | 'sage' | 'default';
   dot?: boolean;
 }
 
@@ -12,6 +12,7 @@ export const Badge: React.FC<BadgeProps> = ({ children, variant = 'default', dot
     danger: 'bg-rose-50 text-rose-800 border-rose-200/80',
     info: 'bg-sky-50 text-sky-800 border-sky-200/80',
     lime: 'bg-brand-lime-soft text-lime-900 border-lime-300',
+    sage: 'bg-brand-sage-light text-brand-sage-deep border-brand-sage/60',
     default: 'bg-brand-surface text-brand-text-secondary border-brand-border',
   };
 
@@ -21,6 +22,7 @@ export const Badge: React.FC<BadgeProps> = ({ children, variant = 'default', dot
     danger: 'bg-rose-500',
     info: 'bg-sky-500',
     lime: 'bg-brand-lime',
+    sage: 'bg-brand-sage-deep',
     default: 'bg-brand-text-secondary',
   };
 

@@ -547,7 +547,7 @@ export const DistanceMatrix: React.FC = () => {
       {/* Grid: 1. Location Selection & 2. Matrix Configuration */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Warehouse & Location Selection */}
-        <Card className="p-6 bg-white border border-brand-border/80 shadow-sm space-y-6">
+        <Card className="p-6 space-y-6">
           <div className="border-b border-brand-border/60 pb-4">
             <h2 className="text-lg font-bold text-brand-text flex items-center gap-2">
               <WarehouseIcon className="w-5 h-5 text-brand-primary" />
@@ -656,7 +656,7 @@ export const DistanceMatrix: React.FC = () => {
         </Card>
 
         {/* Right Column (2 cols wide): Configurable Matrix Table */}
-        <Card className="lg:col-span-2 p-6 bg-white border border-brand-border/80 shadow-sm flex flex-col justify-between">
+        <Card className="lg:col-span-2 p-6 flex flex-col justify-between">
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-brand-border/60 pb-4">
               <div>
@@ -852,7 +852,7 @@ export const DistanceMatrix: React.FC = () => {
           {/* Results Side-by-Side Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Branch and Bound Card */}
-            <Card className="p-6 bg-white border border-brand-border/80 shadow-sm space-y-5">
+            <Card className="p-6 space-y-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-lg bg-emerald-100 flex items-center justify-center">
@@ -944,7 +944,7 @@ export const DistanceMatrix: React.FC = () => {
             </Card>
 
             {/* Greedy Nearest-Neighbor Card */}
-            <Card className="p-6 bg-white border border-brand-border/80 shadow-sm space-y-5">
+            <Card className="p-6 space-y-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center">
@@ -1029,7 +1029,7 @@ export const DistanceMatrix: React.FC = () => {
 
           {/* Comparative Benchmark Summary Table */}
           {bbResult && greedyResult && bbResult.hasTour && greedyResult.hasTour && (
-            <Card className="p-6 bg-white border border-brand-border/80 shadow-sm space-y-4">
+            <Card className="p-6 space-y-4">
               <h3 className="font-bold text-base text-brand-text flex items-center gap-2">
                 <SlidersHorizontal className="w-4 h-4 text-brand-primary" />
                 Algorithm Performance Comparison

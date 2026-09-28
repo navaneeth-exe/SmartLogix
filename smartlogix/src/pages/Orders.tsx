@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Card } from '../components/ui/Card';
@@ -292,8 +292,8 @@ export const Orders = () => {
 
       {/* Order Details Drawer / Modal */}
       {isDetailOpen && selectedOrder && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-glass rounded-2xl">
             {/* Header */}
             <div className="p-6 border-b border-brand-border sticky top-0 bg-brand-card z-10 flex justify-between items-start">
               <div>
