@@ -14,7 +14,8 @@ import type {
   RouteOptimizationAlgorithm,
   RouteStop,
   MatrixLocation,
-  DeliveryLocation
+  DeliveryLocation,
+  DistanceSource
 } from '../types/database.types';
 import { RouteMap } from '../components/RouteMap';
 import { 
@@ -26,7 +27,8 @@ import {
   Route, Plus, Search, Filter, Eye, XCircle, CheckCircle2, 
   AlertCircle, Warehouse as WarehouseIcon, MapPin, 
   Calendar, Package, Check, X, Truck, ArrowRightLeft, Trash2,
-  Compass, Layers, Zap, Clock, ArrowRight, Map as MapIcon
+  Compass, Layers, Zap, Clock, ArrowRight, Map as MapIcon, Car,
+  SlidersHorizontal
 } from 'lucide-react';
 
 export const Planning: React.FC = () => {
@@ -37,6 +39,10 @@ export const Planning: React.FC = () => {
   const [deliveryLocations, setDeliveryLocations] = useState<DeliveryLocation[]>([]);
   const [availableVehicles, setAvailableVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Road Distances & Optimization State
+  const [generatingRoadDistances, setGeneratingRoadDistances] = useState(false);
+  const [routeDistanceSource, setRouteDistanceSource] = useState<DistanceSource | null>(null);
 
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
@@ -351,14 +357,18 @@ export const Planning: React.FC = () => {
 
       // 2. Fetch configured distance matrix from Supabase location_distances table
       const savedDistances = await api.distances.list();
-      const distanceLookup = new Map<string, number>();
+      const distanceLookup = new Map<string, { dist: number; source?: DistanceSource }>();
       savedDistances.forEach(d => {
-        distanceLookup.set(`${d.origin_id}->${d.destination_id}`, Number(d.distance));
+        distanceLookup.set(`${d.origin_id}->${d.destination_id}`, {
+          dist: Number(d.distance),
+          source: d.distance_source
+        });
       });
 
-      // 3. Assemble 2D distance matrix
+      // 3. Assemble 2D distance matrix & track distance source
       const matrix: number[][] = [];
       const missingPairs: string[] = [];
+      let allPairsRoad = true;
 
       for (let i = 0; i < n; i++) {
         matrix[i] = [];
@@ -368,13 +378,16 @@ export const Planning: React.FC = () => {
           } else {
             const key = `${locations[i].id}->${locations[j].id}`;
             const reverseKey = `${locations[j].id}->${locations[i].id}`;
-            const dist = distanceLookup.get(key) ?? distanceLookup.get(reverseKey);
+            const entry = distanceLookup.get(key) ?? distanceLookup.get(reverseKey);
 
-            if (dist === undefined || isNaN(dist) || dist < 0) {
+            if (!entry || isNaN(entry.dist) || entry.dist < 0) {
               missingPairs.push(`"${locations[i].name}" ↔ "${locations[j].name}"`);
               matrix[i][j] = NaN;
             } else {
-              matrix[i][j] = dist;
+              matrix[i][j] = entry.dist;
+              if (entry.source !== 'ORS_ROAD') {
+                allPairsRoad = false;
+              }
             }
           }
         }
@@ -383,7 +396,7 @@ export const Planning: React.FC = () => {
       // Handle missing matrix entries gracefully
       if (missingPairs.length > 0) {
         const sample = missingPairs.slice(0, 3).join(', ');
-        throw new Error(`Missing configured road distances between ${sample}. Please maintain pairwise distances on the Distance Matrix page.`);
+        throw new Error(`Missing road distances between ${sample}. Click "Generate Road Distances (ORS)" above to calculate real road matrix, or configure them on the Distance Matrix page.`);
       }
 
       // 4. Validate Matrix
@@ -427,9 +440,12 @@ export const Planning: React.FC = () => {
         result.executionTimeMs
       );
 
+      const detectedSource: DistanceSource = allPairsRoad ? 'ORS_ROAD' : 'MANUAL_SIMULATION';
+      setRouteDistanceSource(detectedSource);
+
       setModalMessage({
         type: 'success',
-        text: `Optimized route generated with ${result.algorithmName}! Tour distance: ${result.totalDistance} km (${result.executionTimeMs} ms).`
+        text: `Optimized route generated with ${result.algorithmName}! Tour distance: ${result.totalDistance} km (${result.executionTimeMs} ms) using ${detectedSource === 'ORS_ROAD' ? 'OpenRouteService Road Network (driving-car)' : 'Simulation Distance Matrix'}.`
       });
 
       // Refresh plan details
@@ -442,6 +458,103 @@ export const Planning: React.FC = () => {
       setModalMessage({ type: 'error', text: msg });
     } finally {
       setOptimizingRoute(false);
+    }
+  };
+
+  // Generate real road distance matrix for the selected plan via ORS
+  const handleGeneratePlanRoadDistances = async () => {
+    if (!selectedPlan || !selectedPlan.warehouse) return;
+    setModalMessage(null);
+
+    try {
+      setGeneratingRoadDistances(true);
+
+      const locsMap = new Map<string, { id: string; name: string; latitude?: number | null; longitude?: number | null }>();
+      selectedPlan.delivery_plan_orders?.forEach(dpo => {
+        const loc = dpo.order?.delivery_location;
+        if (loc) {
+          locsMap.set(loc.id, {
+            id: loc.id,
+            name: loc.name,
+            latitude: loc.latitude,
+            longitude: loc.longitude
+          });
+        }
+      });
+
+      const uniqueStops = Array.from(locsMap.values());
+      if (uniqueStops.length === 0) {
+        throw new Error('This delivery plan has no delivery destinations assigned.');
+      }
+
+      const allLocs = [
+        {
+          id: selectedPlan.warehouse.id,
+          name: selectedPlan.warehouse.name,
+          latitude: Number(selectedPlan.warehouse.latitude),
+          longitude: Number(selectedPlan.warehouse.longitude)
+        },
+        ...uniqueStops.map(s => ({
+          id: s.id,
+          name: s.name,
+          latitude: Number(s.latitude),
+          longitude: Number(s.longitude)
+        }))
+      ];
+
+      const missingCoords = allLocs.filter(l => isNaN(l.latitude) || isNaN(l.longitude) || l.latitude == null || l.longitude == null);
+      if (missingCoords.length > 0) {
+        throw new Error(`Missing coordinates for ${missingCoords.map(l => `"${l.name}"`).join(', ')}. Please set their location pins on the map first.`);
+      }
+
+      const res = await api.distances.generateRoadMatrix(allLocs, 'driving-car');
+
+      const n = allLocs.length;
+      const entries: {
+        origin_id: string;
+        destination_id: string;
+        distance: number;
+        distance_meters: number;
+        distance_source: DistanceSource;
+        routing_profile: string;
+        duration_seconds: number | null;
+        generated_at: string;
+      }[] = [];
+
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+          if (i !== j) {
+            const km = res.matrix_km[i][j];
+            const meters = res.distances_meters[i]?.[j] ?? Math.round(km * 1000);
+            const duration = res.durations_seconds[i]?.[j] ?? null;
+            if (!isNaN(km)) {
+              entries.push({
+                origin_id: allLocs[i].id,
+                destination_id: allLocs[j].id,
+                distance: km,
+                distance_meters: meters,
+                distance_source: 'ORS_ROAD',
+                routing_profile: res.profile || 'driving-car',
+                duration_seconds: duration,
+                generated_at: res.generated_at
+              });
+            }
+          }
+        }
+      }
+
+      await api.distances.saveBatch(entries);
+      setRouteDistanceSource('ORS_ROAD');
+      setModalMessage({
+        type: 'success',
+        text: `OpenRouteService road distance matrix successfully calculated & saved (${allLocs.length} locations, ${entries.length} directional legs).`
+      });
+    } catch (err: unknown) {
+      console.error('Road matrix generation error:', err);
+      const msg = err instanceof Error ? err.message : 'Failed to generate road distance matrix.';
+      setModalMessage({ type: 'error', text: msg });
+    } finally {
+      setGeneratingRoadDistances(false);
     }
   };
 
@@ -1324,7 +1437,19 @@ export const Planning: React.FC = () => {
                   </div>
 
                   {selectedPlan.status === 'PLANNED' && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleGeneratePlanRoadDistances}
+                        disabled={generatingRoadDistances}
+                        className="border-emerald-600 text-emerald-800 hover:bg-emerald-50 text-xs font-semibold py-1.5 px-2.5 flex items-center gap-1.5 shadow-xs"
+                        title="Calculate real road distance matrix via OpenRouteService driving-car profile"
+                      >
+                        <Car className="w-3.5 h-3.5 text-emerald-700" />
+                        <span>{generatingRoadDistances ? 'Calculating Road Matrix...' : 'Road Distances (ORS)'}</span>
+                      </Button>
+
                       {/* Algorithm Picker */}
                       <select
                         value={selectedAlgorithm}
@@ -1355,7 +1480,7 @@ export const Planning: React.FC = () => {
                 {selectedPlan.route_stops && selectedPlan.route_stops.length > 0 ? (
                   <div className="space-y-4">
                     {/* Route Metric Cards */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       <div className="p-3 bg-brand-surface rounded-xl border border-brand-border/60">
                         <span className="text-[10px] text-brand-text-secondary uppercase font-semibold">Total Tour Distance</span>
                         <p className="text-xl font-extrabold text-emerald-800 font-mono mt-0.5">
@@ -1378,7 +1503,22 @@ export const Planning: React.FC = () => {
                         </p>
                       </div>
 
-                      <div className="p-3 bg-brand-surface rounded-xl border border-brand-border/60 col-span-2 sm:col-span-1">
+                      <div className="p-3 bg-brand-surface rounded-xl border border-brand-border/60">
+                        <span className="text-[10px] text-brand-text-secondary uppercase font-semibold">Distance Source</span>
+                        <p className="text-xs font-bold text-brand-text mt-1 flex items-center gap-1 truncate">
+                          {routeDistanceSource === 'ORS_ROAD' ? (
+                            <span className="text-emerald-700 flex items-center gap-1 truncate" title="OpenRouteService Real Road Network (driving-car)">
+                              <Car className="w-3.5 h-3.5 flex-shrink-0" /> ORS Road Network
+                            </span>
+                          ) : (
+                            <span className="text-amber-800 flex items-center gap-1 truncate" title="Distance Matrix (Manual / Simulation Mode)">
+                              <SlidersHorizontal className="w-3.5 h-3.5 flex-shrink-0" /> Simulation Matrix
+                            </span>
+                          )}
+                        </p>
+                      </div>
+
+                      <div className="p-3 bg-brand-surface rounded-xl border border-brand-border/60">
                         <span className="text-[10px] text-brand-text-secondary uppercase font-semibold">Observed Runtime</span>
                         <p className="text-xl font-extrabold text-brand-text font-mono mt-0.5 flex items-center gap-1">
                           <Clock className="w-4 h-4 text-brand-primary" />
@@ -1424,12 +1564,12 @@ export const Planning: React.FC = () => {
                     </div>
 
                     <div className="text-[11px] text-brand-text-secondary bg-brand-surface/50 p-2.5 rounded-lg border border-brand-border/40">
-                      <strong>Methodology:</strong> Round-trip tour visits each delivery location once (consolidating shared customer orders) and returns to starting warehouse. Distances derived from the configured simulation matrix.
+                      <strong>Methodology:</strong> Round-trip tour visits each delivery location once (consolidating shared customer orders) and returns to starting warehouse. Route is optimized using DAA algorithms on the distance matrix (metric: {routeDistanceSource === 'ORS_ROAD' ? 'OpenRouteService real road network' : 'configured simulation matrix'}).
                     </div>
                   </div>
                 ) : (
                   /* No Route Generated Yet */
-                  <div className="p-4 bg-brand-surface/60 rounded-xl border border-brand-border/80 flex items-center justify-between">
+                  <div className="p-4 bg-brand-surface/60 rounded-xl border border-brand-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-2.5">
                       <Compass className="w-4 h-4 text-brand-primary flex-shrink-0" />
                       <span className="text-xs text-brand-text-secondary">
@@ -1438,14 +1578,26 @@ export const Planning: React.FC = () => {
                     </div>
 
                     {selectedPlan.status === 'PLANNED' && (
-                      <Button
-                        onClick={handleGenerateRoute}
-                        disabled={optimizingRoute}
-                        className="bg-brand-primary text-white text-xs font-semibold py-1.5 px-3 flex items-center gap-1.5 shadow-xs"
-                      >
-                        <Compass className="w-3.5 h-3.5" />
-                        <span>{optimizingRoute ? 'Optimizing...' : 'Generate Route'}</span>
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleGeneratePlanRoadDistances}
+                          disabled={generatingRoadDistances}
+                          className="border-emerald-600 text-emerald-800 hover:bg-emerald-50 text-xs font-semibold py-1.5 px-2.5 flex items-center gap-1.5"
+                        >
+                          <Car className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>{generatingRoadDistances ? 'Calculating...' : 'Road Distances (ORS)'}</span>
+                        </Button>
+                        <Button
+                          onClick={handleGenerateRoute}
+                          disabled={optimizingRoute}
+                          className="bg-brand-primary text-white text-xs font-semibold py-1.5 px-3 flex items-center gap-1.5 shadow-xs"
+                        >
+                          <Compass className="w-3.5 h-3.5" />
+                          <span>{optimizingRoute ? 'Optimizing...' : 'Generate Route'}</span>
+                        </Button>
+                      </div>
                     )}
                   </div>
                 )}

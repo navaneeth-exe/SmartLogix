@@ -11,6 +11,7 @@ import {
   MapPin, Plus, Search, Edit2, CheckCircle2, 
   XCircle, AlertCircle, Building2, MapPinOff, Trash2, Compass
 } from 'lucide-react';
+import { MapLocationPicker } from '../components/MapLocationPicker';
 
 export const Locations = () => {
   const [locations, setLocations] = useState<DeliveryLocation[]>([]);
@@ -24,11 +25,17 @@ export const Locations = () => {
   const [submitting, setSubmitting] = useState(false);
 
   // Form State
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    address: string;
+    latitude: number | null;
+    longitude: number | null;
+    is_active: boolean;
+  }>({
     name: '',
     address: '',
-    latitude: '' as string | number,
-    longitude: '' as string | number,
+    latitude: null,
+    longitude: null,
     is_active: true
   });
 
@@ -55,8 +62,8 @@ export const Locations = () => {
       setFormData({
         name: loc.name,
         address: loc.address || '',
-        latitude: loc.latitude !== null ? loc.latitude : '',
-        longitude: loc.longitude !== null ? loc.longitude : '',
+        latitude: loc.latitude !== null && loc.latitude !== undefined ? Number(loc.latitude) : null,
+        longitude: loc.longitude !== null && loc.longitude !== undefined ? Number(loc.longitude) : null,
         is_active: loc.is_active
       });
     } else {
@@ -64,8 +71,8 @@ export const Locations = () => {
       setFormData({
         name: '',
         address: '',
-        latitude: '',
-        longitude: '',
+        latitude: null,
+        longitude: null,
         is_active: true
       });
     }
@@ -82,21 +89,14 @@ export const Locations = () => {
       return;
     }
 
-    const lat = formData.latitude !== '' ? parseFloat(formData.latitude as string) : null;
-    const lng = formData.longitude !== '' ? parseFloat(formData.longitude as string) : null;
-
-    if (lat !== null) {
-      if (isNaN(lat) || lat < -90 || lat > 90) {
-        setError('Latitude must be a valid number between -90 and 90.');
-        return;
-      }
+    if (formData.latitude === null || formData.longitude === null) {
+      setError('Please select the delivery destination on the interactive map.');
+      return;
     }
 
-    if (lng !== null) {
-      if (isNaN(lng) || lng < -180 || lng > 180) {
-        setError('Longitude must be a valid number between -180 and 180.');
-        return;
-      }
+    if (formData.latitude < -90 || formData.latitude > 90 || formData.longitude < -180 || formData.longitude > 180) {
+      setError('Invalid coordinates. Latitude must be between -90 and 90, Longitude between -180 and 180.');
+      return;
     }
 
     setSubmitting(true);
@@ -104,8 +104,8 @@ export const Locations = () => {
       const payload: Partial<DeliveryLocation> = {
         name: formData.name.trim(),
         address: formData.address.trim() || null,
-        latitude: lat,
-        longitude: lng,
+        latitude: formData.latitude,
+        longitude: formData.longitude,
         is_active: formData.is_active
       };
 
@@ -393,28 +393,20 @@ export const Locations = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-brand-text">Latitude (-90 to 90)</label>
-                  <Input 
-                    type="number" 
-                    step="any" 
-                    value={formData.latitude} 
-                    onChange={e => setFormData({...formData, latitude: e.target.value})} 
-                    placeholder="e.g. 30.2672"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-brand-text">Longitude (-180 to 180)</label>
-                  <Input 
-                    type="number" 
-                    step="any" 
-                    value={formData.longitude} 
-                    onChange={e => setFormData({...formData, longitude: e.target.value})} 
-                    placeholder="e.g. -97.7431"
-                  />
-                </div>
-              </div>
+              <MapLocationPicker
+                value={{ latitude: formData.latitude, longitude: formData.longitude }}
+                onChange={(coords) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    latitude: coords ? coords.latitude : null,
+                    longitude: coords ? coords.longitude : null
+                  }));
+                }}
+                label="Destination Location on Map"
+                markerType="location"
+                required
+                height="220px"
+              />
 
               <div className="p-3 bg-brand-surface rounded-lg border border-brand-border/60">
                 <label className="flex items-center gap-2.5 cursor-pointer">

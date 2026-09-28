@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -7,6 +7,7 @@ import { Badge } from '../components/ui/Badge';
 import { api } from '../services/api';
 import type { Warehouse } from '../types/database.types';
 import { Search, Plus, Edit2, Warehouse as WarehouseIcon } from 'lucide-react';
+import { MapLocationPicker } from '../components/MapLocationPicker';
 
 export const Warehouses = () => {
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
@@ -17,7 +18,21 @@ export const Warehouses = () => {
   const [error, setError] = useState('');
 
   // Form State
-  const [formData, setFormData] = useState({ code: '', name: '', address: '', latitude: 0, longitude: 0, is_active: true });
+  const [formData, setFormData] = useState<{
+    code: string;
+    name: string;
+    address: string;
+    latitude: number | null;
+    longitude: number | null;
+    is_active: boolean;
+  }>({
+    code: '',
+    name: '',
+    address: '',
+    latitude: null,
+    longitude: null,
+    is_active: true
+  });
 
   const fetchWarehouses = async () => {
     try {
@@ -43,13 +58,13 @@ export const Warehouses = () => {
         code: wh.code, 
         name: wh.name, 
         address: wh.address || '', 
-        latitude: wh.latitude || 0, 
-        longitude: wh.longitude || 0,
+        latitude: wh.latitude !== null && wh.latitude !== undefined ? Number(wh.latitude) : null, 
+        longitude: wh.longitude !== null && wh.longitude !== undefined ? Number(wh.longitude) : null,
         is_active: wh.is_active
       });
     } else {
       setEditingWarehouse(null);
-      setFormData({ code: '', name: '', address: '', latitude: 0, longitude: 0, is_active: true });
+      setFormData({ code: '', name: '', address: '', latitude: null, longitude: null, is_active: true });
     }
     setIsModalOpen(true);
   };
@@ -62,6 +77,11 @@ export const Warehouses = () => {
       setError('Please fill in required fields correctly.');
       return;
     }
+
+    if (formData.latitude === null || formData.longitude === null) {
+      setError('Please select the warehouse location on the interactive map.');
+      return;
+    }
     
     if (formData.latitude < -90 || formData.latitude > 90 || formData.longitude < -180 || formData.longitude > 180) {
       setError('Invalid coordinates. Latitude must be between -90 and 90, Longitude between -180 and 180.');
@@ -70,9 +90,23 @@ export const Warehouses = () => {
 
     try {
       if (editingWarehouse) {
-        await api.warehouses.update(editingWarehouse.id, formData);
+        await api.warehouses.update(editingWarehouse.id, {
+          code: formData.code.trim().toUpperCase(),
+          name: formData.name.trim(),
+          address: formData.address.trim() || undefined,
+          latitude: formData.latitude,
+          longitude: formData.longitude,
+          is_active: formData.is_active
+        });
       } else {
-        await api.warehouses.create(formData);
+        await api.warehouses.create({
+          code: formData.code.trim().toUpperCase(),
+          name: formData.name.trim(),
+          address: formData.address.trim() || undefined,
+          latitude: formData.latitude,
+          longitude: formData.longitude,
+          is_active: formData.is_active
+        });
       }
       setIsModalOpen(false);
       fetchWarehouses();
@@ -182,16 +216,20 @@ export const Warehouses = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Latitude</label>
-                  <Input type="number" step="any" value={formData.latitude} onChange={e => setFormData({...formData, latitude: parseFloat(e.target.value) || 0})} />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Longitude</label>
-                  <Input type="number" step="any" value={formData.longitude} onChange={e => setFormData({...formData, longitude: parseFloat(e.target.value) || 0})} />
-                </div>
-              </div>
+              <MapLocationPicker
+                value={{ latitude: formData.latitude, longitude: formData.longitude }}
+                onChange={(coords) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    latitude: coords ? coords.latitude : null,
+                    longitude: coords ? coords.longitude : null
+                  }));
+                }}
+                label="Warehouse Geographic Location"
+                markerType="warehouse"
+                required
+                height="220px"
+              />
               
               <div className="flex items-center gap-2 mt-4">
                 <input 

@@ -101,13 +101,32 @@ export interface Vehicle {
   updated_at: string;
 }
 
+export type DistanceSource = 'ORS_ROAD' | 'MANUAL_SIMULATION';
+
 export interface LocationDistance {
   id: string;
   origin_id: string;
   destination_id: string;
   distance: number;
+  distance_meters?: number | null;
+  distance_source?: DistanceSource;
+  routing_profile?: string;
+  duration_seconds?: number | null;
+  generated_at?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface RoadMatrixResponse {
+  success: boolean;
+  source: DistanceSource;
+  profile: string;
+  units: string;
+  generated_at: string;
+  distances_meters: (number | null)[][];
+  durations_seconds: (number | null)[][];
+  matrix_km: number[][];
+  unreachable_pairs: { origin: string; destination: string }[];
 }
 
 export interface MatrixLocation {

@@ -8,7 +8,8 @@ import type {
   Warehouse, 
   DeliveryLocation, 
   MatrixLocation, 
-  AlgorithmResult 
+  AlgorithmResult,
+  DistanceSource
 } from '../types/database.types';
 import { 
   validateTSPMatrix, 
@@ -19,7 +20,7 @@ import {
   Warehouse as WarehouseIcon, MapPin, Save, Play, 
   CheckCircle2, AlertCircle, ArrowRight, Clock, 
   Cpu, Zap, SlidersHorizontal, RefreshCw, Info, Layers,
-  Check, X
+  Check, X, Car
 } from 'lucide-react';
 
 const MAX_BB_LOCATIONS = 10;
@@ -35,8 +36,15 @@ export const DistanceMatrix: React.FC = () => {
   const [selectedLocationIds, setSelectedLocationIds] = useState<string[]>([]);
   const [isSymmetric, setIsSymmetric] = useState(true);
 
-  // Distance Matrix State: 2D array [i][j]
+  // Distance Matrix State: 2D array [i][j] (values in km)
   const [matrix, setMatrix] = useState<number[][]>([]);
+
+  // Road Distance Metadata
+  const [distanceSource, setDistanceSource] = useState<DistanceSource>('MANUAL_SIMULATION');
+  const [routingProfile, setRoutingProfile] = useState<string>('driving-car');
+  const [lastGeneratedAt, setLastGeneratedAt] = useState<string | null>(null);
+  const [generatingRoad, setGeneratingRoad] = useState(false);
+  const [unreachablePairs, setUnreachablePairs] = useState<{ origin: string; destination: string }[]>([]);
 
   // UI & Execution State
   const [saving, setSaving] = useState(false);
@@ -83,7 +91,9 @@ export const DistanceMatrix: React.FC = () => {
         id: wh.id,
         name: wh.name,
         type: 'warehouse',
-        address: wh.address
+        address: wh.address,
+        latitude: wh.latitude,
+        longitude: wh.longitude
       });
     }
     selectedLocationIds.forEach(id => {
@@ -93,14 +103,16 @@ export const DistanceMatrix: React.FC = () => {
           id: loc.id,
           name: loc.name,
           type: 'delivery_location',
-          address: loc.address
+          address: loc.address,
+          latitude: loc.latitude,
+          longitude: loc.longitude
         });
       }
     });
     return list;
   }, [warehouses, selectedWarehouseId, deliveryLocations, selectedLocationIds]);
 
-  // Reinitialize or resize the matrix when active locations change
+  // Reinitialize or load the matrix when active locations change
   useEffect(() => {
     const n = activeLocations.length;
     if (n === 0) {
@@ -108,35 +120,174 @@ export const DistanceMatrix: React.FC = () => {
       return;
     }
 
-    setMatrix(prev => {
+    let isMounted = true;
+
+    // Check if existing distances for these locations are already stored in database
+    api.distances.list().then(savedDistances => {
+      if (!isMounted) return;
+
+      const distMap = new Map<string, { dist: number; source?: DistanceSource; profile?: string; genAt?: string }>();
+      savedDistances.forEach(d => {
+        distMap.set(`${d.origin_id}->${d.destination_id}`, {
+          dist: Number(d.distance),
+          source: d.distance_source,
+          profile: d.routing_profile,
+          genAt: d.generated_at
+        });
+      });
+
+      let allFoundInDb = true;
+      let hasRoadDistances = false;
+      let latestGen: string | null = null;
+      let activeProfile = 'driving-car';
+
       const next: number[][] = [];
       for (let i = 0; i < n; i++) {
         next[i] = [];
         for (let j = 0; j < n; j++) {
           if (i === j) {
             next[i][j] = 0;
-          } else if (prev[i] && prev[i][j] !== undefined) {
-            next[i][j] = prev[i][j];
           } else {
-            // Generate a deterministic default simulation distance in km
-            const charSum = (activeLocations[i].name.charCodeAt(0) + activeLocations[j].name.charCodeAt(0)) % 35;
-            const seedDist = 12 + charSum;
-            next[i][j] = seedDist;
+            const entry = distMap.get(`${activeLocations[i].id}->${activeLocations[j].id}`);
+            if (entry && !isNaN(entry.dist)) {
+              next[i][j] = entry.dist;
+              if (entry.source === 'ORS_ROAD') {
+                hasRoadDistances = true;
+                if (entry.genAt) latestGen = entry.genAt;
+                if (entry.profile) activeProfile = entry.profile;
+              }
+            } else {
+              allFoundInDb = false;
+              // Deterministic fallback simulation distance in km
+              const charSum = (activeLocations[i].name.charCodeAt(0) + activeLocations[j].name.charCodeAt(0)) % 35;
+              next[i][j] = 12 + charSum;
+            }
           }
         }
       }
-      return next;
+
+      setMatrix(next);
+      if (allFoundInDb && hasRoadDistances) {
+        setDistanceSource('ORS_ROAD');
+        setIsSymmetric(false);
+        setRoutingProfile(activeProfile);
+        setLastGeneratedAt(latestGen);
+      }
+    }).catch(err => {
+      console.warn('Failed to load saved distances:', err);
     });
 
     // Clear previous results on location set modification
     setBbResult(null);
     setGreedyResult(null);
+
+    return () => {
+      isMounted = false;
+    };
   }, [activeLocations]);
+
+  // Generate Real Road Distance Matrix using OpenRouteService
+  const handleGenerateRoadDistances = async () => {
+    if (activeLocations.length < 2) {
+      setStatusMessage({ type: 'error', text: 'Select at least 1 warehouse and 1 delivery destination.' });
+      return;
+    }
+
+    // Check for missing coordinates
+    const missingCoords = activeLocations.filter(l => l.latitude == null || l.longitude == null);
+    if (missingCoords.length > 0) {
+      setStatusMessage({
+        type: 'error',
+        text: `Cannot generate road distances: Missing map coordinates for ${missingCoords.map(l => `"${l.name}"`).join(', ')}. Please assign coordinates on the map.`
+      });
+      return;
+    }
+
+    try {
+      setGeneratingRoad(true);
+      setStatusMessage(null);
+      setUnreachablePairs([]);
+
+      const locPayload = activeLocations.map(l => ({
+        id: l.id,
+        name: l.name,
+        latitude: Number(l.latitude),
+        longitude: Number(l.longitude)
+      }));
+
+      const res = await api.distances.generateRoadMatrix(locPayload, 'driving-car');
+
+      // Update matrix with real road distances in km
+      setMatrix(res.matrix_km);
+      setDistanceSource('ORS_ROAD');
+      setRoutingProfile(res.profile || 'driving-car');
+      setLastGeneratedAt(res.generated_at);
+      setIsSymmetric(false); // ORS driving-car road distances are directional (asymmetric)
+
+      if (res.unreachable_pairs && res.unreachable_pairs.length > 0) {
+        setUnreachablePairs(res.unreachable_pairs);
+        setStatusMessage({
+          type: 'error',
+          text: `Warning: ${res.unreachable_pairs.length} route pairs unreachable by road (e.g. ${res.unreachable_pairs[0].origin} ↔ ${res.unreachable_pairs[0].destination}).`
+        });
+      } else {
+        // Automatically persist the generated road matrix to database with meter precision
+        const n = activeLocations.length;
+        const entries: {
+          origin_id: string;
+          destination_id: string;
+          distance: number;
+          distance_meters: number;
+          distance_source: DistanceSource;
+          routing_profile: string;
+          duration_seconds: number | null;
+          generated_at: string;
+        }[] = [];
+
+        for (let i = 0; i < n; i++) {
+          for (let j = 0; j < n; j++) {
+            if (i !== j) {
+              const km = res.matrix_km[i][j];
+              const meters = res.distances_meters[i]?.[j] ?? Math.round(km * 1000);
+              const durationSec = res.durations_seconds[i]?.[j] ?? null;
+              if (!isNaN(km)) {
+                entries.push({
+                  origin_id: activeLocations[i].id,
+                  destination_id: activeLocations[j].id,
+                  distance: km,
+                  distance_meters: meters,
+                  distance_source: 'ORS_ROAD',
+                  routing_profile: res.profile || 'driving-car',
+                  duration_seconds: durationSec,
+                  generated_at: res.generated_at
+                });
+              }
+            }
+          }
+        }
+
+        await api.distances.saveBatch(entries);
+        setStatusMessage({
+          type: 'success',
+          text: `Real road distance matrix successfully generated via OpenRouteService (${res.profile}) and saved (${entries.length} directional legs).`
+        });
+      }
+    } catch (err: unknown) {
+      console.error('Road matrix generation error:', err);
+      const msg = err instanceof Error ? err.message : 'Failed to generate road distance matrix.';
+      setStatusMessage({ type: 'error', text: msg });
+    } finally {
+      setGeneratingRoad(false);
+    }
+  };
 
   // Handle cell edit with symmetric support
   const handleCellChange = (i: number, j: number, val: string) => {
     const num = parseFloat(val);
     const validVal = isNaN(num) ? 0 : Math.max(0, Number(num.toFixed(1)));
+
+    // Modifying cells manually transitions to simulation mode
+    setDistanceSource('MANUAL_SIMULATION');
 
     setMatrix(prev => {
       const next = prev.map(row => [...row]);
@@ -167,7 +318,8 @@ export const DistanceMatrix: React.FC = () => {
       }
     }
     setMatrix(next);
-    setStatusMessage({ type: 'success', text: 'Populated simulation distances (km). All values are editable.' });
+    setDistanceSource('MANUAL_SIMULATION');
+    setStatusMessage({ type: 'success', text: 'Switched to Simulation Distance Mode. Values are manually editable.' });
   };
 
   // Validate matrix
@@ -184,7 +336,15 @@ export const DistanceMatrix: React.FC = () => {
 
     try {
       setSaving(true);
-      const entries: { origin_id: string; destination_id: string; distance: number }[] = [];
+      const entries: {
+        origin_id: string;
+        destination_id: string;
+        distance: number;
+        distance_meters: number;
+        distance_source: DistanceSource;
+        routing_profile: string;
+        generated_at?: string;
+      }[] = [];
       const n = activeLocations.length;
 
       for (let i = 0; i < n; i++) {
@@ -193,17 +353,24 @@ export const DistanceMatrix: React.FC = () => {
             entries.push({
               origin_id: activeLocations[i].id,
               destination_id: activeLocations[j].id,
-              distance: matrix[i][j]
+              distance: matrix[i][j],
+              distance_meters: Math.round(matrix[i][j] * 1000),
+              distance_source: distanceSource,
+              routing_profile: routingProfile,
+              generated_at: lastGeneratedAt || new Date().toISOString()
             });
           }
         }
       }
 
       await api.distances.saveBatch(entries);
-      setStatusMessage({ type: 'success', text: `Successfully saved ${entries.length} pairwise distances to Supabase.` });
+      setStatusMessage({ 
+        type: 'success', 
+        text: `Successfully saved ${entries.length} pairwise distances (${distanceSource === 'ORS_ROAD' ? 'OpenRouteService Road' : 'Simulation'}) to database.` 
+      });
     } catch (err: unknown) {
       console.error('Save error:', err);
-      setStatusMessage({ type: 'error', text: 'Failed to persist distances to Supabase database.' });
+      setStatusMessage({ type: 'error', text: 'Failed to persist distances to database.' });
     } finally {
       setSaving(false);
     }
@@ -278,21 +445,29 @@ export const DistanceMatrix: React.FC = () => {
       {/* Page Header */}
       <PageHeader
         title="Distance Matrix & DAA Algorithms"
-        description="Manage simulation road distances (km) and benchmark Travelling Salesman Problem (TSP) solvers."
+        description="Calculate real road distances via OpenRouteService or maintain simulation distances (km) for DAA TSP optimization."
         actions={
           <div className="flex flex-wrap items-center gap-3">
+            <Button
+              onClick={handleGenerateRoadDistances}
+              disabled={generatingRoad || activeLocations.length < 2}
+              className="bg-emerald-700 hover:bg-emerald-800 text-white flex items-center gap-2 shadow-sm font-semibold text-xs py-2 px-3.5 transition-all"
+            >
+              <Car className="w-4 h-4" />
+              <span>{generatingRoad ? 'Calling ORS Matrix...' : 'Generate Road Distances (ORS)'}</span>
+            </Button>
             <Button 
               variant="outline" 
               onClick={handlePrefillSimulation}
-              className="flex items-center gap-2 border-brand-border text-brand-dark bg-white hover:bg-brand-surface shadow-sm"
+              className="flex items-center gap-2 border-brand-border text-brand-dark bg-white hover:bg-brand-surface shadow-sm text-xs py-2 px-3"
             >
               <RefreshCw className="w-4 h-4 text-brand-primary" />
-              <span>Pre-fill Distances</span>
+              <span>Pre-fill Simulation</span>
             </Button>
             <Button 
               onClick={handleSaveToDatabase} 
               disabled={saving || !validation.valid}
-              className="bg-brand-primary hover:bg-brand-active text-white flex items-center gap-2 shadow-sm"
+              className="bg-brand-primary hover:bg-brand-active text-white flex items-center gap-2 shadow-sm text-xs py-2 px-3"
             >
               <Save className="w-4 h-4" />
               <span>{saving ? 'Saving...' : 'Save Matrix'}</span>
@@ -325,15 +500,47 @@ export const DistanceMatrix: React.FC = () => {
         </div>
       )}
 
-      {/* Simulation Notice Banner */}
-      <div className="bg-amber-50/80 border border-amber-200 rounded-xl p-4 flex items-start gap-3 text-amber-900">
-        <Info className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" />
-        <div className="text-sm space-y-1">
-          <p className="font-semibold text-amber-950">Simulation Distance Model Note</p>
-          <p className="text-amber-800 leading-relaxed">
-            Distances in this matrix represent simulated transit distances in <strong>kilometres (km)</strong>. 
-            They are maintained independently from GPS map coordinates, guaranteeing deterministic, customizable algorithm benchmarking for academic DAA demonstrations.
-          </p>
+      {/* Active Distance Source & Profile Banner */}
+      <div className={`rounded-xl p-4 border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+        distanceSource === 'ORS_ROAD'
+          ? 'bg-emerald-50/80 border-emerald-300 text-emerald-950'
+          : 'bg-amber-50/80 border-amber-200 text-amber-950'
+      }`}>
+        <div className="flex items-start sm:items-center gap-3">
+          {distanceSource === 'ORS_ROAD' ? (
+            <Car className="w-5 h-5 text-emerald-700 flex-shrink-0 mt-0.5 sm:mt-0" />
+          ) : (
+            <Info className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5 sm:mt-0" />
+          )}
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-bold text-sm">
+                Distance Source: {distanceSource === 'ORS_ROAD' ? 'Real Road Network (OpenRouteService)' : 'Manual Simulation Matrix'}
+              </span>
+              <Badge variant={distanceSource === 'ORS_ROAD' ? 'success' : 'default'} className="text-[10px]">
+                Profile: {routingProfile}
+              </Badge>
+              <Badge variant="outline" className="text-[10px]">
+                {isSymmetric ? 'Symmetric (A↔B)' : 'Directional Asymmetric (A→B ≠ B→A)'}
+              </Badge>
+            </div>
+            <p className="text-xs text-stone-600 mt-1">
+              {distanceSource === 'ORS_ROAD'
+                ? `Directional road network metrics calculated from physical coordinates. Displayed in kilometres (km); stored with internal meter precision.`
+                : `Simulated transit distances in kilometres (km) for deterministic algorithm benchmarking.`}
+              {lastGeneratedAt && (
+                <span className="ml-1 font-mono text-[11px] text-brand-primary">
+                  (Last Generated: {new Date(lastGeneratedAt).toLocaleTimeString()})
+                </span>
+              )}
+            </p>
+          </div>
+        </div>
+
+        <div className="text-right flex-shrink-0">
+          <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded bg-white/80 border border-brand-border">
+            Unit: Kilometres (km)
+          </span>
         </div>
       </div>
 

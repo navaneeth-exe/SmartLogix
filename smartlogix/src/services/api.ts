@@ -10,6 +10,8 @@ import type {
   Vehicle,
   VehicleStatus,
   LocationDistance,
+  DistanceSource,
+  RoadMatrixResponse,
   DeliveryPlan,
   CreateDeliveryPlanInput,
   RouteOptimizationAlgorithm,
@@ -311,23 +313,60 @@ export const api = {
       if (error) throw error;
       return data as LocationDistance[];
     },
-    async save(origin_id: string, destination_id: string, distance: number, symmetric: boolean = true) {
+    async save(
+      origin_id: string, 
+      destination_id: string, 
+      distance: number, 
+      symmetric: boolean = true,
+      options?: {
+        distance_meters?: number;
+        distance_source?: DistanceSource;
+        routing_profile?: string;
+        duration_seconds?: number | null;
+      }
+    ) {
       const { error } = await supabase.rpc('save_location_distance', {
         p_origin_id: origin_id,
         p_destination_id: destination_id,
         p_distance: distance,
-        p_symmetric: symmetric
+        p_symmetric: symmetric,
+        p_distance_meters: options?.distance_meters ?? null,
+        p_distance_source: options?.distance_source ?? 'MANUAL_SIMULATION',
+        p_routing_profile: options?.routing_profile ?? 'driving-car',
+        p_duration_seconds: options?.duration_seconds ?? null
       });
       if (error) throw error;
       return true;
     },
-    async saveBatch(entries: { origin_id: string; destination_id: string; distance: number }[]) {
+    async saveBatch(entries: { 
+      origin_id: string; 
+      destination_id: string; 
+      distance: number;
+      distance_meters?: number | null;
+      distance_source?: DistanceSource;
+      routing_profile?: string;
+      duration_seconds?: number | null;
+      generated_at?: string;
+    }[]) {
       const { data, error } = await supabase
         .from('location_distances')
         .upsert(entries, { onConflict: 'origin_id,destination_id' })
         .select();
       if (error) throw error;
       return data as LocationDistance[];
+    },
+    async generateRoadMatrix(locations: { id: string; name: string; latitude: number; longitude: number }[], profile: string = 'driving-car'): Promise<RoadMatrixResponse> {
+      const { data, error } = await supabase.functions.invoke('ors-matrix', {
+        body: { locations, profile }
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Failed to call OpenRouteService distance matrix function.');
+      }
+      if (!data || data.error) {
+        throw new Error(data?.error || 'OpenRouteService returned an error.');
+      }
+      return data as RoadMatrixResponse;
     }
   },
 
