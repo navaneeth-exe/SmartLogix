@@ -188,3 +188,34 @@ This document tracks the progress, implementation audit, and verification of the
   - Added `@supports not ((backdrop-filter: blur(16px)) or (-webkit-backdrop-filter: blur(16px)))` fallbacks.
   - Verified `tsc -b && vite build` passed with 0 errors in 2.73s.
   - Verified live Vite bundle and HMR delivery.
+
+---
+
+## J. Phase 4 — Maps, Fleet & Route Planning Redesign (Completed)
+
+- [x] **Map Workspace (`src/pages/MapWorkspace.tsx`)**:
+  - Preserved React Leaflet container and OpenStreetMap layer integration.
+  - Upgraded floating layer visibility panel with `.glass-floating`, backdrop blur, and toggle controls.
+  - Refined route summary overlay with clear distance metrics, algorithm indicator, and stop count.
+  - Polished contextual drawer tabs and plan route inspector.
+  - Zero changes to map coordinates, live database data, or TSP routes.
+- [x] **Vehicles & Fleet (`src/pages/Vehicles.tsx`)**:
+  - Implemented 5 fleet KPI cards with semantic icons (`Truck`, `CheckCircle2`, `CheckCheck`, `Wrench`, `XCircle`).
+  - Upgraded search and filter toolbar with frosted glass surface, recessed dropdowns, and quick Reset button.
+  - Upgraded table styling with monospace registration badges, vehicle capacity chips, pulsing status dots, and tactile action buttons.
+  - Preserved vehicle CRUD forms, validation rules, and status logic.
+- [x] **Delivery Planning (`src/pages/Planning.tsx`)**:
+  - Elevated 4 planning KPI metric cards.
+  - Refined filter and search toolbar with frosted background and quick Reset action.
+  - Elevated plans table with monospace plan number tags, warehouse hub badges, order count badges, vehicle registration details, DAA tour distance in km, and order values.
+  - Preserved Branch & Bound (exact TSP) and Greedy Nearest-Neighbor algorithms, selection, and execution without alteration.
+- [x] **Distance Matrix (`src/pages/DistanceMatrix.tsx`)**:
+  - Elevated ORS road distance source and profile banner with emerald frosted card.
+  - Refined depot dropdown and scrollable delivery stop checklist with real-time tour size counter and safe limit warning.
+  - Enhanced symmetric distance toggle and pairwise matrix table with sticky column and row headers.
+  - Enhanced DAA benchmark execution bar and side-by-side results comparison cards.
+  - Preserved OpenRouteService matrix API integration, internal meter precision, and kilometre conversions.
+- [x] **Verification**:
+  - TypeScript check: `node ./node_modules/typescript/bin/tsc -b` passed with 0 errors.
+  - Production build: `node ./node_modules/vite/bin/vite.js build` passed with 0 errors in 13.20s.
+  - Browser subagent visually inspected `/map`, `/vehicles`, `/planning`, and `/distance-matrix`; all 4 pages rendered without error or overflow.

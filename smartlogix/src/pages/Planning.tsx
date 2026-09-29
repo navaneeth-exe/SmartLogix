@@ -28,7 +28,7 @@ import {
   AlertCircle, Warehouse as WarehouseIcon, MapPin, 
   Calendar, Package, Check, X, Truck, ArrowRightLeft, Trash2,
   Compass, Layers, Zap, Clock, ArrowRight, Map as MapIcon, Car,
-  SlidersHorizontal
+  SlidersHorizontal, RotateCcw
 } from 'lucide-react';
 
 export const Planning: React.FC = () => {
@@ -736,6 +736,21 @@ export const Planning: React.FC = () => {
               <option value="PLANNED">Planned (Active)</option>
               <option value="CANCELLED">Cancelled</option>
             </select>
+
+            {(searchQuery || statusFilter !== 'ALL') && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSearchQuery('');
+                  setStatusFilter('ALL');
+                }}
+                className="text-brand-text-secondary hover:text-brand-dark flex items-center gap-1.5 text-xs py-2 px-3"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset</span>
+              </Button>
+            )}
           </div>
         </div>
 

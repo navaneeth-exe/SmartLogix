@@ -126,4 +126,39 @@
 - Added `variant="ghost"` support to [Button.tsx](file:///c:/Users/NAVANEETH/Documents/Academic%20Projects/Smart%20Inventory%20&%20Delivery%20Optimization%20System/smartlogix/src/components/ui/Button.tsx).
 - 100% preservation of all Supabase schemas, live queries, DAA TSP algorithms, and ORS road matrix calculations. Zero mock data.
 
+---
+
+## Phase 4 — Maps, Fleet & Route Planning Redesign (Completed)
+
+### 1. Logistics Map Workspace (`src/pages/MapWorkspace.tsx`)
+- **Primary Visual Focus**: Map canvas expanded to full workspace bounds with high-contrast OpenStreetMap Leaflet layer.
+- **Refined Floating Glass Panels**: Layer visibility panel (`glass-floating backdrop-blur-md rounded-2xl shadow-glass`) on top-left with warehouse, delivery location, and route visibility controls.
+- **Route Summary Overlay**: Floating glass banner with tour distance, algorithm tag, and stop count.
+- **Collapsible Contextual Drawer**: Smooth side drawer for selecting plans, inspecting tour stops, adding pins, or triggering route optimization.
+- **Preserved Architecture**: 100% real Leaflet map instances, coordinate markers, DAA algorithms, and ORS API integration.
+
+### 2. Fleet & Vehicles Management (`src/pages/Vehicles.tsx`)
+- **Fleet KPI Grid**: 5 elevated metric cards (Total Fleet, Available, In Use / Route, Maintenance, Off Duty / Inactive) with semantic icons (`Truck`, `CheckCircle2`, `CheckCheck`, `Wrench`, `XCircle`).
+- **Frosted Filter Toolbar**: Search input, vehicle type filter, status filter, and quick Reset button.
+- **Elevated Data Table**: Monospace registration tags, model details, capacity chips, status indicators with pulsing accents, and tactile action buttons.
+- **CRUD Operations**: 100% preserved vehicle creation, editing, deletion, and validation logic.
+
+### 3. Route & Delivery Planning (`src/pages/Planning.tsx`)
+- **Operational KPI Cards**: 4 cards tracking Total Plans, Active Planned, Vehicles Assigned, and Available Fleet.
+- **Frosted Filter Toolbar**: Search field, status selector, and quick Reset button.
+- **Plans Data Table**: Monospace plan numbers, warehouse hub badges, order count badges, vehicle tags with capacity info, DAA algorithm details with tour distance (`km`), and total order value.
+- **Preserved Routing Algorithms**: Branch and Bound (exact TSP with lower bound pruning) and Greedy Nearest Neighbor heuristic untouched and verifiable.
+
+### 4. Distance Matrix & DAA Algorithms (`src/pages/DistanceMatrix.tsx`)
+- **ORS Integration & Profile Banner**: Frosted status banner displaying distance source (`ORS_ROAD` vs simulation), routing profile (`driving-car`), symmetry status, and unit in kilometres (`km`).
+- **Depot & Stop Selection**: Warehouse starting depot (Node 0) selector, Select All / Clear Stops controls, and stop checklist with real-time tour size counter and safe limit warning.
+- **Configurable Matrix Table**: Sticky headers and origin labels, editable distance cells with validation feedback, and symmetric/asymmetric toggle switch.
+- **Benchmarking Engine**: Execution bar to run Branch & Bound ($O(n!)$ with pruning) and Greedy ($O(n^2)$) algorithms side-by-side with execution time (ms), nodes pruned, and step-by-step route visualization.
+
+### 5. Verification & Testing
+- **TypeScript**: 0 errors (`node ./node_modules/typescript/bin/tsc -b`).
+- **Production Build**: 0 errors (`node ./node_modules/vite/bin/vite.js build`).
+- **Visual Browser Verification**: Automated browser subagent verified all 4 pages (`/map`, `/vehicles`, `/planning`, `/distance-matrix`) with zero layout breaks, overflow, or errors.
+
+
 
