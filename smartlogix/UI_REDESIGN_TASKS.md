@@ -115,3 +115,53 @@ This document tracks the progress, implementation audit, and verification of the
 - [x] Run production build (`node ./node_modules/typescript/bin/tsc -b; node ./node_modules/vite/bin/vite.js build`) to confirm zero errors.
 - [x] Record the checks actually performed.
 - [x] Record any unresolved issues (None).
+
+---
+
+## G. Phase 1 — Premium Dashboard + Sidebar Transformation (Completed)
+
+- [x] **Cohesive Light-Themed Nature Sidebar (`src/components/Layout.tsx`)**:
+  - Implemented soft ivory and pale sage gradient (`#FAF8F5` to `#EBF1EA`) harmonizing with warm ivory workspace.
+  - Positioned original 3D isometric warehouse landscape illustration (`sidebar-nature-scenery.jpg`) as a seamless background layer (`pointer-events-none z-0`) with vertical gradient mask; removed all hard card frames and borders.
+  - Eliminated unwanted vertical scrolling on desktop viewports (768px-900px+) using proper flex layout (`min-h-0`).
+  - Recreated brand header with deep forest-green squircle icon, vibrant lime dot, and `LOGISTICS CLOUD` subtitle.
+  - Active navigation pill styled with rich forest green (`#143d2b`), mint icon, and right chevron.
+  - Inactive navigation styled with deep forest green line icons, crisp labels, and smooth hover states.
+  - Completely removed visible `Sign Out` item from sidebar while preserving authentication logic.
+  - Settings item cleanly anchored at bottom with subtle divider.
+  - Completely removed the Routing Engine / ORS Live status panel from the UI.
+  - Maintained full responsive collapsing (w-18 rail with tooltips) and mobile drawer.
+- [x] **Premium Dashboard Transformation (`src/pages/Dashboard.tsx`)**:
+  - Generated and integrated original 16:9 3D logistics fulfillment hub illustration (`dashboard-hero-nature.jpg`) for hero section.
+  - Dynamic Command Center hero with live warehouse counts and quick dispatch actions.
+  - Upgraded 7-KPI grid with visual hierarchy and distinct semantic accents.
+  - Fleet readiness section with real-time availability gauge and 3D EV delivery van preview.
+  - Clean Recharts donut and bar visual cards and dense recent orders table.
+  - Verified 100% preservation of all live Supabase queries, real metrics, and zero mock data.
+  - Added live Fleet Readiness meter (% calculation) and refined 3D EV van preview card.
+  - Refined Recharts donut and bar visual cards with custom tooltips, axis labels, and legend pills.
+  - Verified 100% preservation of all live Supabase queries, real metrics, and zero mock data.
+- [x] **Verification**:
+  - `tsc -b && vite build` succeeded in 3.10s with 0 errors.
+
+---
+
+## H. Sidebar Visual Polish — Image Opacity, Glassmorphism & Neumorphism (Completed)
+
+- [x] **Subtle Illustration Visibility & Contrast**:
+  - Fine-tuned `sidebarAtmosphericScenery` in `src/components/Layout.tsx` with `opacity-[0.88]`, `contrast-[1.07]`, and `saturate-[1.04]`.
+  - Tuned the vertical gradient mask (`92%` to `22%` to transparent) to naturally integrate the warehouse, trucks, roads, and trees without hard card frames or separate borders.
+  - Retained the cream, ivory, sage, and forest-green palette with zero jarring saturation.
+- [x] **Subtle Glassmorphism**:
+  - Active navigation pill upgraded with translucent glassmorphic gradient (`from-[#123827]/95 via-[#164531]/95 to-[#1c543c]/90`), `backdrop-blur-md`, and delicate `border-emerald-500/40 ring-1 ring-lime-400/25`.
+  - Brand header enhanced with `bg-white/20 backdrop-blur-xs`.
+  - Bottom Settings container treated with frosted glassmorphic surface (`bg-white/25 backdrop-blur-md border-t border-white/50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.75),0_-2px_10px_rgba(19,59,45,0.03)]`) and extended scenery down to `bottom-0` so the illustration naturally blurs and shines through.
+  - Inactive Settings button enhanced with translucent glass pill (`bg-white/40 backdrop-blur-xs border border-white/60 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.9)]`) blending seamlessly into the background illustration.
+- [x] **Subtle Neumorphic Depth**:
+  - SmartLogix logo container given tactile neumorphic dual highlight/shadow (`shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.35),0_2px_4px_0_rgba(12,47,33,0.18),0_6px_16px_-4px_rgba(12,47,33,0.25)]`).
+  - Active navigation item detailed with top specular highlight (`shadow-[inset_0_1px_0_0_rgba(255,255,255,0.22),0_2px_4px_0_rgba(19,59,45,0.12),0_6px_16px_-3px_rgba(19,59,45,0.2)]`).
+  - Collapse / expand toggle button detailed with crisp white rim and ambient drop shadow (`shadow-[inset_0_1px_0_0_#ffffff,0_1px_3px_0_rgba(19,59,45,0.08)] active:shadow-[inset_0_1px_2px_0_rgba(19,59,45,0.12)]`).
+- [x] **Preserved Core Architecture**:
+  - Unused `Sign Out` button completely absent from view.
+  - Kept original isometric warehouse distribution hub illustration on the Dashboard hero.
+  - Zero mock data; all Supabase queries, DAA routing, and ORS calculations preserved.

@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
 import { 
   Package, Box, Warehouse, ShoppingCart, Truck, 
-  CheckCircle, ArrowRight, Route, ShieldCheck, TrendingUp, MapPin, Sparkles
+  CheckCircle2, ArrowRight, Route, ShieldCheck, TrendingUp, Sparkles,
+  Compass
 } from 'lucide-react';
 import { 
   PieChart, Pie, Cell, ResponsiveContainer, 
@@ -19,17 +20,17 @@ const containerVariants: Variants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.08
+      staggerChildren: 0.06
     }
   }
 };
 
 const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 12 },
+  hidden: { opacity: 0, y: 10 },
   visible: { 
     opacity: 1, 
     y: 0,
-    transition: { duration: 0.35 }
+    transition: { duration: 0.3 }
   }
 };
 
@@ -40,23 +41,43 @@ interface StatCardProps {
   icon: any;
   trend?: string;
   to?: string;
+  highlight?: 'emerald' | 'amber' | 'sky' | 'default';
+  iconColorClass?: string;
+  iconBgClass?: string;
 }
 
-const StatCard = ({ title, value, subtitle, icon: Icon, trend, to }: StatCardProps) => {
+const StatCard = ({ 
+  title, 
+  value, 
+  subtitle, 
+  icon: Icon, 
+  trend, 
+  to,
+  highlight = 'default',
+  iconColorClass = 'text-brand-primary',
+  iconBgClass = 'bg-brand-soft'
+}: StatCardProps) => {
+  const highlightStyles = {
+    emerald: 'border-emerald-300/80 hover:border-emerald-500/60 bg-gradient-to-b from-emerald-50/40 to-white/95',
+    amber: 'border-amber-300/80 hover:border-amber-500/60 bg-gradient-to-b from-amber-50/40 to-white/95',
+    sky: 'border-sky-300/80 hover:border-sky-500/60 bg-gradient-to-b from-sky-50/40 to-white/95',
+    default: 'hover:border-brand-primary/40'
+  }[highlight];
+
   const content = (
     <motion.div
       variants={itemVariants}
-      whileHover={{ y: -3, transition: { duration: 0.18 } }}
+      whileHover={{ y: -3, transition: { duration: 0.16 } }}
       className="h-full"
     >
-      <div className="soft-card rounded-2xl p-4 flex flex-col justify-between h-full relative overflow-hidden transition-all duration-200 hover:border-brand-primary/40 hover:shadow-soft-lg group cursor-pointer">
-        <div className="flex items-center justify-between gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-brand-soft border border-brand-primary/15 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105 shadow-soft-sm">
-            <Icon className="w-5 h-5 text-brand-primary" />
+      <div className={`soft-card rounded-2xl p-4 flex flex-col justify-between h-full relative overflow-hidden transition-all duration-200 hover:shadow-soft-lg group cursor-pointer ${highlightStyles}`}>
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className={`w-10 h-10 rounded-xl border border-brand-primary/15 flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105 shadow-soft-xs ${iconBgClass}`}>
+            <Icon className={`w-5 h-5 ${iconColorClass}`} />
           </div>
           {trend && (
-            <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/70 flex items-center gap-0.5">
-              <TrendingUp className="w-3 h-3" />
+            <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-full border border-emerald-300/60 flex items-center gap-0.5">
+              <TrendingUp className="w-2.5 h-2.5" />
               {trend}
             </span>
           )}
@@ -68,17 +89,17 @@ const StatCard = ({ title, value, subtitle, icon: Icon, trend, to }: StatCardPro
             <h3 className="text-2xl font-bold tracking-tight text-brand-text font-sans">{value}</h3>
           </div>
           {subtitle && (
-            <p className="text-[11px] text-brand-text-secondary/90 font-medium mt-1 truncate">{subtitle}</p>
+            <p className="text-[11px] text-brand-text-secondary/85 font-medium mt-1 truncate">{subtitle}</p>
           )}
         </div>
 
         {/* Subtle accent bar at bottom on hover */}
-        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-brand-primary to-brand-lime opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-brand-primary via-emerald-500 to-brand-lime opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
     </motion.div>
   );
 
-  return to ? <Link to={to} className="block h-full">{content}</Link> : content;
+  return to ? <Link to={to} className="block h-full" aria-label={title}>{content}</Link> : content;
 };
 
 const getStatusVariant = (status: string) => {
@@ -139,6 +160,7 @@ export const Dashboard = () => {
   const inUseVehicles = vehicles.filter(v => v.status === 'ON_ROUTE').length;
   const maintenanceVehicles = vehicles.filter(v => v.status === 'MAINTENANCE').length;
   const offDutyVehicles = vehicles.filter(v => v.status === 'OFF_DUTY').length;
+  const fleetReadinessPct = totalVehicles > 0 ? Math.round((availableVehicles / totalVehicles) * 100) : 0;
 
   // Order stats
   const totalOrders = orders.length;
@@ -180,20 +202,23 @@ export const Dashboard = () => {
         </motion.div>
       )}
 
-      {/* Hero Section with 3D Logistics Visual */}
+      {/* Hero Section with 3D Logistics Visual & Command Controls */}
       <motion.div variants={itemVariants}>
-        <div className="soft-card-elevated rounded-2xl overflow-hidden relative border border-brand-border/80 min-h-[270px] flex items-center">
+        <div className="soft-card-elevated rounded-2xl overflow-hidden relative border border-brand-border/90 min-h-[270px] flex items-center">
           <div className="relative z-10 w-full md:w-3/5 p-6 sm:p-10 bg-gradient-to-r from-white via-white/95 to-transparent">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-soft border border-brand-primary/20 text-brand-primary text-xs font-semibold mb-3 shadow-soft-sm">
-              <span className="w-2 h-2 rounded-full bg-brand-lime shadow-lime-glow animate-pulse" />
-              Live Operations Control Center
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50/90 border border-emerald-300/60 text-emerald-900 text-xs font-semibold mb-3 shadow-soft-xs">
+              <span className="w-2 h-2 rounded-full bg-brand-lime shadow-[0_0_6px_rgba(163,230,53,0.9)] animate-pulse" />
+              Live Operations Command Center
             </div>
             
             <h1 className="text-2xl sm:text-3xl font-extrabold text-brand-text tracking-tight mb-2">
               Logistics & Distribution Fleet
             </h1>
             <p className="text-brand-text-secondary mb-6 max-w-md leading-relaxed text-xs sm:text-sm">
-              Real road-distance routing via OpenRouteService and Branch & Bound DAA optimization are active across {warehouses.length} warehouse hubs.
+              {warehouses.length > 0 
+                ? `Real road-distance routing via OpenRouteService and Branch & Bound DAA optimization are active across ${warehouses.length} warehouse hubs.`
+                : 'Real road-distance routing via OpenRouteService and Branch & Bound DAA optimization are ready for dispatch operations.'
+              }
             </p>
 
             <div className="flex flex-wrap gap-3">
@@ -209,7 +234,7 @@ export const Dashboard = () => {
               </Link>
               <Link to="/map">
                 <Button variant="secondary" size="md">
-                  <MapPin className="w-4 h-4 text-brand-primary" /> Logistics Map
+                  <Compass className="w-4 h-4 text-brand-primary" /> Logistics Map
                 </Button>
               </Link>
             </div>
@@ -229,12 +254,14 @@ export const Dashboard = () => {
         </div>
       </motion.div>
 
-      {/* Primary KPI Grid (7 Stats) */}
+      {/* Primary KPI Grid (7 Stats) with Clear Visual Hierarchy */}
       <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3.5">
         <StatCard 
           title="Total Products" 
           value={loading ? '...' : products.length} 
           icon={Package} 
+          iconBgClass="bg-emerald-50 text-emerald-700"
+          iconColorClass="text-emerald-700"
           trend="+Active"
           to="/products"
         />
@@ -243,6 +270,8 @@ export const Dashboard = () => {
           value={loading ? '...' : totalInventoryQty.toLocaleString()} 
           subtitle="units stored"
           icon={Box} 
+          iconBgClass="bg-teal-50 text-teal-700"
+          iconColorClass="text-teal-700"
           to="/inventory"
         />
         <StatCard 
@@ -250,40 +279,54 @@ export const Dashboard = () => {
           value={loading ? '...' : warehouses.length} 
           subtitle="regional hubs"
           icon={Warehouse} 
+          iconBgClass="bg-stone-100 text-stone-700"
+          iconColorClass="text-stone-700"
           to="/warehouses"
         />
         <StatCard 
           title="Total Orders" 
           value={loading ? '...' : totalOrders} 
           icon={ShoppingCart} 
+          highlight="amber"
+          iconBgClass="bg-amber-100 text-amber-800"
+          iconColorClass="text-amber-800"
           trend={pendingOrders > 0 ? `${pendingOrders} pend` : undefined}
+          subtitle={`${deliveredOrders} delivered`}
           to="/orders"
         />
         <StatCard 
           title="Fleet Units" 
           value={loading ? '...' : totalVehicles} 
-          subtitle={`${availableVehicles} available`}
           icon={Truck} 
+          highlight="sky"
+          iconBgClass="bg-sky-100 text-sky-800"
+          iconColorClass="text-sky-800"
+          subtitle={`${availableVehicles} available`}
           to="/vehicles"
         />
         <StatCard 
           title="In Transit" 
           value={loading ? '...' : inUseVehicles} 
+          icon={CheckCircle2} 
+          iconBgClass="bg-emerald-100 text-emerald-800"
+          iconColorClass="text-emerald-800"
           subtitle={`${maintenanceVehicles} maintenance`}
-          icon={CheckCircle} 
           to="/vehicles"
         />
         <StatCard 
           title="Active Plans" 
           value={loading ? '...' : activePlans} 
-          subtitle={`${totalRoutedDistance.toFixed(0)} km routed`}
+          highlight="emerald"
           icon={Route} 
+          iconBgClass="bg-brand-soft text-brand-primary"
+          iconColorClass="text-brand-primary"
           trend="DAA TSP"
+          subtitle={`${totalRoutedDistance.toFixed(0)} km routed`}
           to="/planning"
         />
       </motion.div>
 
-      {/* Fleet Operational Readiness with 3D Van Asset */}
+      {/* Fleet Operational Readiness with 3D Van Asset & Availability Meter */}
       <motion.div variants={itemVariants}>
         <div className="soft-card rounded-2xl p-6 relative overflow-hidden">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
@@ -297,7 +340,7 @@ export const Dashboard = () => {
                   <Badge variant="lime" dot className="ml-1 text-[10px]">Real-Time</Badge>
                 </h3>
                 <p className="text-xs text-brand-text-secondary mt-0.5">
-                  Live status breakdown of registered transport vehicles in database
+                  Live status breakdown of registered transport vehicles in database ({fleetReadinessPct}% ready)
                 </p>
               </div>
             </div>
@@ -398,7 +441,7 @@ export const Dashboard = () => {
           <div className="grid grid-cols-2 gap-x-2 gap-y-2.5 mt-3 pt-3 border-t border-brand-border/60">
             {orderStatusData.map((item) => (
               <div key={item.name} className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full flex-shrink-0 shadow-soft-sm" style={{ backgroundColor: item.color }} />
+                <div className="w-2.5 h-2.5 rounded-full flex-shrink-0 shadow-soft-xs" style={{ backgroundColor: item.color }} />
                 <span className="text-xs text-brand-text-secondary truncate">
                   {item.name}: <strong className="text-brand-text font-semibold">{item.value}</strong>
                 </span>
@@ -544,7 +587,7 @@ export const Dashboard = () => {
                 <div className="flex items-center justify-between p-3 rounded-xl border border-brand-border/70 bg-white/70 hover:bg-white hover:border-brand-primary/40 hover:shadow-soft-sm transition-all group">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-brand-soft rounded-lg group-hover:bg-brand-primary group-hover:text-white transition-colors text-brand-primary">
-                      <MapPin className="w-4 h-4" />
+                      <Compass className="w-4 h-4" />
                     </div>
                     <div>
                       <span className="font-semibold text-brand-text text-xs block">Logistics Map Workspace</span>
