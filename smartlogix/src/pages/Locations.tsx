@@ -173,19 +173,19 @@ export const Locations = () => {
   const inactiveCount = totalCount - activeCount;
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
       <PageHeader 
         title="Delivery Locations" 
         description="Manage destination hubs, client facilities, and dispatch delivery points"
         actions={
           <div className="flex items-center gap-3">
             <Link to="/map">
-              <Button variant="outline" className="flex items-center gap-1.5 text-xs font-semibold">
+              <Button variant="outline" size="md" className="flex items-center gap-1.5 text-xs font-semibold">
                 <Compass className="w-4 h-4 text-brand-primary" />
                 <span>Map Workspace</span>
               </Button>
             </Link>
-            <Button onClick={() => openModal()}>
+            <Button onClick={() => openModal()} size="md">
               <Plus className="w-4 h-4 mr-2" /> Add Delivery Location
             </Button>
           </div>
@@ -194,46 +194,49 @@ export const Locations = () => {
 
       {/* Feedback Messages */}
       {successMsg && (
-        <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg flex items-center justify-between text-sm">
+        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl flex items-center justify-between text-xs font-semibold shadow-soft-xs">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
             <span>{successMsg}</span>
           </div>
-          <button onClick={() => setSuccessMsg('')} className="text-emerald-600 hover:text-emerald-800 font-semibold ml-4">✕</button>
+          <button onClick={() => setSuccessMsg('')} className="text-emerald-600 hover:text-emerald-800 font-bold ml-4">✕</button>
         </div>
       )}
 
       {error && !isModalOpen && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg flex items-center justify-between text-sm">
+        <div className="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl flex items-center justify-between text-xs font-semibold shadow-soft-xs">
           <div className="flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+            <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
             <span>{error}</span>
           </div>
-          <button onClick={() => setError('')} className="text-red-600 hover:text-red-800 font-semibold ml-4">✕</button>
+          <button onClick={() => setError('')} className="text-red-600 hover:text-red-800 font-bold ml-4">✕</button>
         </div>
       )}
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card className="p-6 border-l-4 border-l-brand-primary">
-          <h4 className="text-brand-text-secondary text-sm font-medium">Total Destinations</h4>
-          <p className="text-3xl font-bold mt-2 text-brand-text">{totalCount}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+        <Card variant="glass" hoverable className="p-5 sm:p-6 border-l-4 border-l-brand-primary">
+          <span className="text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">Total Destinations</span>
+          <p className="text-3xl font-extrabold mt-1.5 text-brand-text tracking-tight font-sans">{totalCount}</p>
+          <span className="text-[11px] text-brand-text-secondary/80 mt-1 block">Registered destination points</span>
         </Card>
-        <Card className="p-6 border-l-4 border-l-emerald-500">
-          <h4 className="text-brand-text-secondary text-sm font-medium">Active Locations</h4>
-          <p className="text-3xl font-bold mt-2 text-emerald-600">{activeCount}</p>
+        <Card variant="glass" hoverable className="p-5 sm:p-6 border-l-4 border-l-emerald-500">
+          <span className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">Active Locations</span>
+          <p className="text-3xl font-extrabold mt-1.5 text-emerald-600 tracking-tight font-sans">{activeCount}</p>
+          <span className="text-[11px] text-emerald-700/80 mt-1 block">Eligible for dispatch routes</span>
         </Card>
-        <Card className="p-6 border-l-4 border-l-slate-400">
-          <h4 className="text-brand-text-secondary text-sm font-medium">Deactivated Locations</h4>
-          <p className="text-3xl font-bold mt-2 text-slate-500">{inactiveCount}</p>
+        <Card variant="glass" hoverable className="p-5 sm:p-6 border-l-4 border-l-slate-400">
+          <span className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Deactivated Locations</span>
+          <p className="text-3xl font-extrabold mt-1.5 text-slate-600 tracking-tight font-sans">{inactiveCount}</p>
+          <span className="text-[11px] text-slate-500 block mt-1">Temporarily offline</span>
         </Card>
       </div>
 
       {/* Main Content Card */}
-      <Card>
-        <div className="p-4 border-b border-brand-border flex flex-col sm:flex-row items-center justify-between gap-4">
+      <Card variant="dense" noPadding className="overflow-hidden shadow-soft-sm">
+        <div className="p-4 sm:p-5 border-b border-brand-border/80 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/50 backdrop-blur-xs">
           <div className="relative w-full sm:max-w-md">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-brand-text-secondary" />
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-text-secondary" />
             <Input 
               placeholder="Search by destination name or address..." 
               value={search}
@@ -242,12 +245,12 @@ export const Locations = () => {
             />
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <span className="text-xs font-medium text-brand-text-secondary">Filter:</span>
+          <div className="flex items-center gap-2.5 w-full sm:w-auto">
+            <span className="text-xs font-semibold text-brand-text-secondary">Filter:</span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="bg-brand-surface border border-brand-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/50 text-brand-text"
+              className="bg-white/90 backdrop-blur-xs border border-brand-border/90 rounded-xl px-3.5 py-2 text-xs font-semibold focus:outline-none focus:ring-4 focus:ring-brand-primary/10 text-brand-text"
             >
               <option value="all">All Locations ({totalCount})</option>
               <option value="active">Active Only ({activeCount})</option>
@@ -257,7 +260,7 @@ export const Locations = () => {
         </div>
 
         {loading ? (
-          <div className="p-12 text-center text-brand-text-secondary">Loading delivery locations...</div>
+          <div className="p-12 text-center text-sm text-brand-text-secondary">Loading delivery locations...</div>
         ) : filtered.length === 0 ? (
           <div className="p-14 text-center text-brand-text-secondary flex flex-col items-center">
             <div className="w-24 h-24 mb-3 rounded-2xl overflow-hidden soft-inset p-1 flex items-center justify-center shadow-soft-sm">
@@ -267,54 +270,57 @@ export const Locations = () => {
             <p className="text-xs text-brand-text-secondary mt-1 max-w-xs">Try adjusting your search criteria or add a new delivery destination.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-4 sm:p-6 bg-brand-surface/20">
             {filtered.map(loc => (
               <Card 
                 key={loc.id} 
-                className={`p-5 flex flex-col justify-between border transition-all ${
+                variant="glass"
+                hoverable
+                className={`p-5 sm:p-6 flex flex-col justify-between border transition-all ${
                   loc.is_active 
-                    ? 'border-brand-border hover:border-brand-primary/60 hover:shadow-sm' 
-                    : 'border-brand-border/60 bg-brand-surface/40 opacity-75'
+                    ? 'border-brand-border/90' 
+                    : 'border-brand-border/60 bg-brand-surface/60 opacity-80'
                 }`}
               >
                 <div>
                   <div className="flex justify-between items-start gap-2 mb-3">
                     <div className="flex items-start gap-2.5">
-                      <div className={`p-2 rounded-lg mt-0.5 ${loc.is_active ? 'bg-brand-primary/10 text-brand-primary' : 'bg-gray-100 text-gray-500'}`}>
+                      <div className={`p-2 rounded-xl mt-0.5 shadow-soft-xs ${loc.is_active ? 'bg-brand-soft text-brand-primary border border-brand-primary/20' : 'bg-gray-100 text-gray-500 border border-gray-200'}`}>
                         <Building2 className="w-4 h-4" />
                       </div>
                       <div>
                         <h3 className="font-bold text-base text-brand-text leading-snug">{loc.name}</h3>
-                        <p className="text-xs text-brand-text-secondary mt-0.5 font-mono">
+                        <p className="text-[11px] text-brand-text-secondary mt-0.5 font-mono">
                           ID: {loc.id.substring(0, 8)}...
                         </p>
                       </div>
                     </div>
-                    <Badge variant={loc.is_active ? 'success' : 'default'}>
+                    <Badge variant={loc.is_active ? 'success' : 'default'} dot>
                       {loc.is_active ? 'Active' : 'Deactivated'}
                     </Badge>
                   </div>
 
-                  <div className="text-sm text-brand-text-secondary my-3 space-y-1.5">
+                  <div className="text-xs text-brand-text-secondary my-3 space-y-2">
                     <div className="flex items-start gap-2">
-                      <MapPin className="w-3.5 h-3.5 mt-1 flex-shrink-0 text-brand-primary" />
+                      <MapPin className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-brand-primary" />
                       <p className="text-xs leading-relaxed text-brand-text">
-                        {loc.address || <span className="italic text-brand-text-secondary">No street address provided</span>}
+                        {loc.address || <span className="italic text-brand-text-muted">No street address provided</span>}
                       </p>
                     </div>
 
                     {(loc.latitude !== null && loc.longitude !== null) && (
-                      <div className="text-xs font-mono text-brand-text-secondary bg-brand-surface px-2.5 py-1.5 rounded border border-brand-border/50">
-                        Geo: {Number(loc.latitude).toFixed(4)}°, {Number(loc.longitude).toFixed(4)}°
+                      <div className="text-[11px] font-mono text-brand-text bg-brand-surface/90 px-2.5 py-1 rounded-lg border border-brand-border/70 inline-flex items-center gap-1.5 shadow-soft-xs">
+                        <span className="text-brand-text-muted">Geo:</span>
+                        <span className="font-semibold">{Number(loc.latitude).toFixed(4)}°, {Number(loc.longitude).toFixed(4)}°</span>
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-brand-border flex items-center justify-between gap-2 mt-2">
+                <div className="pt-3 border-t border-brand-border/60 flex items-center justify-between gap-2 mt-2">
                   <button
                     onClick={() => handleToggleActive(loc)}
-                    className={`text-xs font-medium px-2.5 py-1.5 rounded transition-colors flex items-center gap-1.5 ${
+                    className={`text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
                       loc.is_active 
                         ? 'text-amber-700 hover:bg-amber-50' 
                         : 'text-emerald-700 hover:bg-emerald-50'
@@ -333,12 +339,12 @@ export const Locations = () => {
 
                   <div className="flex items-center gap-1.5">
                     <Button variant="outline" size="sm" onClick={() => openModal(loc)} title="Edit Location">
-                      <Edit2 className="w-3.5 h-3.5" />
+                      <Edit2 className="w-3.5 h-3.5 mr-1 text-brand-primary" /> Edit
                     </Button>
                     <button
                       onClick={() => handleDelete(loc)}
-                      className="p-1.5 text-gray-400 hover:text-red-600 rounded hover:bg-red-50 transition-colors"
-                      title="Delete Location (fails if referenced by orders)"
+                      className="p-1.5 text-brand-text-secondary hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors"
+                      title="Delete Location"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -352,31 +358,31 @@ export const Locations = () => {
 
       {/* Modal for Create / Edit */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-glass rounded-2xl">
-            <div className="p-6 border-b border-brand-border sticky top-0 bg-brand-card z-10 flex justify-between items-center">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <Card variant="dense" noPadding className="w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl rounded-2xl border border-brand-border/90 bg-white">
+            <div className="p-5 border-b border-brand-border/80 sticky top-0 bg-brand-surface/50 backdrop-blur-xs z-10 flex justify-between items-center">
               <div>
-                <h3 className="text-lg font-bold text-brand-text">
+                <h3 className="text-base font-bold text-brand-text">
                   {editingLocation ? 'Edit Delivery Location' : 'Add New Delivery Location'}
                 </h3>
-                <p className="text-xs text-brand-text-secondary mt-0.5">
+                <p className="text-[11px] text-brand-text-secondary mt-0.5">
                   Configure delivery destination coordinates and details
                 </p>
               </div>
-              <button onClick={() => setIsModalOpen(false)} className="text-brand-text-secondary hover:text-brand-text text-xl">✕</button>
+              <button onClick={() => setIsModalOpen(false)} className="p-1 rounded-lg text-brand-text-secondary hover:text-brand-text">✕</button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="p-5 space-y-4">
               {error && (
-                <div className="p-3 bg-red-100 border border-red-200 text-red-700 rounded-lg text-sm flex items-center gap-2">
+                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-semibold flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   <span>{error}</span>
                 </div>
               )}
 
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-brand-text">Location Name *</label>
                 <Input 
+                  label="Location Name *"
                   required 
                   value={formData.name} 
                   onChange={e => setFormData({...formData, name: e.target.value})} 
@@ -385,9 +391,9 @@ export const Locations = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-brand-text">Address</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-brand-text-secondary">Address</label>
                 <textarea 
-                  className="w-full rounded-lg border border-brand-border bg-brand-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary text-brand-text"
+                  className="w-full rounded-xl border border-brand-border/90 bg-white/90 px-3.5 py-2 text-sm focus:outline-none focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary text-brand-text shadow-soft-inset transition-all"
                   value={formData.address} 
                   onChange={e => setFormData({...formData, address: e.target.value})} 
                   placeholder="Street address, city, state, postal code"
@@ -410,8 +416,8 @@ export const Locations = () => {
                 height="220px"
               />
 
-              <div className="p-3 bg-brand-surface rounded-lg border border-brand-border/60">
-                <label className="flex items-center gap-2.5 cursor-pointer">
+              <div className="p-3.5 bg-brand-surface/70 rounded-xl border border-brand-border/70">
+                <label className="flex items-center gap-3 cursor-pointer">
                   <input 
                     type="checkbox" 
                     checked={formData.is_active} 
@@ -419,13 +425,13 @@ export const Locations = () => {
                     className="w-4 h-4 rounded border-brand-border text-brand-primary focus:ring-brand-primary"
                   />
                   <div>
-                    <span className="text-sm font-medium text-brand-text">Active for deliveries</span>
-                    <p className="text-xs text-brand-text-secondary">Only active locations can be selected when placing new orders.</p>
+                    <span className="text-xs font-bold text-brand-text">Active for deliveries</span>
+                    <p className="text-[11px] text-brand-text-secondary">Only active locations can be selected when placing new orders.</p>
                   </div>
                 </label>
               </div>
 
-              <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-brand-border">
+              <div className="flex justify-end gap-3 mt-6 pt-3 border-t border-brand-border/60">
                 <Button 
                   type="button" 
                   variant="outline" 

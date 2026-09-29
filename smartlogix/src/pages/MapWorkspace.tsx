@@ -861,7 +861,7 @@ export const MapWorkspace: React.FC = () => {
         </MapContainer>
 
         {/* MAP OVERLAY: CATEGORY CONTROLS & LEGEND */}
-        <div className="absolute top-4 left-4 z-[500] bg-white/95 backdrop-blur-md rounded-xl p-3 border border-brand-border/80 shadow-md text-xs space-y-2 max-w-xs">
+        <div className="absolute top-4 left-4 z-[500] glass-floating rounded-2xl p-3.5 border border-brand-border/90 shadow-soft-lg text-xs space-y-2.5 max-w-xs">
           <div className="flex items-center justify-between border-b border-brand-border/60 pb-1.5">
             <span className="font-bold text-brand-text flex items-center gap-1.5">
               <Layers className="w-3.5 h-3.5 text-brand-primary" />
@@ -924,7 +924,7 @@ export const MapWorkspace: React.FC = () => {
 
         {/* MAP OVERLAY: ROUTE SUMMARY BANNER */}
         {selectedPlan && selectedPlan.route_distance && (
-          <div className="absolute bottom-4 left-4 z-[500] bg-white/95 backdrop-blur-md rounded-xl p-3 border border-brand-border/80 shadow-md text-xs flex items-center gap-4">
+          <div className="absolute bottom-4 left-4 z-[500] glass-floating rounded-2xl p-3.5 border border-brand-border/90 shadow-soft-lg text-xs flex items-center gap-4">
             <div>
               <span className="text-[10px] text-brand-text-secondary font-bold uppercase block">
                 Plan {selectedPlan.plan_number} Tour
@@ -948,7 +948,7 @@ export const MapWorkspace: React.FC = () => {
         {!drawerOpen && (
           <button
             onClick={() => setDrawerOpen(true)}
-            className="absolute top-4 right-4 z-[500] bg-brand-primary text-white p-2.5 rounded-xl shadow-lg hover:bg-brand-active transition-all flex items-center gap-2 text-xs font-bold"
+            className="absolute top-4 right-4 z-[500] bg-brand-primary text-white p-2.5 rounded-xl shadow-soft-md hover:bg-brand-active tactile-button transition-all flex items-center gap-2 text-xs font-bold"
           >
             <Route className="w-4 h-4" />
             <span>Open Logistics Workspace</span>
@@ -958,7 +958,7 @@ export const MapWorkspace: React.FC = () => {
 
       {/* --- CONTEXTUAL SIDE DRAWER / PANEL --- */}
       {drawerOpen && (
-        <aside className="w-full sm:w-[420px] h-full bg-brand-card border-l border-brand-border shadow-2xl flex flex-col z-20 transition-all flex-shrink-0">
+        <aside className="w-full sm:w-[420px] h-full surface-dense border-l border-brand-border/90 shadow-2xl flex flex-col z-20 transition-all flex-shrink-0">
           {/* Drawer Header */}
           <div className="p-4 border-b border-brand-border flex items-center justify-between bg-brand-surface/40">
             <div>

@@ -75,14 +75,14 @@ export const Products = () => {
   );
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
       <PageHeader 
-        title="Products" 
-        description="Manage product catalog, SKUs, and pricing"
+        title="Products Catalog" 
+        description="Manage product catalog, SKUs, and pricing across distribution networks"
         actions={<Button onClick={() => openModal()}><Plus className="w-4 h-4 mr-2"/> Add Product</Button>}
       />
 
-      <Card className="mt-6">
+      <Card variant="dense" noPadding className="overflow-hidden shadow-soft-sm">
         <div className="p-4 border-b border-brand-border flex items-center">
           <div className="relative w-full max-w-sm">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-brand-text-secondary" />
@@ -104,26 +104,31 @@ export const Products = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-brand-surface border-b border-brand-border">
-                <tr>
-                  <th className="px-4 py-3 font-medium text-brand-text-secondary">SKU</th>
-                  <th className="px-4 py-3 font-medium text-brand-text-secondary">Name</th>
-                  <th className="px-4 py-3 font-medium text-brand-text-secondary">Category</th>
-                  <th className="px-4 py-3 font-medium text-brand-text-secondary">Price</th>
-                  <th className="px-4 py-3 font-medium text-brand-text-secondary text-right">Actions</th>
+            <table className="w-full text-left text-sm border-collapse">
+              <thead className="bg-brand-surface/70 border-b border-brand-border/80">
+                <tr className="text-xs uppercase tracking-wider font-semibold text-brand-text-secondary">
+                  <th className="px-5 py-3.5">SKU</th>
+                  <th className="px-5 py-3.5">Name</th>
+                  <th className="px-5 py-3.5">Category</th>
+                  <th className="px-5 py-3.5">Unit Price</th>
+                  <th className="px-5 py-3.5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-brand-border">
+              <tbody className="divide-y divide-brand-border/60 bg-white/40">
                 {filtered.map(product => (
-                  <tr key={product.id} className="hover:bg-brand-surface/50">
-                    <td className="px-4 py-3 font-mono text-xs">{product.sku}</td>
-                    <td className="px-4 py-3 font-medium text-brand-text">{product.name}</td>
-                    <td className="px-4 py-3"><Badge variant="default">{product.category || 'Uncategorized'}</Badge></td>
-                    <td className="px-4 py-3 font-medium"></td>
-                    <td className="px-4 py-3 text-right">
-                      <Button variant="outline" onClick={() => openModal(product)}>
-                        <Edit2 className="w-4 h-4" />
+                  <tr key={product.id} className="hover:bg-brand-soft/30 transition-colors group">
+                    <td className="px-5 py-3.5 font-mono text-xs font-bold text-brand-text group-hover:text-brand-primary transition-colors">{product.sku}</td>
+                    <td className="px-5 py-3.5 font-semibold text-brand-text">
+                      <div>{product.name}</div>
+                      {product.description && <div className="text-xs text-brand-text-secondary font-normal truncate max-w-xs">{product.description}</div>}
+                    </td>
+                    <td className="px-5 py-3.5 text-xs text-brand-text-secondary">
+                      <Badge variant="sage">{product.category || 'General'}</Badge>
+                    </td>
+                    <td className="px-5 py-3.5 font-mono font-bold text-brand-text">${Number(product.unit_price).toFixed(2)}</td>
+                    <td className="px-5 py-3.5 text-right">
+                      <Button variant="outline" size="sm" onClick={() => openModal(product)}>
+                        <Edit2 className="w-3.5 h-3.5 mr-1 text-brand-primary" /> Edit
                       </Button>
                     </td>
                   </tr>
@@ -135,9 +140,9 @@ export const Products = () => {
       </Card>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-md shadow-glass rounded-2xl">
-            <div className="p-6 border-b border-brand-border">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <Card variant="dense" noPadding className="w-full max-w-md shadow-2xl rounded-2xl overflow-hidden border border-brand-border/90 bg-white">
+            <div className="p-5 border-b border-brand-border/80 bg-brand-surface/40 flex items-center justify-between">
               <h3 className="text-lg font-bold">{editingProduct ? 'Edit Product' : 'Add New Product'}</h3>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">

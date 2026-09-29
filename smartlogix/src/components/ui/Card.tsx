@@ -4,6 +4,7 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   noPadding?: boolean;
   glass?: boolean;
   hoverable?: boolean;
+  variant?: 'default' | 'glass' | 'elevated' | 'dense' | 'floating';
 }
 
 export const Card: React.FC<CardProps> = ({ 
@@ -12,14 +13,21 @@ export const Card: React.FC<CardProps> = ({
   noPadding = false, 
   glass = false,
   hoverable = false,
+  variant,
   ...props 
 }) => {
-  const surfaceClass = glass ? 'glass-panel' : 'soft-card';
+  // Determine surface class based on variant or legacy glass prop
+  let surfaceClass = 'soft-card';
+  if (variant === 'glass' || (glass && !variant)) surfaceClass = 'glass-panel';
+  else if (variant === 'elevated') surfaceClass = 'soft-card-elevated';
+  else if (variant === 'dense') surfaceClass = 'surface-dense';
+  else if (variant === 'floating') surfaceClass = 'glass-floating';
+
   const hoverClass = hoverable ? 'transition-all duration-200 hover:-translate-y-0.5 hover:shadow-soft-lg' : '';
 
   return (
     <div 
-      className={`${surfaceClass} rounded-2xl ${noPadding ? '' : 'p-6'} ${hoverClass} ${className}`}
+      className={`${surfaceClass} rounded-2xl ${noPadding ? '' : 'p-5 sm:p-6'} ${hoverClass} ${className}`}
       {...props}
     >
       {children}

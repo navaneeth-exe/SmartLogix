@@ -144,7 +144,7 @@ export const Reports: React.FC = () => {
   }
 
   return (
-    <div className="p-6 sm:p-8 max-w-7xl mx-auto space-y-8">
+    <div className="max-w-7xl mx-auto p-4 sm:p-8 space-y-6 sm:space-y-8 animate-fade-in">
       {/* Page Header */}
       <PageHeader
         title="Operational Analytics & Route Reports"
@@ -171,18 +171,18 @@ export const Reports: React.FC = () => {
       />
 
       {/* Primary KPI Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-5 border border-brand-border">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card variant="glass" className="p-5 border-l-4 border-l-emerald-500">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-brand-text-secondary">
+            <span className="text-xs font-semibold uppercase tracking-wider text-brand-text-secondary">
               Active Plans
             </span>
-            <div className="p-2 rounded-lg bg-emerald-50 text-emerald-700">
+            <div className="p-2 rounded-xl bg-emerald-50 text-emerald-700 shadow-xs">
               <Route className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold font-mono text-brand-text">{metrics.activePlans}</span>
+            <span className="text-2xl font-bold font-mono text-brand-text">{metrics.activePlans}</span>
             <span className="text-xs text-brand-text-secondary">of {metrics.totalPlans} total</span>
           </div>
           <span className="text-[11px] text-emerald-700 font-medium block mt-1">
@@ -190,17 +190,17 @@ export const Reports: React.FC = () => {
           </span>
         </Card>
 
-        <Card className="p-5 border border-brand-border">
+        <Card variant="glass" className="p-5 border-l-4 border-l-blue-500">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-brand-text-secondary">
+            <span className="text-xs font-semibold uppercase tracking-wider text-brand-text-secondary">
               Total Route Distance
             </span>
-            <div className="p-2 rounded-lg bg-blue-50 text-blue-700">
+            <div className="p-2 rounded-xl bg-blue-50 text-blue-700 shadow-xs">
               <Compass className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold font-mono text-brand-text">{metrics.totalRoutedDistance}</span>
+            <span className="text-2xl font-bold font-mono text-brand-text">{metrics.totalRoutedDistance}</span>
             <span className="text-xs font-semibold text-brand-text-secondary">km</span>
           </div>
           <span className="text-[11px] text-brand-text-secondary block mt-1">
@@ -208,17 +208,17 @@ export const Reports: React.FC = () => {
           </span>
         </Card>
 
-        <Card className="p-5 border border-brand-border">
+        <Card variant="glass" className="p-5 border-l-4 border-l-amber-500">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-brand-text-secondary">
+            <span className="text-xs font-semibold uppercase tracking-wider text-brand-text-secondary">
               Fleet Assignment
             </span>
-            <div className="p-2 rounded-lg bg-amber-50 text-amber-700">
+            <div className="p-2 rounded-xl bg-amber-50 text-amber-700 shadow-xs">
               <Truck className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold font-mono text-brand-text">{metrics.fleetUtilization}%</span>
+            <span className="text-2xl font-bold font-mono text-brand-text">{metrics.fleetUtilization}%</span>
             <span className="text-xs text-brand-text-secondary">utilized</span>
           </div>
           <span className="text-[11px] text-brand-text-secondary block mt-1">
@@ -226,17 +226,17 @@ export const Reports: React.FC = () => {
           </span>
         </Card>
 
-        <Card className="p-5 border border-brand-border">
+        <Card variant="glass" className="p-5 border-l-4 border-l-brand-primary">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-brand-text-secondary">
+            <span className="text-xs font-semibold uppercase tracking-wider text-brand-text-secondary">
               DAA Algorithms
             </span>
-            <div className="p-2 rounded-lg bg-purple-50 text-purple-700">
+            <div className="p-2 rounded-xl bg-purple-50 text-purple-700 shadow-xs">
               <Layers className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold font-mono text-brand-text">
+            <span className="text-2xl font-bold font-mono text-brand-text">
               {metrics.branchAndBoundCount + metrics.greedyCount}
             </span>
             <span className="text-xs text-brand-text-secondary">routes solved</span>
@@ -250,7 +250,7 @@ export const Reports: React.FC = () => {
       {/* Visual Analytics Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Algorithm Usage Chart */}
-        <Card className="p-5 border border-brand-border space-y-4">
+        <Card variant="glass" className="p-5 space-y-4">
           <div className="border-b border-brand-border/60 pb-3">
             <h3 className="text-sm font-bold text-brand-text flex items-center gap-2">
               <Layers className="w-4 h-4 text-brand-primary" />
@@ -301,7 +301,7 @@ export const Reports: React.FC = () => {
         </Card>
 
         {/* Warehouse Activity Bar Chart */}
-        <Card className="p-5 border border-brand-border lg:col-span-2 space-y-4">
+        <Card variant="glass" className="p-5 lg:col-span-2 space-y-4">
           <div className="border-b border-brand-border/60 pb-3">
             <h3 className="text-sm font-bold text-brand-text flex items-center gap-2">
               <Building2 className="w-4 h-4 text-brand-primary" />
@@ -327,7 +327,7 @@ export const Reports: React.FC = () => {
       </div>
 
       {/* Detailed Plans Audit Table */}
-      <Card className="p-6 border border-brand-border space-y-4">
+      <Card variant="dense" className="p-6 space-y-4 overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-brand-border/60 pb-4">
           <div>
             <h3 className="text-base font-bold text-brand-text flex items-center gap-2">
@@ -345,7 +345,7 @@ export const Reports: React.FC = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="bg-brand-surface border border-brand-border rounded-lg px-2.5 py-1.5 text-xs font-semibold text-brand-text focus:outline-none focus:ring-1 focus:ring-brand-primary"
+              className="bg-white/90 backdrop-blur-xs border border-brand-border/80 rounded-xl px-3 py-1.5 text-xs font-semibold text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/40 shadow-xs"
             >
               <option value="ALL">All Statuses ({plans.length})</option>
               <option value="PLANNED">Planned ({metrics.activePlans})</option>
@@ -354,26 +354,26 @@ export const Reports: React.FC = () => {
           </div>
         </div>
 
-        <div className="overflow-x-auto -mx-6 px-6">
+        <div className="overflow-x-auto rounded-xl border border-brand-border/70">
           {filteredPlans.length === 0 ? (
             <div className="text-center py-10 text-brand-text-secondary text-sm">
               No delivery plans match the selected criteria.
             </div>
           ) : (
             <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="border-b border-brand-border text-brand-text-secondary font-bold">
-                  <th className="pb-3 px-3">Plan #</th>
-                  <th className="pb-3 px-3">Origin Warehouse</th>
-                  <th className="pb-3 px-3">Assigned Vehicle</th>
-                  <th className="pb-3 px-3 text-center">Orders</th>
-                  <th className="pb-3 px-3">Algorithm</th>
-                  <th className="pb-3 px-3 text-right">Distance</th>
-                  <th className="pb-3 px-3 text-center">Status</th>
-                  <th className="pb-3 px-3 text-right">Action</th>
+              <thead className="bg-brand-surface/70 border-b border-brand-border/80 text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">
+                <tr>
+                  <th className="py-3 px-3">Plan #</th>
+                  <th className="py-3 px-3">Origin Warehouse</th>
+                  <th className="py-3 px-3">Assigned Vehicle</th>
+                  <th className="py-3 px-3 text-center">Orders</th>
+                  <th className="py-3 px-3">Algorithm</th>
+                  <th className="py-3 px-3 text-right">Distance</th>
+                  <th className="py-3 px-3 text-center">Status</th>
+                  <th className="py-3 px-3 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-brand-border/60">
+              <tbody className="divide-y divide-brand-border/60 bg-white/70">
                 {filteredPlans.map(plan => {
                   const orderCount = plan.delivery_plan_orders?.length || 0;
                   return (

@@ -444,7 +444,7 @@ export const Dashboard = () => {
       {/* Operational Overview: Recent Orders & Quick Actions */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         {/* Recent Orders Table */}
-        <div className="soft-card rounded-2xl p-6 lg:col-span-2 overflow-hidden flex flex-col justify-between">
+        <div className="surface-dense rounded-2xl p-6 lg:col-span-2 overflow-hidden flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-bold text-brand-text">Recent Orders & Shipments</h3>

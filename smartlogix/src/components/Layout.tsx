@@ -281,18 +281,18 @@ export const Layout = () => {
               <input 
                 type="text" 
                 placeholder="Search orders, warehouses, fleet, routes..." 
-                className="w-full bg-brand-surface/90 border border-brand-border/80 rounded-xl pl-10 pr-4 py-1.5 text-xs font-medium focus:outline-none focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary text-brand-text shadow-soft-inset transition-all"
+                className="w-full bg-white/85 backdrop-blur-xs hover:bg-white border border-brand-border/90 rounded-xl pl-10 pr-4 py-2 text-xs font-medium focus:outline-none focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary text-brand-text shadow-soft-inset transition-all placeholder:text-brand-text-muted/60"
               />
             </div>
           </div>
           
-          <div className="flex items-center gap-3 sm:gap-5 flex-shrink-0">
-            <button className="sm:hidden relative p-2 rounded-xl text-brand-text-secondary hover:text-brand-text hover:bg-brand-surface transition-all">
+          <div className="flex items-center gap-3 sm:gap-4 flex-shrink-0">
+            <button className="sm:hidden relative p-2 rounded-xl text-brand-text-secondary hover:text-brand-text hover:bg-white/80 transition-all">
               <Search className="w-5 h-5" />
             </button>
             
             <button 
-              className="relative p-2 rounded-xl text-brand-text-secondary hover:text-brand-text hover:bg-brand-surface/80 border border-transparent hover:border-brand-border/70 transition-all shadow-soft-sm"
+              className="relative p-2 rounded-xl neumorphic-pill text-brand-text-secondary hover:text-brand-text"
               aria-label="View notifications"
             >
               <Bell className="w-4 h-4" />
@@ -300,13 +300,13 @@ export const Layout = () => {
             </button>
 
             {/* User Profile Card */}
-            <div className="flex items-center gap-2.5 py-1 px-2.5 rounded-xl border border-brand-border/50 bg-white/60 shadow-soft-sm hover:border-brand-border transition-all cursor-pointer group">
+            <div className="flex items-center gap-2.5 py-1.5 px-3 rounded-xl border border-brand-border/80 bg-white/80 backdrop-blur-xs shadow-soft-xs hover:border-brand-primary/40 hover:shadow-soft-sm transition-all cursor-pointer group">
               <div className="text-right hidden md:block">
                 <div className="text-xs font-bold text-brand-text group-hover:text-brand-primary transition-colors">Operations Team</div>
                 <div className="text-[10px] text-brand-text-secondary font-mono">Dispatcher</div>
               </div>
-              <div className="w-8 h-8 rounded-lg bg-brand-soft border border-brand-primary/30 flex items-center justify-center text-brand-primary shadow-soft-sm">
-                <UserCircle className="w-6 h-6" />
+              <div className="w-8 h-8 rounded-lg bg-brand-soft border border-brand-primary/30 flex items-center justify-center text-brand-primary shadow-soft-xs group-hover:scale-105 transition-transform">
+                <UserCircle className="w-5 h-5" />
               </div>
             </div>
           </div>

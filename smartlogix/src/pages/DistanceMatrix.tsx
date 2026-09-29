@@ -441,7 +441,7 @@ export const DistanceMatrix: React.FC = () => {
   const isLocationLimitExceeded = activeLocations.length > MAX_BB_LOCATIONS;
 
   return (
-    <div className="p-6 sm:p-8 max-w-7xl mx-auto space-y-8">
+    <div className="max-w-7xl mx-auto p-4 sm:p-8 space-y-6 sm:space-y-8 animate-fade-in">
       {/* Page Header */}
       <PageHeader
         title="Distance Matrix & DAA Algorithms"
@@ -459,7 +459,7 @@ export const DistanceMatrix: React.FC = () => {
             <Button 
               variant="outline" 
               onClick={handlePrefillSimulation}
-              className="flex items-center gap-2 border-brand-border text-brand-dark bg-white hover:bg-brand-surface shadow-sm text-xs py-2 px-3"
+              className="flex items-center gap-2 border-brand-border/80 text-brand-dark bg-white/90 hover:bg-brand-surface shadow-xs text-xs py-2 px-3"
             >
               <RefreshCw className="w-4 h-4 text-brand-primary" />
               <span>Pre-fill Simulation</span>
@@ -478,10 +478,10 @@ export const DistanceMatrix: React.FC = () => {
 
       {/* Status Messages */}
       {statusMessage && (
-        <div className={`p-4 rounded-xl border flex items-center justify-between ${
+        <div className={`p-4 rounded-xl border flex items-center justify-between shadow-xs ${
           statusMessage.type === 'success' 
-            ? 'bg-emerald-50 border-emerald-200 text-emerald-900' 
-            : 'bg-rose-50 border-rose-200 text-rose-900'
+            ? 'bg-emerald-50/90 backdrop-blur-xs border-emerald-200 text-emerald-900' 
+            : 'bg-rose-50/90 backdrop-blur-xs border-rose-200 text-rose-900'
         }`}>
           <div className="flex items-center gap-3">
             {statusMessage.type === 'success' ? (
@@ -501,16 +501,20 @@ export const DistanceMatrix: React.FC = () => {
       )}
 
       {/* Active Distance Source & Profile Banner */}
-      <div className={`rounded-xl p-4 border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+      <div className={`rounded-2xl p-4 sm:p-5 border flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs ${
         distanceSource === 'ORS_ROAD'
-          ? 'bg-emerald-50/80 border-emerald-300 text-emerald-950'
-          : 'bg-amber-50/80 border-amber-200 text-amber-950'
+          ? 'bg-emerald-50/90 backdrop-blur-xs border-emerald-300/80 text-emerald-950'
+          : 'bg-amber-50/90 backdrop-blur-xs border-amber-200/80 text-amber-950'
       }`}>
         <div className="flex items-start sm:items-center gap-3">
           {distanceSource === 'ORS_ROAD' ? (
-            <Car className="w-5 h-5 text-emerald-700 flex-shrink-0 mt-0.5 sm:mt-0" />
+            <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700 flex-shrink-0">
+              <Car className="w-5 h-5" />
+            </div>
           ) : (
-            <Info className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5 sm:mt-0" />
+            <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-700 flex-shrink-0">
+              <Info className="w-5 h-5" />
+            </div>
           )}
           <div>
             <div className="flex items-center gap-2 flex-wrap">
@@ -543,7 +547,7 @@ export const DistanceMatrix: React.FC = () => {
         </div>
 
         <div className="text-right flex-shrink-0">
-          <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded bg-white/80 border border-brand-border">
+          <span className="text-[11px] font-mono font-bold px-3 py-1.5 rounded-xl bg-white/90 backdrop-blur-xs border border-brand-border/80 shadow-xs text-brand-text">
             Unit: Kilometres (km)
           </span>
         </div>
@@ -552,7 +556,7 @@ export const DistanceMatrix: React.FC = () => {
       {/* Grid: 1. Location Selection & 2. Matrix Configuration */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Warehouse & Location Selection */}
-        <Card className="p-6 space-y-6">
+        <Card variant="dense" className="p-6 space-y-6">
           <div className="border-b border-brand-border/60 pb-4">
             <h2 className="text-lg font-bold text-brand-text flex items-center gap-2">
               <WarehouseIcon className="w-5 h-5 text-brand-primary" />
@@ -570,7 +574,7 @@ export const DistanceMatrix: React.FC = () => {
             <select
               value={selectedWarehouseId}
               onChange={(e) => setSelectedWarehouseId(e.target.value)}
-              className="w-full bg-brand-surface border border-brand-border rounded-lg px-3 py-2.5 text-sm font-medium text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/50"
+              className="w-full bg-white/90 backdrop-blur-xs border border-brand-border/80 rounded-xl px-3 py-2.5 text-sm font-medium text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/40 shadow-xs"
             >
               {warehouses.map(wh => (
                 <option key={wh.id} value={wh.id}>
@@ -661,7 +665,7 @@ export const DistanceMatrix: React.FC = () => {
         </Card>
 
         {/* Right Column (2 cols wide): Configurable Matrix Table */}
-        <Card className="lg:col-span-2 p-6 flex flex-col justify-between">
+        <Card variant="dense" className="lg:col-span-2 p-6 flex flex-col justify-between overflow-hidden">
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-brand-border/60 pb-4">
               <div>
@@ -675,7 +679,7 @@ export const DistanceMatrix: React.FC = () => {
               </div>
 
               {/* Symmetric Toggle */}
-              <div className="flex items-center gap-3 bg-brand-surface px-3 py-2 rounded-lg border border-brand-border">
+              <div className="flex items-center gap-3 bg-brand-surface/70 backdrop-blur-xs px-3 py-2 rounded-xl border border-brand-border/80 shadow-xs">
                 <span className="text-xs font-semibold text-brand-text">Symmetric Distances:</span>
                 <button
                   type="button"
@@ -698,17 +702,17 @@ export const DistanceMatrix: React.FC = () => {
 
             {/* Matrix Table */}
             {activeLocations.length < 2 ? (
-              <div className="p-12 text-center text-brand-text-secondary border-2 border-dashed border-brand-border rounded-xl">
+              <div className="p-12 text-center text-brand-text-secondary border-2 border-dashed border-brand-border/80 rounded-xl bg-brand-surface/20">
                 <AlertCircle className="w-8 h-8 text-amber-500 mx-auto mb-2" />
                 <p className="font-semibold text-brand-text">At least 2 locations required</p>
                 <p className="text-xs mt-1">Select a starting warehouse and at least one delivery stop on the left.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto border border-brand-border rounded-xl">
-                <table className="min-w-full divide-y divide-brand-border text-xs">
-                  <thead className="bg-brand-surface text-brand-text-secondary">
+              <div className="overflow-x-auto rounded-xl border border-brand-border/70">
+                <table className="min-w-full divide-y divide-brand-border/70 text-xs">
+                  <thead className="bg-brand-surface/70 border-b border-brand-border/80 text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">
                     <tr>
-                      <th className="py-2.5 px-3 text-left font-bold sticky left-0 bg-brand-surface z-10 border-r border-brand-border">
+                      <th className="py-2.5 px-3 text-left font-bold sticky left-0 bg-brand-surface/90 backdrop-blur-xs z-10 border-r border-brand-border/80">
                         From \ To
                       </th>
                       {activeLocations.map((loc, j) => (
@@ -857,7 +861,7 @@ export const DistanceMatrix: React.FC = () => {
           {/* Results Side-by-Side Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Branch and Bound Card */}
-            <Card className="p-6 space-y-5">
+            <Card variant="glass" className="p-6 space-y-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-lg bg-emerald-100 flex items-center justify-center">
@@ -949,7 +953,7 @@ export const DistanceMatrix: React.FC = () => {
             </Card>
 
             {/* Greedy Nearest-Neighbor Card */}
-            <Card className="p-6 space-y-5">
+            <Card variant="glass" className="p-6 space-y-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center">
@@ -1034,7 +1038,7 @@ export const DistanceMatrix: React.FC = () => {
 
           {/* Comparative Benchmark Summary Table */}
           {bbResult && greedyResult && bbResult.hasTour && greedyResult.hasTour && (
-            <Card className="p-6 space-y-4">
+            <Card variant="glass" className="p-6 space-y-4">
               <h3 className="font-bold text-base text-brand-text flex items-center gap-2">
                 <SlidersHorizontal className="w-4 h-4 text-brand-primary" />
                 Algorithm Performance Comparison

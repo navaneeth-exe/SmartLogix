@@ -235,7 +235,7 @@ export const Vehicles = () => {
   const offDutyCount = vehicles.filter(v => v.status === 'OFF_DUTY').length;
 
   return (
-    <div className="p-8">
+    <div className="max-w-7xl mx-auto p-4 sm:p-8 space-y-6 sm:space-y-8 animate-fade-in">
       <PageHeader 
         title="Vehicles" 
         description="Monitor fleet units, configure payload capacities, and manage maintenance states"
@@ -248,7 +248,7 @@ export const Vehicles = () => {
 
       {/* Global Alerts */}
       {successMsg && !isDetailModalOpen && !isFormModalOpen && (
-        <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg flex items-center justify-between text-sm">
+        <div className="p-4 bg-emerald-50/90 backdrop-blur-xs border border-emerald-200 text-emerald-800 rounded-xl flex items-center justify-between text-sm shadow-sm">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
             <span>{successMsg}</span>
@@ -258,7 +258,7 @@ export const Vehicles = () => {
       )}
 
       {error && !isDetailModalOpen && !isFormModalOpen && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg flex items-center justify-between text-sm">
+        <div className="p-4 bg-red-50/90 backdrop-blur-xs border border-red-200 text-red-800 rounded-xl flex items-center justify-between text-sm shadow-sm">
           <div className="flex items-center gap-2">
             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
             <span>{error}</span>
@@ -268,32 +268,32 @@ export const Vehicles = () => {
       )}
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-        <Card className="p-5 border-l-4 border-l-brand-primary">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <Card variant="glass" className="p-5 border-l-4 border-l-brand-primary">
           <h4 className="text-brand-text-secondary text-xs font-semibold uppercase tracking-wider">Total Fleet</h4>
-          <p className="text-2xl font-bold mt-2 text-brand-text">{totalCount}</p>
+          <p className="text-2xl font-bold mt-2 text-brand-text font-mono">{totalCount}</p>
         </Card>
-        <Card className="p-5 border-l-4 border-l-emerald-500">
+        <Card variant="glass" className="p-5 border-l-4 border-l-emerald-500">
           <h4 className="text-brand-text-secondary text-xs font-semibold uppercase tracking-wider">Available</h4>
-          <p className="text-2xl font-bold mt-2 text-emerald-600">{availableCount}</p>
+          <p className="text-2xl font-bold mt-2 text-emerald-600 font-mono">{availableCount}</p>
         </Card>
-        <Card className="p-5 border-l-4 border-l-blue-500">
+        <Card variant="glass" className="p-5 border-l-4 border-l-blue-500">
           <h4 className="text-brand-text-secondary text-xs font-semibold uppercase tracking-wider">In Use / Route</h4>
-          <p className="text-2xl font-bold mt-2 text-blue-600">{onRouteCount}</p>
+          <p className="text-2xl font-bold mt-2 text-blue-600 font-mono">{onRouteCount}</p>
         </Card>
-        <Card className="p-5 border-l-4 border-l-amber-500">
+        <Card variant="glass" className="p-5 border-l-4 border-l-amber-500">
           <h4 className="text-brand-text-secondary text-xs font-semibold uppercase tracking-wider">Maintenance</h4>
-          <p className="text-2xl font-bold mt-2 text-amber-600">{maintenanceCount}</p>
+          <p className="text-2xl font-bold mt-2 text-amber-600 font-mono">{maintenanceCount}</p>
         </Card>
-        <Card className="p-5 border-l-4 border-l-slate-400">
+        <Card variant="glass" className="p-5 border-l-4 border-l-slate-400">
           <h4 className="text-brand-text-secondary text-xs font-semibold uppercase tracking-wider">Off Duty / Inactive</h4>
-          <p className="text-2xl font-bold mt-2 text-slate-500">{offDutyCount}</p>
+          <p className="text-2xl font-bold mt-2 text-slate-500 font-mono">{offDutyCount}</p>
         </Card>
       </div>
 
       {/* Main Table & Filter Card */}
-      <Card>
-        <div className="p-4 border-b border-brand-border flex flex-col md:flex-row items-center justify-between gap-4">
+      <Card variant="dense" className="overflow-hidden">
+        <div className="p-4 sm:p-5 border-b border-brand-border/60 flex flex-col md:flex-row items-center justify-between gap-4 bg-brand-surface/40">
           <div className="relative w-full md:max-w-md">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-brand-text-secondary" />
             <Input 
@@ -310,7 +310,7 @@ export const Vehicles = () => {
               <select
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
-                className="bg-brand-surface border border-brand-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/50 text-brand-text"
+                className="bg-white/90 backdrop-blur-xs border border-brand-border/80 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 text-brand-text shadow-xs"
               >
                 <option value="all">All Vehicle Types</option>
                 <option value="Motorcycle">Motorcycle</option>
@@ -323,7 +323,7 @@ export const Vehicles = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-brand-surface border border-brand-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/50 text-brand-text"
+              className="bg-white/90 backdrop-blur-xs border border-brand-border/80 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 text-brand-text shadow-xs"
             >
               <option value="all">All Statuses</option>
               <option value="AVAILABLE">Available</option>
@@ -354,7 +354,7 @@ export const Vehicles = () => {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-brand-surface border-b border-brand-border text-xs text-brand-text-secondary">
+              <thead className="bg-brand-surface/70 border-b border-brand-border/80 text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">
                 <tr>
                   <th className="px-4 py-3">Registration</th>
                   <th className="px-4 py-3">Vehicle Name / Model</th>
@@ -409,9 +409,9 @@ export const Vehicles = () => {
 
       {/* Add / Edit Vehicle Modal */}
       {isFormModalOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-glass">
-            <div className="p-6 border-b border-brand-border sticky top-0 bg-brand-card z-10 flex justify-between items-center">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
+          <Card variant="dense" className="w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-glass-hover rounded-2xl border border-brand-border/80">
+            <div className="p-6 border-b border-brand-border/60 sticky top-0 bg-white/95 backdrop-blur-md z-10 flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-brand-text">
                   {editingVehicle ? 'Edit Vehicle' : 'Register New Vehicle'}
@@ -420,12 +420,17 @@ export const Vehicles = () => {
                   Configure vehicle registration, type, and payload limits
                 </p>
               </div>
-              <button onClick={() => setIsFormModalOpen(false)} className="text-brand-text-secondary hover:text-brand-text text-xl">✕</button>
+              <button 
+                onClick={() => setIsFormModalOpen(false)} 
+                className="w-8 h-8 rounded-lg bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/60 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-all"
+              >
+                ✕
+              </button>
             </div>
 
             <form onSubmit={handleFormSubmit} className="p-6 space-y-4">
               {error && (
-                <div className="p-3 bg-red-100 border border-red-200 text-red-700 rounded-lg text-sm flex items-center gap-2">
+                <div className="p-3 bg-red-100 border border-red-200 text-red-700 rounded-xl text-sm flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   <span>{error}</span>
                 </div>
@@ -459,7 +464,7 @@ export const Vehicles = () => {
                   <select
                     value={formData.vehicle_type}
                     onChange={e => setFormData({...formData, vehicle_type: e.target.value as VehicleType})}
-                    className="w-full bg-brand-surface border border-brand-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/50 text-brand-text"
+                    className="w-full bg-white/90 backdrop-blur-xs border border-brand-border/80 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 text-brand-text shadow-xs"
                   >
                     <option value="Motorcycle">Motorcycle</option>
                     <option value="Van">Van</option>
@@ -473,7 +478,7 @@ export const Vehicles = () => {
                   <select
                     value={formData.status}
                     onChange={e => setFormData({...formData, status: e.target.value as VehicleStatus})}
-                    className="w-full bg-brand-surface border border-brand-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/50 text-brand-text"
+                    className="w-full bg-white/90 backdrop-blur-xs border border-brand-border/80 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 text-brand-text shadow-xs"
                   >
                     <option value="AVAILABLE">Available</option>
                     <option value="ON_ROUTE">In Use / On Route</option>
@@ -502,7 +507,7 @@ export const Vehicles = () => {
                   <select
                     value={formData.capacity_unit}
                     onChange={e => setFormData({...formData, capacity_unit: e.target.value as CapacityUnit})}
-                    className="w-full bg-brand-surface border border-brand-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/50 text-brand-text"
+                    className="w-full bg-white/90 backdrop-blur-xs border border-brand-border/80 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 text-brand-text shadow-xs"
                   >
                     <option value="kg">Kilograms (kg)</option>
                     <option value="units">Discrete Units</option>
@@ -511,7 +516,7 @@ export const Vehicles = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-brand-border">
+              <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-brand-border/60">
                 <Button 
                   type="button" 
                   variant="outline" 
@@ -535,9 +540,9 @@ export const Vehicles = () => {
 
       {/* Vehicle Details Modal */}
       {isDetailModalOpen && selectedVehicle && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-brand-border sticky top-0 bg-brand-card z-10 flex justify-between items-start">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
+          <Card variant="dense" className="w-full max-w-md max-h-[90vh] overflow-y-auto shadow-glass-hover rounded-2xl border border-brand-border/80">
+            <div className="p-6 border-b border-brand-border/60 sticky top-0 bg-white/95 backdrop-blur-md z-10 flex justify-between items-start">
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-lg font-bold font-mono text-brand-text">{selectedVehicle.registration_number}</h3>
@@ -545,26 +550,31 @@ export const Vehicles = () => {
                 </div>
                 <p className="text-xs text-brand-text-secondary mt-0.5">{selectedVehicle.name}</p>
               </div>
-              <button onClick={() => setIsDetailModalOpen(false)} className="text-brand-text-secondary hover:text-brand-text text-xl">✕</button>
+              <button 
+                onClick={() => setIsDetailModalOpen(false)} 
+                className="w-8 h-8 rounded-lg bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/60 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-all"
+              >
+                ✕
+              </button>
             </div>
 
             <div className="p-6 space-y-5">
               {/* Feedback messages inside modal */}
               {error && (
-                <div className="p-3 bg-red-100 border border-red-200 text-red-700 rounded-lg text-xs flex items-center gap-2">
+                <div className="p-3 bg-red-100 border border-red-200 text-red-700 rounded-xl text-xs flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   <span>{error}</span>
                 </div>
               )}
               {successMsg && (
-                <div className="p-3 bg-emerald-100 border border-emerald-200 text-emerald-800 rounded-lg text-xs flex items-center gap-2">
+                <div className="p-3 bg-emerald-100 border border-emerald-200 text-emerald-800 rounded-xl text-xs flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
                   <span>{successMsg}</span>
                 </div>
               )}
 
               {/* Attributes Card */}
-              <div className="p-4 bg-brand-surface rounded-xl border border-brand-border space-y-3">
+              <div className="p-4 bg-brand-surface/70 rounded-xl border border-brand-border/80 space-y-3 shadow-xs">
                 <div className="flex justify-between items-center text-sm border-b border-brand-border/60 pb-2">
                   <span className="text-brand-text-secondary">Vehicle Classification:</span>
                   <span>{getTypeBadge(selectedVehicle.vehicle_type)}</span>
@@ -639,7 +649,7 @@ export const Vehicles = () => {
               </div>
             </div>
 
-            <div className="p-6 border-t border-brand-border bg-brand-surface/40 flex justify-between items-center">
+            <div className="p-6 border-t border-brand-border/60 bg-brand-surface/40 flex justify-between items-center">
               <Button 
                 variant="outline" 
                 size="sm" 

@@ -619,7 +619,7 @@ export const Planning: React.FC = () => {
   }
 
   return (
-    <div className="p-6 sm:p-8 max-w-7xl mx-auto space-y-8">
+    <div className="max-w-7xl mx-auto p-4 sm:p-8 space-y-6 sm:space-y-8 animate-fade-in">
       {/* Page Header */}
       <PageHeader
         title="Delivery Planning & Route Optimization"
@@ -645,10 +645,10 @@ export const Planning: React.FC = () => {
 
       {/* Status Messages */}
       {statusMessage && (
-        <div className={`p-4 rounded-xl border flex items-center justify-between ${
+        <div className={`p-4 rounded-xl border flex items-center justify-between shadow-xs ${
           statusMessage.type === 'success' 
-            ? 'bg-emerald-50 border-emerald-200 text-emerald-900' 
-            : 'bg-rose-50 border-rose-200 text-rose-900'
+            ? 'bg-emerald-50/90 backdrop-blur-xs border-emerald-200 text-emerald-900' 
+            : 'bg-rose-50/90 backdrop-blur-xs border-rose-200 text-rose-900'
         }`}>
           <div className="flex items-center gap-3">
             {statusMessage.type === 'success' ? (
@@ -669,7 +669,7 @@ export const Planning: React.FC = () => {
 
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-5 bg-white border border-brand-border/80 shadow-sm flex items-center justify-between">
+        <Card variant="glass" className="p-5 flex items-center justify-between border-l-4 border-l-brand-primary">
           <div>
             <span className="text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">Total Plans</span>
             <p className="text-2xl font-bold text-brand-text font-mono mt-1">{stats.total}</p>
@@ -679,7 +679,7 @@ export const Planning: React.FC = () => {
           </div>
         </Card>
 
-        <Card className="p-5 bg-white border border-brand-border/80 shadow-sm flex items-center justify-between">
+        <Card variant="glass" className="p-5 flex items-center justify-between border-l-4 border-l-emerald-500">
           <div>
             <span className="text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">Active Planned</span>
             <p className="text-2xl font-bold text-emerald-700 font-mono mt-1">{stats.active}</p>
@@ -689,7 +689,7 @@ export const Planning: React.FC = () => {
           </div>
         </Card>
 
-        <Card className="p-5 bg-white border border-brand-border/80 shadow-sm flex items-center justify-between">
+        <Card variant="glass" className="p-5 flex items-center justify-between border-l-4 border-l-brand-primary">
           <div>
             <span className="text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">Vehicles Assigned</span>
             <p className="text-2xl font-bold text-brand-primary font-mono mt-1">{stats.assignedPlans}</p>
@@ -699,7 +699,7 @@ export const Planning: React.FC = () => {
           </div>
         </Card>
 
-        <Card className="p-5 bg-white border border-brand-border/80 shadow-sm flex items-center justify-between">
+        <Card variant="glass" className="p-5 flex items-center justify-between border-l-4 border-l-amber-500">
           <div>
             <span className="text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">Available Fleet</span>
             <p className="text-2xl font-bold text-amber-700 font-mono mt-1">{availableVehicles.length}</p>
@@ -711,7 +711,7 @@ export const Planning: React.FC = () => {
       </div>
 
       {/* Main Delivery Plans Section */}
-      <Card className="p-6 bg-white border border-brand-border/80 shadow-sm space-y-6">
+      <Card variant="dense" className="p-6 space-y-6 overflow-hidden">
         {/* Filters & Search Toolbar */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-b border-brand-border/60 pb-4">
           <div className="relative flex-1 max-w-md">
@@ -721,7 +721,7 @@ export const Planning: React.FC = () => {
               placeholder="Search plan number, warehouse, or vehicle..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-brand-surface border border-brand-border rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/50 text-brand-text"
+              className="w-full bg-white/90 backdrop-blur-xs border border-brand-border/80 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 text-brand-text shadow-xs"
             />
           </div>
 
@@ -730,7 +730,7 @@ export const Planning: React.FC = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as 'ALL' | DeliveryPlanStatus)}
-              className="bg-brand-surface border border-brand-border rounded-lg px-3 py-2 text-xs font-medium text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/50"
+              className="bg-white/90 backdrop-blur-xs border border-brand-border/80 rounded-xl px-3 py-2 text-xs font-semibold text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/40 shadow-xs"
             >
               <option value="ALL">All Statuses</option>
               <option value="PLANNED">Planned (Active)</option>
@@ -756,9 +756,9 @@ export const Planning: React.FC = () => {
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-brand-border text-xs">
-              <thead className="bg-brand-surface text-brand-text font-bold">
+          <div className="overflow-x-auto rounded-xl border border-brand-border/70">
+            <table className="min-w-full divide-y divide-brand-border/70 text-xs">
+              <thead className="bg-brand-surface/70 border-b border-brand-border/80 text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">
                 <tr>
                   <th className="py-3 px-4 text-left">Plan Number</th>
                   <th className="py-3 px-4 text-left">Starting Warehouse</th>
@@ -771,7 +771,7 @@ export const Planning: React.FC = () => {
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-brand-border bg-white text-brand-text">
+              <tbody className="divide-y divide-brand-border/70 bg-white/70 text-brand-text">
                 {filteredPlans.map(plan => {
                   const ordersList = plan.delivery_plan_orders?.map(dpo => dpo.order).filter(Boolean) || [];
                   const orderCount = ordersList.length;
@@ -907,10 +907,10 @@ export const Planning: React.FC = () => {
 
       {/* CREATE PLAN MODAL */}
       {isCreateModalOpen && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-glass border border-white/60 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-fade-in">
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-glass-hover border border-brand-border/80 overflow-hidden">
             {/* Modal Header */}
-            <div className="p-6 border-b border-brand-border flex items-center justify-between bg-brand-surface/50">
+            <div className="p-6 border-b border-brand-border/60 flex items-center justify-between bg-brand-surface/40">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary">
                   <Route className="w-5 h-5" />
@@ -924,9 +924,9 @@ export const Planning: React.FC = () => {
               </div>
               <button 
                 onClick={() => setIsCreateModalOpen(false)}
-                className="text-brand-text-secondary hover:text-brand-text p-1"
+                className="w-8 h-8 rounded-lg bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/60 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-all"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -1130,10 +1130,10 @@ export const Planning: React.FC = () => {
 
       {/* PLAN DETAILS, VEHICLE & ROUTE MODAL */}
       {isDetailModalOpen && selectedPlan && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-glass border border-white/60 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-fade-in">
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-glass-hover border border-brand-border/80 overflow-hidden">
             {/* Header */}
-            <div className="p-6 border-b border-brand-border flex items-center justify-between bg-brand-surface/50">
+            <div className="p-6 border-b border-brand-border/60 flex items-center justify-between bg-brand-surface/40">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary">
                   <Route className="w-5 h-5" />
@@ -1158,9 +1158,9 @@ export const Planning: React.FC = () => {
               </div>
               <button 
                 onClick={() => setIsDetailModalOpen(false)}
-                className="text-brand-text-secondary hover:text-brand-text p-1"
+                className="w-8 h-8 rounded-lg bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/60 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-all"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 

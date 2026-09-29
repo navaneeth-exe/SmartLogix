@@ -121,17 +121,17 @@ export const Warehouses = () => {
   );
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
       <PageHeader 
-        title="Warehouses" 
-        description="Manage warehouse locations and details"
+        title="Warehouses & Depots" 
+        description="Manage regional warehouse facilities, geographic coordinates, and active dispatch status"
         actions={<Button onClick={() => openModal()}><Plus className="w-4 h-4 mr-2"/> Add Warehouse</Button>}
       />
 
-      <Card className="mt-6">
-        <div className="p-4 border-b border-brand-border flex items-center">
+      <Card variant="dense" noPadding className="overflow-hidden shadow-soft-sm">
+        <div className="p-4 sm:p-5 border-b border-brand-border/80 flex items-center bg-white/50 backdrop-blur-xs">
           <div className="relative w-full max-w-sm">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-brand-text-secondary" />
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-text-secondary" />
             <Input 
               placeholder="Search by name or code..." 
               value={search}
@@ -142,7 +142,7 @@ export const Warehouses = () => {
         </div>
         
         {loading ? (
-          <div className="p-8 text-center text-brand-text-secondary">Loading warehouses...</div>
+          <div className="p-12 text-center text-sm text-brand-text-secondary">Loading warehouses...</div>
         ) : filtered.length === 0 ? (
           <div className="p-12 text-center text-brand-text-secondary flex flex-col items-center">
             <div className="w-24 h-24 mb-3 rounded-2xl overflow-hidden soft-inset p-1 flex items-center justify-center shadow-soft-sm">
@@ -152,36 +152,38 @@ export const Warehouses = () => {
             <p className="text-xs text-brand-text-secondary mt-1">Get started by creating your first regional distribution hub.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-4 sm:p-6 bg-brand-surface/20">
             {filtered.map(warehouse => (
-              <Card key={warehouse.id} hoverable className="p-5 flex flex-col h-full border border-brand-border/80">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="font-bold text-base text-brand-text">{warehouse.name}</h3>
-                    <p className="text-xs font-mono font-semibold text-brand-primary mt-0.5">{warehouse.code}</p>
-                  </div>
-                  <Badge variant={warehouse.is_active ? 'success' : 'default'} dot>
-                    {warehouse.is_active ? 'Active' : 'Inactive'}
-                  </Badge>
-                </div>
-                
-                <div className="text-sm text-brand-text-secondary mb-4 flex-1">
-                  {warehouse.address ? (
-                     <p className="mb-2 line-clamp-2 text-xs">{warehouse.address}</p>
-                  ) : (
-                     <p className="mb-2 italic text-xs">No address provided</p>
-                  )}
-                  {(warehouse.latitude !== null && warehouse.longitude !== null) && (
-                    <div className="text-[11px] font-mono bg-brand-surface/70 px-2 py-0.5 rounded border border-brand-border/60 inline-flex items-center gap-1 text-brand-text-secondary">
-                      <span>Coords:</span>
-                      <span className="text-brand-text font-medium">{warehouse.latitude.toFixed(4)}, {warehouse.longitude.toFixed(4)}</span>
+              <Card key={warehouse.id} variant="glass" hoverable className="p-5 sm:p-6 flex flex-col justify-between h-full border border-brand-border/80">
+                <div>
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h3 className="font-bold text-base text-brand-text">{warehouse.name}</h3>
+                      <p className="text-xs font-mono font-bold text-brand-primary mt-0.5">{warehouse.code}</p>
                     </div>
-                  )}
+                    <Badge variant={warehouse.is_active ? 'success' : 'default'} dot>
+                      {warehouse.is_active ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </div>
+                  
+                  <div className="text-xs text-brand-text-secondary mb-4 space-y-2">
+                    {warehouse.address ? (
+                      <p className="line-clamp-2 leading-relaxed">{warehouse.address}</p>
+                    ) : (
+                      <p className="italic text-brand-text-muted">No address provided</p>
+                    )}
+                    {(warehouse.latitude !== null && warehouse.longitude !== null) && (
+                      <div className="text-[11px] font-mono bg-brand-surface/90 px-2.5 py-1 rounded-lg border border-brand-border/70 inline-flex items-center gap-1.5 text-brand-text-secondary shadow-soft-xs">
+                        <span className="text-brand-text-muted">Geo:</span>
+                        <span className="text-brand-text font-semibold">{warehouse.latitude.toFixed(4)}°, {warehouse.longitude.toFixed(4)}°</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
                 <div className="pt-3 border-t border-brand-border/60 flex justify-end">
                   <Button variant="outline" size="sm" onClick={() => openModal(warehouse)}>
-                    <Edit2 className="w-3.5 h-3.5 mr-1.5" />
+                    <Edit2 className="w-3.5 h-3.5 mr-1.5 text-brand-primary" />
                     Edit Details
                   </Button>
                 </div>
@@ -192,31 +194,33 @@ export const Warehouses = () => {
       </Card>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto shadow-glass rounded-2xl">
-            <div className="p-6 border-b border-brand-border sticky top-0 bg-brand-card z-10">
-              <h3 className="text-lg font-bold">{editingWarehouse ? 'Edit Warehouse' : 'Add New Warehouse'}</h3>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <Card variant="dense" noPadding className="w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl rounded-2xl border border-brand-border/90 bg-white">
+            <div className="p-5 border-b border-brand-border/80 sticky top-0 bg-brand-surface/50 backdrop-blur-xs z-10 flex items-center justify-between">
+              <h3 className="text-base font-bold text-brand-text">{editingWarehouse ? 'Edit Warehouse Hub' : 'Add New Warehouse Hub'}</h3>
+              <button onClick={() => setIsModalOpen(false)} className="p-1 rounded-lg text-brand-text-secondary hover:text-brand-text">
+                ✕
+              </button>
             </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              {error && <div className="p-3 bg-red-100 text-red-700 rounded text-sm">{error}</div>}
+            <form onSubmit={handleSubmit} className="p-5 space-y-4">
+              {error && <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-semibold">{error}</div>}
               
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Warehouse Code *</label>
-                <Input required value={formData.code} onChange={e => setFormData({...formData, code: e.target.value})} placeholder="e.g. WH-001" />
+              <div className="space-y-1.5">
+                <Input label="Warehouse Code *" required value={formData.code} onChange={e => setFormData({...formData, code: e.target.value})} placeholder="e.g. WH-CENTRAL" />
               </div>
               
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Warehouse Name *</label>
-                <Input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. Central Hub" />
+              <div className="space-y-1.5">
+                <Input label="Warehouse Name *" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. Central Distribution Center" />
               </div>
               
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Address</label>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-brand-text-secondary">Physical Address</label>
                 <textarea 
-                  className="w-full rounded-md border border-brand-border bg-brand-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                  className="w-full rounded-xl border border-brand-border/90 bg-white/90 px-3.5 py-2 text-sm focus:outline-none focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary text-brand-text shadow-soft-inset transition-all"
                   value={formData.address} 
                   onChange={e => setFormData({...formData, address: e.target.value})} 
                   rows={2}
+                  placeholder="Street, City, State, Postal Code"
                 />
               </div>
 
@@ -235,18 +239,18 @@ export const Warehouses = () => {
                 height="220px"
               />
               
-              <div className="flex items-center gap-2 mt-4">
+              <div className="flex items-center gap-2.5 pt-2">
                 <input 
                   type="checkbox" 
                   id="isActive" 
                   checked={formData.is_active} 
                   onChange={e => setFormData({...formData, is_active: e.target.checked})}
-                  className="rounded border-brand-border text-brand-primary focus:ring-brand-primary"
+                  className="rounded border-brand-border text-brand-primary focus:ring-brand-primary w-4 h-4"
                 />
-                <label htmlFor="isActive" className="text-sm font-medium">Warehouse is active</label>
+                <label htmlFor="isActive" className="text-xs font-semibold text-brand-text cursor-pointer">Warehouse is active for dispatch operations</label>
               </div>
 
-              <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-brand-border">
+              <div className="flex justify-end gap-3 mt-6 pt-3 border-t border-brand-border/60">
                 <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
                 <Button type="submit" variant="primary">{editingWarehouse ? 'Save Changes' : 'Create Warehouse'}</Button>
               </div>

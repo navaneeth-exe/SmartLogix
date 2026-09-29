@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -207,8 +207,8 @@ export const CreateOrder = () => {
 
   if (loadingInitial) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-[400px]">
-        <div className="text-brand-text-secondary">Loading order preparation data...</div>
+      <div className="max-w-7xl mx-auto p-8 flex items-center justify-center min-h-[400px]">
+        <div className="text-brand-text-secondary text-sm font-medium">Loading order preparation data...</div>
       </div>
     );
   }
@@ -217,36 +217,36 @@ export const CreateOrder = () => {
   if (successResult) {
     const orderData = successResult.order || successResult;
     return (
-      <div className="p-8 max-w-4xl mx-auto">
-        <Card className="p-8 text-center border-emerald-200 bg-white">
-          <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="max-w-4xl mx-auto p-4 sm:p-8 animate-fade-in">
+        <Card variant="glass" className="p-8 sm:p-12 text-center border-emerald-200/80 shadow-glass rounded-2xl">
+          <div className="w-16 h-16 bg-emerald-100/80 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-xs">
             <CheckCircle2 className="w-10 h-10" />
           </div>
           <h2 className="text-2xl font-bold text-brand-text">Order Created Successfully!</h2>
-          <p className="text-brand-text-secondary mt-1">
+          <p className="text-brand-text-secondary mt-1 text-sm">
             Order has been placed in <span className="font-semibold text-brand-primary">PENDING</span> status and recorded in the database.
           </p>
 
-          <div className="my-6 p-4 bg-brand-surface rounded-xl border border-brand-border inline-block text-left w-full max-w-md">
-            <div className="flex justify-between py-1.5 border-b border-brand-border/60 text-sm">
+          <div className="my-6 p-5 bg-white/80 backdrop-blur-xs rounded-xl border border-brand-border/80 inline-block text-left w-full max-w-md shadow-xs">
+            <div className="flex justify-between py-2 border-b border-brand-border/60 text-sm">
               <span className="text-brand-text-secondary">Order Number:</span>
               <span className="font-mono font-bold text-brand-text">{orderData.order_number}</span>
             </div>
-            <div className="flex justify-between py-1.5 border-b border-brand-border/60 text-sm">
+            <div className="flex justify-between py-2 border-b border-brand-border/60 text-sm">
               <span className="text-brand-text-secondary">Status:</span>
               <Badge variant="warning">{orderData.status}</Badge>
             </div>
-            <div className="flex justify-between py-1.5 border-b border-brand-border/60 text-sm">
+            <div className="flex justify-between py-2 border-b border-brand-border/60 text-sm">
               <span className="text-brand-text-secondary">Priority:</span>
               <span className="font-semibold text-brand-text">{orderData.priority}</span>
             </div>
-            <div className="flex justify-between py-1.5 text-sm">
+            <div className="flex justify-between py-2 text-sm">
               <span className="text-brand-text-secondary">Total Amount:</span>
-              <span className="font-bold text-emerald-600">${Number(orderData.total_amount).toFixed(2)}</span>
+              <span className="font-bold text-emerald-600 font-mono">${Number(orderData.total_amount).toFixed(2)}</span>
             </div>
           </div>
 
-          <div className="flex justify-center gap-4">
+          <div className="flex flex-wrap justify-center gap-4">
             <Button variant="outline" onClick={() => { setSuccessResult(null); setItems([]); }}>
               Create Another Order
             </Button>
@@ -260,9 +260,9 @@ export const CreateOrder = () => {
   }
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-        <Link to="/orders" className="p-2 rounded-lg bg-brand-surface border border-brand-border text-brand-text hover:bg-brand-card transition-colors">
+    <div className="max-w-7xl mx-auto p-4 sm:p-8 space-y-6 sm:space-y-8 animate-fade-in">
+      <div className="flex items-center gap-3">
+        <Link to="/orders" className="p-2.5 rounded-xl bg-white/80 backdrop-blur-xs border border-brand-border/80 text-brand-text hover:bg-brand-surface hover:shadow-xs transition-all">
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
@@ -274,14 +274,14 @@ export const CreateOrder = () => {
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg flex items-start gap-3 text-sm">
+        <div className="p-4 bg-red-50/90 backdrop-blur-xs border border-red-200 text-red-800 rounded-xl flex items-start gap-3 text-sm shadow-sm">
           <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
           <div className="whitespace-pre-line">{error}</div>
         </div>
       )}
 
       {locations.length === 0 && (
-        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg flex items-center justify-between text-sm">
+        <div className="p-4 bg-amber-50/90 backdrop-blur-xs border border-amber-200 text-amber-800 rounded-xl flex items-center justify-between text-sm shadow-sm">
           <div className="flex items-center gap-2">
             <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
             <span>No active delivery locations found. Please activate or add a location before placing orders.</span>
@@ -292,11 +292,11 @@ export const CreateOrder = () => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         {/* Left Column: Form Details & Items */}
         <div className="lg:col-span-2 space-y-6">
           {/* Section 1: Order Destination & Settings */}
-          <Card className="p-6">
+          <Card variant="glass" className="p-6">
             <h3 className="text-base font-bold text-brand-text mb-4 flex items-center gap-2">
               <Building2 className="w-4 h-4 text-brand-primary" />
               1. Delivery Destination & Settings
@@ -309,7 +309,7 @@ export const CreateOrder = () => {
                   required
                   value={selectedLocationId}
                   onChange={(e) => setSelectedLocationId(e.target.value)}
-                  className="w-full bg-brand-surface border border-brand-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/50 text-brand-text"
+                  className="w-full bg-white/90 backdrop-blur-xs border border-brand-border/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 text-brand-text shadow-xs"
                 >
                   {locations.map(loc => (
                     <option key={loc.id} value={loc.id}>
@@ -327,7 +327,7 @@ export const CreateOrder = () => {
                 <select
                   value={priority}
                   onChange={(e) => setPriority(e.target.value as OrderPriority)}
-                  className="w-full bg-brand-surface border border-brand-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/50 text-brand-text"
+                  className="w-full bg-white/90 backdrop-blur-xs border border-brand-border/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 text-brand-text shadow-xs"
                 >
                   <option value="LOW">Low Priority</option>
                   <option value="MEDIUM">Medium Priority (Standard)</option>
@@ -341,7 +341,7 @@ export const CreateOrder = () => {
                 <select
                   value={selectedWarehouseId}
                   onChange={(e) => setSelectedWarehouseId(e.target.value)}
-                  className="w-full bg-brand-surface border border-brand-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/50 text-brand-text"
+                  className="w-full bg-white/90 backdrop-blur-xs border border-brand-border/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 text-brand-text shadow-xs"
                 >
                   <option value="">All Warehouses (Network-Wide Stock)</option>
                   {warehouses.map(w => (
@@ -356,21 +356,21 @@ export const CreateOrder = () => {
           </Card>
 
           {/* Section 2: Order Items */}
-          <Card className="p-6">
+          <Card variant="dense" className="p-6">
             <h3 className="text-base font-bold text-brand-text mb-4 flex items-center gap-2">
               <Package className="w-4 h-4 text-brand-primary" />
               2. Add Products to Order
             </h3>
 
             {/* Product selection bar */}
-            <div className="p-4 bg-brand-surface rounded-xl border border-brand-border mb-6">
+            <div className="p-4 bg-brand-surface/70 backdrop-blur-xs rounded-xl border border-brand-border/80 mb-6 shadow-xs">
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
                 <div className="sm:col-span-6 space-y-1">
                   <label className="text-xs font-semibold text-brand-text">Select Product</label>
                   <select
                     value={stagingProductId}
                     onChange={(e) => setStagingProductId(e.target.value)}
-                    className="w-full bg-brand-card border border-brand-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/50 text-brand-text"
+                    className="w-full bg-white/90 backdrop-blur-xs border border-brand-border/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 text-brand-text shadow-xs"
                   >
                     {products.map(p => {
                       const avail = getProductStock(p.id, selectedWarehouseId || undefined);
@@ -390,7 +390,7 @@ export const CreateOrder = () => {
                     min="1"
                     value={stagingQty}
                     onChange={(e) => setStagingQty(parseInt(e.target.value) || 1)}
-                    className="bg-brand-card"
+                    className="bg-white/90"
                   />
                 </div>
 
@@ -408,30 +408,30 @@ export const CreateOrder = () => {
               </div>
 
               {stagingProduct && (
-                <div className="mt-3 flex items-center justify-between text-xs text-brand-text-secondary pt-2 border-t border-brand-border/50">
-                  <span>Unit Price: <strong className="text-brand-text">${stagingProduct.unit_price.toFixed(2)}</strong></span>
+                <div className="mt-3 flex items-center justify-between text-xs text-brand-text-secondary pt-2 border-t border-brand-border/60">
+                  <span>Unit Price: <strong className="text-brand-text font-mono">${stagingProduct.unit_price.toFixed(2)}</strong></span>
                   <span>
                     Stock Available:{' '}
                     <strong className={stagingAvailableStock > 0 ? 'text-emerald-700 font-bold' : 'text-red-600 font-bold'}>
                       {stagingAvailableStock} units
                     </strong>
                   </span>
-                  <span>Line Est: <strong className="text-brand-text">${(stagingProduct.unit_price * (stagingQty || 0)).toFixed(2)}</strong></span>
+                  <span>Line Est: <strong className="text-brand-text font-mono">${(stagingProduct.unit_price * (stagingQty || 0)).toFixed(2)}</strong></span>
                 </div>
               )}
             </div>
 
             {/* Items List Table */}
             {items.length === 0 ? (
-              <div className="p-8 text-center text-brand-text-secondary border-2 border-dashed border-brand-border rounded-xl">
-                <ShoppingCart className="w-10 h-10 mx-auto mb-2 opacity-40" />
+              <div className="p-8 text-center text-brand-text-secondary border-2 border-dashed border-brand-border/80 rounded-xl bg-brand-surface/20">
+                <ShoppingCart className="w-10 h-10 mx-auto mb-2 opacity-40 text-brand-primary" />
                 <p className="text-sm font-medium">No items added to this order yet.</p>
                 <p className="text-xs text-brand-text-secondary mt-1">Select products and quantities above to populate order.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto rounded-xl border border-brand-border/70">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-brand-surface border-b border-brand-border text-xs text-brand-text-secondary">
+                  <thead className="bg-brand-surface/70 border-b border-brand-border/80 text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">
                     <tr>
                       <th className="px-4 py-3">Product</th>
                       <th className="px-4 py-3 text-right">Available Stock</th>
@@ -441,7 +441,7 @@ export const CreateOrder = () => {
                       <th className="px-4 py-3 text-right">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-brand-border">
+                  <tbody className="divide-y divide-brand-border/70">
                     {items.map(item => {
                       const prod = products.find(p => p.id === item.product_id);
                       const available = getProductStock(item.product_id, selectedWarehouseId || undefined);
@@ -449,9 +449,9 @@ export const CreateOrder = () => {
                       const lineTotal = (prod ? prod.unit_price * item.quantity : 0);
 
                       return (
-                        <tr key={item.product_id} className={`hover:bg-brand-surface/40 ${hasStockError ? 'bg-red-50/60' : ''}`}>
+                        <tr key={item.product_id} className={`hover:bg-brand-surface/40 transition-colors ${hasStockError ? 'bg-red-50/60' : ''}`}>
                           <td className="px-4 py-3">
-                            <div className="font-medium text-brand-text">{prod?.name || 'Unknown Product'}</div>
+                            <div className="font-semibold text-brand-text">{prod?.name || 'Unknown Product'}</div>
                             <div className="text-xs font-mono text-brand-text-secondary">{prod?.sku}</div>
                           </td>
                           <td className="px-4 py-3 text-right">
@@ -465,20 +465,20 @@ export const CreateOrder = () => {
                               min="1"
                               value={item.quantity}
                               onChange={(e) => handleUpdateItemQty(item.product_id, parseInt(e.target.value) || 0)}
-                              className="w-20 text-center bg-brand-surface border border-brand-border rounded px-2 py-1 text-sm font-semibold focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                              className="w-20 text-center bg-white/90 border border-brand-border/80 rounded-lg px-2 py-1 text-sm font-semibold focus:outline-none focus:ring-1 focus:ring-brand-primary shadow-xs"
                             />
                           </td>
                           <td className="px-4 py-3 text-right font-mono text-brand-text-secondary">
                             ${prod?.unit_price.toFixed(2)}
                           </td>
-                          <td className="px-4 py-3 text-right font-bold text-brand-text">
+                          <td className="px-4 py-3 text-right font-bold text-brand-text font-mono">
                             ${lineTotal.toFixed(2)}
                           </td>
                           <td className="px-4 py-3 text-right">
                             <button
                               type="button"
                               onClick={() => handleRemoveItem(item.product_id)}
-                              className="p-1.5 text-gray-400 hover:text-red-600 rounded transition-colors"
+                              className="p-1.5 text-brand-text-secondary hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
                               title="Remove item"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -496,20 +496,20 @@ export const CreateOrder = () => {
 
         {/* Right Column: Order Summary & Review */}
         <div className="space-y-6">
-          <Card className="p-6 sticky top-6">
+          <Card variant="dense" className="p-6 sticky top-6 shadow-glass rounded-2xl border border-brand-border/80">
             <h3 className="text-base font-bold text-brand-text mb-4 flex items-center gap-2">
               <Layers className="w-4 h-4 text-brand-primary" />
               Order Summary
             </h3>
 
-            <div className="space-y-3 pb-4 border-b border-brand-border text-sm">
+            <div className="space-y-3 pb-4 border-b border-brand-border/60 text-sm">
               <div className="flex justify-between">
                 <span className="text-brand-text-secondary">Distinct Products:</span>
-                <span className="font-semibold text-brand-text">{totalDistinctItems}</span>
+                <span className="font-semibold text-brand-text font-mono">{totalDistinctItems}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-brand-text-secondary">Total Quantity:</span>
-                <span className="font-semibold text-brand-text">{totalItemCount} units</span>
+                <span className="font-semibold text-brand-text font-mono">{totalItemCount} units</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-brand-text-secondary">Priority Level:</span>
@@ -523,10 +523,10 @@ export const CreateOrder = () => {
               </div>
             </div>
 
-            <div className="py-4 border-b border-brand-border">
+            <div className="py-4 border-b border-brand-border/60">
               <div className="flex justify-between items-baseline">
                 <span className="text-base font-bold text-brand-text">Estimated Total:</span>
-                <span className="text-2xl font-black text-brand-primary">
+                <span className="text-2xl font-black text-brand-primary font-mono">
                   ${estimatedSubtotal.toFixed(2)}
                 </span>
               </div>
@@ -536,7 +536,7 @@ export const CreateOrder = () => {
             </div>
 
             {/* Inventory Status Note */}
-            <div className="my-4 p-3 bg-brand-surface rounded-lg border border-brand-border/60 text-xs text-brand-text-secondary space-y-1.5">
+            <div className="my-4 p-3.5 bg-brand-surface/70 rounded-xl border border-brand-border/60 text-xs text-brand-text-secondary space-y-1.5 shadow-xs">
               <div className="flex items-center gap-1.5 font-semibold text-brand-text">
                 <Info className="w-3.5 h-3.5 text-brand-primary" />
                 <span>Inventory Verification Policy</span>

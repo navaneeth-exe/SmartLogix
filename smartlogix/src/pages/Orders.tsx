@@ -116,7 +116,7 @@ export const Orders = () => {
   const deliveredCount = orders.filter(o => o.status === 'DELIVERED').length;
 
   return (
-    <div className="p-8">
+    <div className="max-w-7xl mx-auto p-4 sm:p-8 space-y-6 sm:space-y-8 animate-fade-in">
       <PageHeader 
         title="Orders" 
         description="Monitor, fulfill, and track distribution orders and status transitions"
@@ -131,7 +131,7 @@ export const Orders = () => {
 
       {/* Global Message */}
       {successMsg && !isDetailOpen && (
-        <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg flex items-center justify-between text-sm">
+        <div className="p-4 bg-emerald-50/90 backdrop-blur-xs border border-emerald-200 text-emerald-800 rounded-xl flex items-center justify-between text-sm shadow-sm">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
             <span>{successMsg}</span>
@@ -141,7 +141,7 @@ export const Orders = () => {
       )}
 
       {error && !isDetailOpen && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg flex items-center justify-between text-sm">
+        <div className="p-4 bg-red-50/90 backdrop-blur-xs border border-red-200 text-red-800 rounded-xl flex items-center justify-between text-sm shadow-sm">
           <div className="flex items-center gap-2">
             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
             <span>{error}</span>
@@ -151,28 +151,28 @@ export const Orders = () => {
       )}
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card className="p-6 border-l-4 border-l-brand-primary">
-          <h4 className="text-brand-text-secondary text-sm font-medium">Total Orders</h4>
-          <p className="text-3xl font-bold mt-2 text-brand-text">{totalCount}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <Card variant="glass" className="p-5 border-l-4 border-l-brand-primary">
+          <h4 className="text-brand-text-secondary text-xs font-semibold uppercase tracking-wider">Total Orders</h4>
+          <p className="text-3xl font-bold mt-2 text-brand-text font-mono">{totalCount}</p>
         </Card>
-        <Card className="p-6 border-l-4 border-l-amber-500">
-          <h4 className="text-brand-text-secondary text-sm font-medium">Pending Verification</h4>
-          <p className="text-3xl font-bold mt-2 text-amber-600">{pendingCount}</p>
+        <Card variant="glass" className="p-5 border-l-4 border-l-amber-500">
+          <h4 className="text-brand-text-secondary text-xs font-semibold uppercase tracking-wider">Pending Verification</h4>
+          <p className="text-3xl font-bold mt-2 text-amber-600 font-mono">{pendingCount}</p>
         </Card>
-        <Card className="p-6 border-l-4 border-l-blue-500">
-          <h4 className="text-brand-text-secondary text-sm font-medium">Processing / Dispatched</h4>
-          <p className="text-3xl font-bold mt-2 text-blue-600">{inProgressCount}</p>
+        <Card variant="glass" className="p-5 border-l-4 border-l-blue-500">
+          <h4 className="text-brand-text-secondary text-xs font-semibold uppercase tracking-wider">Processing / Dispatched</h4>
+          <p className="text-3xl font-bold mt-2 text-blue-600 font-mono">{inProgressCount}</p>
         </Card>
-        <Card className="p-6 border-l-4 border-l-emerald-500">
-          <h4 className="text-brand-text-secondary text-sm font-medium">Delivered</h4>
-          <p className="text-3xl font-bold mt-2 text-emerald-600">{deliveredCount}</p>
+        <Card variant="glass" className="p-5 border-l-4 border-l-emerald-500">
+          <h4 className="text-brand-text-secondary text-xs font-semibold uppercase tracking-wider">Delivered</h4>
+          <p className="text-3xl font-bold mt-2 text-emerald-600 font-mono">{deliveredCount}</p>
         </Card>
       </div>
 
       {/* Table & Filter Card */}
-      <Card>
-        <div className="p-4 border-b border-brand-border flex flex-col md:flex-row items-center justify-between gap-4">
+      <Card variant="dense" className="overflow-hidden">
+        <div className="p-4 sm:p-5 border-b border-brand-border/60 flex flex-col md:flex-row items-center justify-between gap-4 bg-brand-surface/40">
           <div className="relative w-full md:max-w-md">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-brand-text-secondary" />
             <Input 
@@ -189,7 +189,7 @@ export const Orders = () => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-brand-surface border border-brand-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/50 text-brand-text"
+                className="bg-white/90 backdrop-blur-xs border border-brand-border/80 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 text-brand-text shadow-xs"
               >
                 <option value="all">All Statuses</option>
                 <option value="PENDING">Pending</option>
@@ -203,7 +203,7 @@ export const Orders = () => {
             <select
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
-              className="bg-brand-surface border border-brand-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/50 text-brand-text"
+              className="bg-white/90 backdrop-blur-xs border border-brand-border/80 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 text-brand-text shadow-xs"
             >
               <option value="all">All Priorities</option>
               <option value="URGENT">Urgent</option>
@@ -218,7 +218,7 @@ export const Orders = () => {
           <div className="p-12 text-center text-brand-text-secondary">Loading orders...</div>
         ) : filtered.length === 0 ? (
           <div className="p-16 text-center text-brand-text-secondary flex flex-col items-center">
-            <ShoppingCart className="w-12 h-12 mb-4 opacity-40" />
+            <ShoppingCart className="w-12 h-12 mb-4 opacity-40 text-brand-primary" />
             <h3 className="font-semibold text-brand-text text-base">No orders found</h3>
             <p className="text-sm mt-1 mb-4">No order matches the current filters.</p>
             <Link to="/orders/create">
@@ -230,7 +230,7 @@ export const Orders = () => {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-brand-surface border-b border-brand-border text-xs text-brand-text-secondary">
+              <thead className="bg-brand-surface/70 border-b border-brand-border/80 text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">
                 <tr>
                   <th className="px-4 py-3">Order Number</th>
                   <th className="px-4 py-3">Destination</th>
@@ -292,10 +292,10 @@ export const Orders = () => {
 
       {/* Order Details Drawer / Modal */}
       {isDetailOpen && selectedOrder && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-glass rounded-2xl">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
+          <Card variant="dense" className="w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-glass-hover rounded-2xl border border-brand-border/80">
             {/* Header */}
-            <div className="p-6 border-b border-brand-border sticky top-0 bg-brand-card z-10 flex justify-between items-start">
+            <div className="p-6 border-b border-brand-border/60 sticky top-0 bg-white/95 backdrop-blur-md z-10 flex justify-between items-start">
               <div>
                 <div className="flex items-center gap-3">
                   <h3 className="text-xl font-bold font-mono text-brand-text">{selectedOrder.order_number}</h3>
@@ -308,7 +308,7 @@ export const Orders = () => {
               </div>
               <button 
                 onClick={() => setIsDetailOpen(false)}
-                className="text-brand-text-secondary hover:text-brand-text text-xl"
+                className="w-8 h-8 rounded-lg bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/60 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-all"
               >
                 ✕
               </button>

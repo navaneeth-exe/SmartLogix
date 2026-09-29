@@ -23,7 +23,7 @@ export const Settings: React.FC = () => {
   };
 
   return (
-    <div className="p-6 sm:p-8 max-w-5xl mx-auto space-y-8">
+    <div className="max-w-7xl mx-auto p-4 sm:p-8 space-y-6 sm:space-y-8 animate-fade-in">
       {/* Page Header */}
       <PageHeader
         title="System Settings & Infrastructure"
@@ -31,14 +31,14 @@ export const Settings: React.FC = () => {
       />
 
       {savedSuccess && (
-        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2 animate-fade-in">
+        <div className="p-4 rounded-xl bg-emerald-50/90 backdrop-blur-xs border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2 shadow-xs animate-fade-in">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
           <span>System configuration preferences saved successfully.</span>
         </div>
       )}
 
       {/* DAA Algorithm Engine Configuration */}
-      <Card className="p-6 border border-brand-border space-y-5">
+      <Card variant="glass" className="p-6 space-y-5">
         <div className="border-b border-brand-border/60 pb-3">
           <h3 className="text-base font-bold text-brand-text flex items-center gap-2">
             <Compass className="w-5 h-5 text-brand-primary" />
@@ -52,13 +52,13 @@ export const Settings: React.FC = () => {
         <form onSubmit={handleSave} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-bold text-brand-text block mb-1">
+              <label className="text-xs font-semibold text-brand-text block mb-1">
                 Default Optimization Solver
               </label>
               <select
                 value={defaultAlgorithm}
                 onChange={(e) => setDefaultAlgorithm(e.target.value as any)}
-                className="w-full bg-brand-surface border border-brand-border rounded-lg px-3 py-2 text-xs font-semibold text-brand-text focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                className="w-full bg-white/90 backdrop-blur-xs border border-brand-border/80 rounded-xl px-3 py-2 text-xs font-semibold text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/40 shadow-xs"
               >
                 <option value="BRANCH_AND_BOUND">Branch & Bound (Exact Tour with Lower-Bound Pruning)</option>
                 <option value="GREEDY_NEAREST_NEIGHBOR">Greedy Nearest Neighbor (Rapid Heuristic)</option>
@@ -69,7 +69,7 @@ export const Settings: React.FC = () => {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-brand-text block mb-1">
+              <label className="text-xs font-semibold text-brand-text block mb-1">
                 Branch & Bound Stop Limit (Safety Guard)
               </label>
               <input
@@ -78,7 +78,7 @@ export const Settings: React.FC = () => {
                 max={15}
                 value={maxNodesExact}
                 onChange={(e) => setMaxNodesExact(Number(e.target.value))}
-                className="w-full bg-brand-surface border border-brand-border rounded-lg px-3 py-2 text-xs font-semibold text-brand-text focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                className="w-full bg-white/90 backdrop-blur-xs border border-brand-border/80 rounded-xl px-3 py-2 text-xs font-semibold text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/40 shadow-xs"
               />
               <span className="text-[11px] text-brand-text-secondary mt-1 block">
                 Prevents browser thread blocking from factorial combinatorial state-space growth (default: 10 stops).
@@ -96,7 +96,7 @@ export const Settings: React.FC = () => {
       </Card>
 
       {/* Database & Spatial Engine Health */}
-      <Card className="p-6 border border-brand-border space-y-4">
+      <Card variant="glass" className="p-6 space-y-4">
         <div className="border-b border-brand-border/60 pb-3">
           <h3 className="text-base font-bold text-brand-text flex items-center gap-2">
             <Server className="w-5 h-5 text-brand-primary" />
@@ -108,7 +108,7 @@ export const Settings: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="p-3.5 bg-brand-surface/90 rounded-xl border border-brand-border/70 shadow-soft-sm space-y-1">
+          <div className="p-3.5 bg-white/70 backdrop-blur-xs rounded-xl border border-brand-border/80 shadow-xs space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-brand-text">Supabase PostgreSQL</span>
               <Badge variant="success" dot>Active</Badge>
@@ -118,7 +118,7 @@ export const Settings: React.FC = () => {
             </p>
           </div>
 
-          <div className="p-3.5 bg-brand-surface/90 rounded-xl border border-brand-border/70 shadow-soft-sm space-y-1">
+          <div className="p-3.5 bg-white/70 backdrop-blur-xs rounded-xl border border-brand-border/80 shadow-xs space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-brand-text">OpenRouteService API</span>
               <Badge variant="lime" dot>Active</Badge>
@@ -128,7 +128,7 @@ export const Settings: React.FC = () => {
             </p>
           </div>
 
-          <div className="p-3.5 bg-brand-surface/90 rounded-xl border border-brand-border/70 shadow-soft-sm space-y-1">
+          <div className="p-3.5 bg-white/70 backdrop-blur-xs rounded-xl border border-brand-border/80 shadow-xs space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-brand-text">Leaflet Map & OSM</span>
               <Badge variant="success" dot>Operational</Badge>
@@ -138,7 +138,7 @@ export const Settings: React.FC = () => {
             </p>
           </div>
 
-          <div className="p-3.5 bg-brand-surface/90 rounded-xl border border-brand-border/70 shadow-soft-sm space-y-1">
+          <div className="p-3.5 bg-white/70 backdrop-blur-xs rounded-xl border border-brand-border/80 shadow-xs space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-brand-text">Distance Matrix Table</span>
               <Badge variant="success" dot>Synchronized</Badge>
@@ -151,7 +151,7 @@ export const Settings: React.FC = () => {
       </Card>
 
       {/* Security & RLS Policies Status */}
-      <Card className="p-6 border border-brand-border space-y-3">
+      <Card variant="glass" className="p-6 space-y-3">
         <h3 className="text-sm font-bold text-brand-text flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-emerald-700" />
           Security Guardrails & Business Constraints
