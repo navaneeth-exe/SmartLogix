@@ -4,14 +4,14 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   noPadding?: boolean;
   glass?: boolean;
   hoverable?: boolean;
-  variant?: 'default' | 'glass' | 'elevated' | 'dense' | 'floating';
+  variant?: 'default' | 'glass' | 'elevated' | 'dense' | 'floating' | 'modal';
 }
 
 export const Card: React.FC<CardProps> = ({ 
   children, 
   className = '', 
   noPadding = false, 
-  glass = false,
+  glass = false, 
   hoverable = false,
   variant,
   ...props 
@@ -22,8 +22,11 @@ export const Card: React.FC<CardProps> = ({
   else if (variant === 'elevated') surfaceClass = 'soft-card-elevated';
   else if (variant === 'dense') surfaceClass = 'surface-dense';
   else if (variant === 'floating') surfaceClass = 'glass-floating';
+  else if (variant === 'modal') surfaceClass = 'glass-modal';
 
-  const hoverClass = hoverable ? 'transition-all duration-200 hover:-translate-y-0.5 hover:shadow-soft-lg' : '';
+  const hoverClass = hoverable 
+    ? 'transition-all duration-200 hover:-translate-y-1 hover:shadow-soft-lg active:scale-[0.995]' 
+    : '';
 
   return (
     <div 
@@ -42,7 +45,7 @@ export const CardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ chi
 );
 
 export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({ children, className = '', ...props }) => (
-  <h3 className={`text-lg font-bold text-brand-text ${className}`} {...props}>
+  <h3 className={`text-lg font-bold text-brand-text font-sans ${className}`} {...props}>
     {children}
   </h3>
 );

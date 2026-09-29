@@ -165,3 +165,26 @@ This document tracks the progress, implementation audit, and verification of the
   - Unused `Sign Out` button completely absent from view.
   - Kept original isometric warehouse distribution hub illustration on the Dashboard hero.
   - Zero mock data; all Supabase queries, DAA routing, and ORS calculations preserved.
+
+---
+
+## I. Real CSS Glassmorphism Fix (Completed)
+
+- [x] **Eliminated Opaque Active Nav Button**:
+  - Replaced solid 95%-opaque green gradient (`from-[#123827]/95`) with `.sidebar-glass-active`.
+  - Applied genuine translucent surface (`background: linear-gradient(135deg, rgba(255, 255, 255, 0.72) 0%, rgba(220, 242, 230, 0.46) 100%)`).
+  - Added explicit `backdrop-filter: blur(16px) saturate(150%)` and `-webkit-backdrop-filter: blur(16px) saturate(150%)`.
+  - Added delicate white edge highlight (`inset 0 1px 1.5px 0 rgba(255, 255, 255, 1)`) and subtle emerald contour (`inset 0 0 0 1px rgba(27, 94, 67, 0.12)`).
+  - Used high-contrast deep forest green typography (`#0c2f21`) and icon styling with active left frosted indicator bar.
+- [x] **Translucent Glass Header, Collapse Button & Footer**:
+  - Attached `.sidebar-header-glass` (`rgba(255, 255, 255, 0.28)` + `blur(16px)`).
+  - Attached `.sidebar-collapse-glass` (`rgba(255, 255, 255, 0.48)` + `blur(16px)` with tactile active depth).
+  - Attached `.sidebar-footer-glass` (`linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.48) 100%)` + `blur(16px)`).
+  - Attached `.sidebar-settings-glass-btn` (`rgba(255, 255, 255, 0.42)` + `blur(12px)`).
+- [x] **Enhanced Backdrop Visual Substrate**:
+  - Enriched `sidebarRouteDecorations` with dual logistics network vector curves and ambient blur glows so the upper rail items have visible vector lines to blur.
+  - Scenery illustration at bottom (`h-84`) contributes rich photographic details (trucks, warehouse, trees, roads) that visually refract through active pills and settings footer.
+- [x] **Graceful Fallbacks & Verification**:
+  - Added `@supports not ((backdrop-filter: blur(16px)) or (-webkit-backdrop-filter: blur(16px)))` fallbacks.
+  - Verified `tsc -b && vite build` passed with 0 errors in 2.73s.
+  - Verified live Vite bundle and HMR delivery.

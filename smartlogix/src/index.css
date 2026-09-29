@@ -100,20 +100,33 @@
 
   /* Restrained Glassmorphism Utilities with Fallbacks */
   .glass-panel {
-    background: rgba(255, 255, 255, 0.88);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.84);
+    backdrop-filter: blur(14px) saturate(135%);
+    -webkit-backdrop-filter: blur(14px) saturate(135%);
+    border: 1px solid rgba(255, 255, 255, 0.88);
     box-shadow: 
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.9),
-      0 8px 30px 0 rgba(19, 59, 45, 0.05);
+      inset 0 1px 1px 0 rgba(255, 255, 255, 0.95),
+      0 8px 30px -4px rgba(19, 59, 45, 0.05),
+      0 2px 6px -1px rgba(19, 59, 45, 0.02);
   }
 
   .glass-header {
-    background: rgba(250, 248, 245, 0.88);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: rgba(250, 248, 245, 0.82);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
     border-bottom: 1px solid rgba(226, 228, 220, 0.85);
+    box-shadow: 0 4px 20px -2px rgba(19, 59, 45, 0.03);
+  }
+
+  .glass-modal {
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.92);
+    box-shadow: 
+      inset 0 1px 1px 0 rgba(255, 255, 255, 1),
+      0 24px 60px -12px rgba(19, 59, 45, 0.18),
+      0 8px 24px -4px rgba(19, 59, 45, 0.08);
   }
 
   .glass-sidebar {
@@ -121,45 +134,153 @@
     box-shadow: 2px 0 20px -2px rgba(19, 59, 45, 0.06);
   }
 
+  /* Real CSS Glassmorphism for Sidebar Surfaces */
+  .sidebar-glass-active {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.72) 0%, rgba(220, 242, 230, 0.46) 100%);
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.92);
+    box-shadow: 
+      inset 0 1px 1.5px 0 rgba(255, 255, 255, 1),
+      inset 0 0 0 1px rgba(27, 94, 67, 0.12),
+      0 4px 16px -2px rgba(19, 59, 45, 0.08),
+      0 1px 3px 0 rgba(19, 59, 45, 0.04);
+  }
+
+  .sidebar-glass-active-collapsed {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.78) 0%, rgba(220, 242, 230, 0.52) 100%);
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 
+      inset 0 1px 1.5px 0 rgba(255, 255, 255, 1),
+      inset 0 0 0 1px rgba(27, 94, 67, 0.12),
+      0 4px 16px -2px rgba(19, 59, 45, 0.10),
+      0 1px 3px 0 rgba(19, 59, 45, 0.04);
+  }
+
+  .sidebar-header-glass {
+    background: rgba(255, 255, 255, 0.28);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.65);
+    box-shadow: 0 1px 8px 0 rgba(19, 59, 45, 0.02);
+  }
+
+  .sidebar-collapse-glass {
+    background: rgba(255, 255, 255, 0.48);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 
+      inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95),
+      0 2px 8px 0 rgba(19, 59, 45, 0.05);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .sidebar-collapse-glass:hover {
+    background: rgba(255, 255, 255, 0.78);
+    border-color: rgba(255, 255, 255, 0.98);
+    box-shadow: 
+      inset 0 1px 1.5px 0 rgba(255, 255, 255, 1),
+      0 4px 12px 0 rgba(19, 59, 45, 0.08);
+  }
+  .sidebar-collapse-glass:active {
+    background: rgba(255, 255, 255, 0.60);
+    box-shadow: inset 0 1px 3px 0 rgba(19, 59, 45, 0.12);
+  }
+
+  .sidebar-footer-glass {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.48) 100%);
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    border-top: 1px solid rgba(255, 255, 255, 0.70);
+    box-shadow: 
+      inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.90),
+      0 -4px 16px 0 rgba(19, 59, 45, 0.03);
+  }
+
+  .sidebar-settings-glass-btn {
+    background: rgba(255, 255, 255, 0.42);
+    backdrop-filter: blur(12px) saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    box-shadow: 
+      inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.92),
+      0 2px 6px 0 rgba(19, 59, 45, 0.03);
+    transition: all 0.2s ease;
+  }
+  .sidebar-settings-glass-btn:hover {
+    background: rgba(255, 255, 255, 0.72);
+    border-color: rgba(255, 255, 255, 0.95);
+    box-shadow: 
+      inset 0 1px 1.5px 0 rgba(255, 255, 255, 1),
+      0 4px 12px 0 rgba(19, 59, 45, 0.06);
+  }
+
+  @supports not ((backdrop-filter: blur(16px)) or (-webkit-backdrop-filter: blur(16px))) {
+    .sidebar-glass-active,
+    .sidebar-glass-active-collapsed {
+      background: #E8F2EC;
+      border-color: #C3DFCE;
+    }
+    .sidebar-header-glass {
+      background: #FAF8F5;
+    }
+    .sidebar-collapse-glass {
+      background: #FFFFFF;
+    }
+    .sidebar-footer-glass {
+      background: #F4F1EA;
+    }
+    .sidebar-settings-glass-btn {
+      background: #F4F1EA;
+    }
+  }
+
   .tactile-button {
     box-shadow: 
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.22),
-      0 2px 4px 0 rgba(19, 59, 45, 0.18);
-    transition: all 0.15s ease;
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.28),
+      0 2px 4px 0 rgba(19, 59, 45, 0.16),
+      0 6px 14px -3px rgba(19, 59, 45, 0.18);
+    transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .tactile-button:hover {
     transform: translateY(-1px);
     box-shadow: 
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.28),
-      0 4px 10px 0 rgba(19, 59, 45, 0.22);
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.35),
+      0 4px 8px 0 rgba(19, 59, 45, 0.18),
+      0 10px 20px -3px rgba(19, 59, 45, 0.22);
   }
 
   .tactile-button:active {
-    transform: translateY(0);
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.18);
+    transform: translateY(0.5px);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.22);
   }
 
   /* Subtle Neumorphic Secondary Icon / Pill Button */
   .neumorphic-pill {
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(226, 228, 220, 0.9);
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(226, 228, 220, 0.85);
     box-shadow: 
       inset 0 1px 0 0 rgba(255, 255, 255, 0.95),
-      0 1px 2px 0 rgba(19, 59, 45, 0.03);
-    transition: all 0.15s ease;
+      0 1px 3px 0 rgba(19, 59, 45, 0.04),
+      0 2px 6px -1px rgba(19, 59, 45, 0.02);
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .neumorphic-pill:hover {
     background: #FFFFFF;
     border-color: rgba(30, 86, 68, 0.35);
     box-shadow: 
       inset 0 1px 0 0 #FFFFFF,
-      0 2px 6px 0 rgba(19, 59, 45, 0.06);
+      0 3px 8px 0 rgba(19, 59, 45, 0.07);
     transform: translateY(-0.5px);
   }
   .neumorphic-pill:active {
-    transform: translateY(0);
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+    transform: translateY(0.5px);
+    box-shadow: inset 0 1px 2px 0 rgba(19, 59, 45, 0.08);
   }
 }
 

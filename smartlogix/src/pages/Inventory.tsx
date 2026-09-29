@@ -163,24 +163,41 @@ export const InventoryPage = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
         <Card variant="glass" hoverable className="p-5 sm:p-6 border-l-4 border-l-brand-primary">
-          <span className="text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">Total Tracked Items</span>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">Total Tracked Items</span>
+            <div className="w-8 h-8 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary">
+              <Box className="w-4 h-4" />
+            </div>
+          </div>
           <p className="text-3xl font-extrabold text-brand-text mt-1.5 tracking-tight font-sans">{inventory.length}</p>
           <span className="text-[11px] text-brand-text-secondary/80 mt-1 block">Active SKU-warehouse pairs</span>
         </Card>
+
         <Card variant="glass" hoverable className="p-5 sm:p-6 border-l-4 border-l-amber-500">
-          <span className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Low Stock Alerts</span>
-          <p className="text-3xl font-extrabold text-amber-600 mt-1.5 tracking-tight font-sans">{lowStockCount}</p>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Low Stock Alerts</span>
+            <div className="w-8 h-8 rounded-xl bg-amber-100/80 flex items-center justify-center text-amber-700">
+              <Filter className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-3xl font-extrabold text-amber-700 mt-1.5 tracking-tight font-sans">{lowStockCount}</p>
           <span className="text-[11px] text-amber-700/80 mt-1 block">At or below reorder threshold</span>
         </Card>
+
         <Card variant="glass" hoverable className="p-5 sm:p-6 border-l-4 border-l-rose-500">
-          <span className="text-xs font-semibold text-rose-800 uppercase tracking-wider">Out of Stock</span>
-          <p className="text-3xl font-extrabold text-rose-600 mt-1.5 tracking-tight font-sans">{outOfStockCount}</p>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-rose-800 uppercase tracking-wider">Out of Stock</span>
+            <div className="w-8 h-8 rounded-xl bg-rose-100/80 flex items-center justify-center text-rose-700">
+              <Box className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-3xl font-extrabold text-rose-700 mt-1.5 tracking-tight font-sans">{outOfStockCount}</p>
           <span className="text-[11px] text-rose-700/80 mt-1 block">Zero inventory available</span>
         </Card>
       </div>
 
       <Card variant="dense" noPadding className="overflow-hidden shadow-soft-sm">
-        <div className="p-4 sm:p-5 border-b border-brand-border/80 flex flex-col md:flex-row items-center justify-between gap-4 bg-white/50 backdrop-blur-xs">
+        <div className="p-4 sm:p-5 border-b border-brand-border/80 flex flex-col md:flex-row items-center justify-between gap-4 bg-white/60 backdrop-blur-md">
           <div className="relative w-full max-w-sm">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-text-secondary" />
             <Input 
@@ -197,24 +214,36 @@ export const InventoryPage = () => {
               <select 
                 value={filterWarehouse}
                 onChange={e => setFilterWarehouse(e.target.value)}
-                className="bg-white/90 backdrop-blur-xs border border-brand-border/90 rounded-xl px-3.5 py-2 text-xs font-semibold text-brand-text focus:outline-none focus:ring-4 focus:ring-brand-primary/10"
+                className="bg-white/85 backdrop-blur-xs border border-brand-border/90 rounded-xl px-3.5 py-2 text-xs font-semibold text-brand-text shadow-[inset_0_1px_2px_0_rgba(19,59,45,0.04)] focus:outline-none focus:ring-4 focus:ring-brand-primary/10 transition-all"
               >
-                <option value="all">All Warehouses</option>
+                <option value="all">All Warehouses ({warehouses.length})</option>
                 {warehouses.map(w => (
                   <option key={w.id} value={w.id}>{w.name}</option>
                 ))}
               </select>
             </div>
+
             <select 
               value={filterStatus}
               onChange={e => setFilterStatus(e.target.value)}
-              className="bg-white/90 backdrop-blur-xs border border-brand-border/90 rounded-xl px-3.5 py-2 text-xs font-semibold text-brand-text focus:outline-none focus:ring-4 focus:ring-brand-primary/10"
+              className="bg-white/85 backdrop-blur-xs border border-brand-border/90 rounded-xl px-3.5 py-2 text-xs font-semibold text-brand-text shadow-[inset_0_1px_2px_0_rgba(19,59,45,0.04)] focus:outline-none focus:ring-4 focus:ring-brand-primary/10 transition-all"
             >
-              <option value="all">All Statuses</option>
+              <option value="all">All Stock Statuses</option>
               <option value="ok">In Stock</option>
-              <option value="low">Low Stock</option>
-              <option value="out">Out of Stock</option>
+              <option value="low">Low Stock ({lowStockCount})</option>
+              <option value="out">Out of Stock ({outOfStockCount})</option>
             </select>
+
+            {(search || filterWarehouse !== 'all' || filterStatus !== 'all') && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { setSearch(''); setFilterWarehouse('all'); setFilterStatus('all'); }}
+                className="text-xs text-brand-text-secondary hover:text-brand-text"
+              >
+                Reset
+              </Button>
+            )}
           </div>
         </div>
         
@@ -222,8 +251,15 @@ export const InventoryPage = () => {
           <div className="p-12 text-center text-sm text-brand-text-secondary">Loading inventory records...</div>
         ) : filtered.length === 0 ? (
           <div className="p-12 text-center text-brand-text-secondary flex flex-col items-center">
-            <Box className="w-12 h-12 mb-3 opacity-40 text-brand-primary" />
-            <p className="text-sm font-medium">No inventory records found for these filters.</p>
+            <div className="w-16 h-16 rounded-2xl bg-brand-surface/60 flex items-center justify-center mb-3">
+              <Box className="w-8 h-8 opacity-40 text-brand-primary" />
+            </div>
+            <h4 className="font-bold text-brand-text text-base">No inventory records found</h4>
+            <p className="text-xs text-brand-text-secondary mt-1 max-w-sm">
+              {search || filterWarehouse !== 'all' || filterStatus !== 'all'
+                ? 'Try adjusting your search query or warehouse filter.'
+                : 'Get started by configuring initial warehouse stock levels.'}
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -235,28 +271,65 @@ export const InventoryPage = () => {
                   <th className="px-5 py-3.5">Warehouse Hub</th>
                   <th className="px-5 py-3.5 text-right">Quantity</th>
                   <th className="px-5 py-3.5 text-right">Reorder Level</th>
-                  <th className="px-5 py-3.5">Status</th>
+                  <th className="px-5 py-3.5">Status & Stock Gauge</th>
                   <th className="px-5 py-3.5 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-brand-border/60 bg-white/40">
-                {filtered.map(item => (
-                  <tr key={item.id} className="hover:bg-brand-soft/30 transition-colors group">
-                    <td className="px-5 py-3.5 font-semibold text-brand-text">{item.product?.name}</td>
-                    <td className="px-5 py-3.5 font-mono text-xs font-bold text-brand-text group-hover:text-brand-primary transition-colors">{item.product?.sku}</td>
-                    <td className="px-5 py-3.5 text-xs text-brand-text-secondary">{item.warehouse?.name}</td>
-                    <td className="px-5 py-3.5 text-right font-mono font-bold text-brand-text">{item.quantity}</td>
-                    <td className="px-5 py-3.5 text-right font-mono text-xs text-brand-text-secondary">{item.reorder_level}</td>
-                    <td className="px-5 py-3.5">
-                      {getStatusBadge(item.quantity, item.reorder_level)}
-                    </td>
-                    <td className="px-5 py-3.5 text-right">
-                      <Button variant="outline" size="sm" onClick={() => openModal(item)}>
-                        <Edit2 className="w-3.5 h-3.5 mr-1 text-brand-primary" /> Adjust
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
+                {filtered.map(item => {
+                  const percent = item.reorder_level > 0 
+                    ? Math.min(100, Math.round((item.quantity / (item.reorder_level * 2)) * 100))
+                    : 100;
+                  const barColor = item.quantity === 0 
+                    ? 'bg-rose-500' 
+                    : item.quantity <= item.reorder_level 
+                    ? 'bg-amber-500' 
+                    : 'bg-emerald-500';
+
+                  return (
+                    <tr key={item.id} className="hover:bg-brand-soft/30 transition-colors group">
+                      <td className="px-5 py-3.5 font-semibold text-brand-text">
+                        <div className="font-bold">{item.product?.name}</div>
+                        {item.product?.category && (
+                          <span className="text-[11px] text-brand-text-secondary">{item.product.category}</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3.5 font-mono text-xs font-bold text-brand-text group-hover:text-brand-primary transition-colors">
+                        <span className="bg-brand-surface/80 border border-brand-border/80 px-2 py-0.5 rounded-md">
+                          {item.product?.sku}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5 text-xs text-brand-text-secondary font-medium">
+                        <div>{item.warehouse?.name}</div>
+                        {item.warehouse?.code && (
+                          <span className="font-mono text-[10px] text-brand-primary font-bold">{item.warehouse.code}</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3.5 text-right font-mono font-bold text-brand-text text-base">
+                        {item.quantity}
+                      </td>
+                      <td className="px-5 py-3.5 text-right font-mono text-xs text-brand-text-secondary">
+                        {item.reorder_level}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="space-y-1.5">
+                          {getStatusBadge(item.quantity, item.reorder_level)}
+                          <div className="w-24 bg-brand-surface/80 rounded-full h-1.5 overflow-hidden border border-brand-border/60">
+                            <div 
+                              className={`h-full ${barColor} rounded-full transition-all duration-300`} 
+                              style={{ width: `${percent}%` }}
+                            />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-3.5 text-right">
+                        <Button variant="outline" size="sm" onClick={() => openModal(item)} className="shadow-xs hover:shadow-glass">
+                          <Edit2 className="w-3.5 h-3.5 mr-1 text-brand-primary" /> Adjust
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -264,11 +337,14 @@ export const InventoryPage = () => {
       </Card>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <Card variant="dense" noPadding className="w-full max-w-md shadow-2xl rounded-2xl overflow-hidden border border-brand-border/90 bg-white">
-            <div className="p-5 border-b border-brand-border/80 bg-brand-surface/40 flex items-center justify-between">
-              <h3 className="text-base font-bold text-brand-text">{editingItem ? 'Adjust Stock Quantity' : 'Add Inventory Record'}</h3>
-              <button onClick={() => setIsModalOpen(false)} className="p-1 rounded-lg text-brand-text-secondary hover:text-brand-text">
+        <div className="fixed inset-0 bg-black/35 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
+          <Card variant="modal" noPadding className="w-full max-w-md rounded-2xl overflow-hidden border border-white/80 shadow-[0_20px_50px_rgba(19,59,45,0.18)]">
+            <div className="p-5 border-b border-brand-border/70 bg-white/85 backdrop-blur-md flex items-center justify-between">
+              <h3 className="text-base font-bold text-brand-text font-sans">{editingItem ? 'Adjust Stock Quantity' : 'Add Inventory Record'}</h3>
+              <button 
+                onClick={() => setIsModalOpen(false)} 
+                className="w-8 h-8 rounded-lg bg-white/80 hover:bg-white border border-brand-border/70 flex items-center justify-center text-brand-text-secondary hover:text-brand-text shadow-soft-xs active:scale-95 transition-all"
+              >
                 ✕
               </button>
             </div>

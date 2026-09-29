@@ -74,7 +74,7 @@ export const Orders = () => {
       case 'PROCESSING':
         return <Badge variant="info" className="flex items-center gap-1"><Clock className="w-3 h-3"/> Processing</Badge>;
       case 'DISPATCHED':
-        return <Badge variant="default" className="bg-purple-100 text-purple-800 flex items-center gap-1"><Truck className="w-3 h-3"/> Dispatched</Badge>;
+        return <Badge variant="purple" className="flex items-center gap-1"><Truck className="w-3 h-3"/> Dispatched</Badge>;
       case 'DELIVERED':
         return <Badge variant="success" className="flex items-center gap-1"><CheckCheck className="w-3 h-3"/> Delivered</Badge>;
       case 'CANCELLED':
@@ -87,15 +87,15 @@ export const Orders = () => {
   const getPriorityBadge = (priority: OrderPriority) => {
     switch (priority) {
       case 'URGENT':
-        return <span className="text-xs font-bold px-2 py-0.5 rounded bg-red-100 text-red-700 border border-red-200">URGENT</span>;
+        return <Badge variant="danger" dot>URGENT</Badge>;
       case 'HIGH':
-        return <span className="text-xs font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-700 border border-amber-200">HIGH</span>;
+        return <Badge variant="warning" dot>HIGH</Badge>;
       case 'MEDIUM':
-        return <span className="text-xs font-medium px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">MEDIUM</span>;
+        return <Badge variant="info" dot>MEDIUM</Badge>;
       case 'LOW':
-        return <span className="text-xs text-gray-600 px-2 py-0.5 rounded bg-gray-100">LOW</span>;
+        return <Badge variant="default" dot>LOW</Badge>;
       default:
-        return <span className="text-xs">{priority}</span>;
+        return <Badge variant="default">{priority}</Badge>;
     }
   };
 
@@ -152,29 +152,56 @@ export const Orders = () => {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <Card variant="glass" className="p-5 border-l-4 border-l-brand-primary">
-          <h4 className="text-brand-text-secondary text-xs font-semibold uppercase tracking-wider">Total Orders</h4>
-          <p className="text-3xl font-bold mt-2 text-brand-text font-mono">{totalCount}</p>
+        <Card variant="glass" hoverable className="p-5 border-l-4 border-l-brand-primary">
+          <div className="flex items-center justify-between">
+            <h4 className="text-brand-text-secondary text-xs font-semibold uppercase tracking-wider">Total Orders</h4>
+            <div className="w-8 h-8 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary">
+              <ShoppingCart className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-3xl font-extrabold mt-1.5 text-brand-text font-mono">{totalCount}</p>
+          <span className="text-[11px] text-brand-text-secondary/80 mt-1 block">All registered dispatch orders</span>
         </Card>
-        <Card variant="glass" className="p-5 border-l-4 border-l-amber-500">
-          <h4 className="text-brand-text-secondary text-xs font-semibold uppercase tracking-wider">Pending Verification</h4>
-          <p className="text-3xl font-bold mt-2 text-amber-600 font-mono">{pendingCount}</p>
+
+        <Card variant="glass" hoverable className="p-5 border-l-4 border-l-amber-500">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-amber-800">Pending Verification</h4>
+            <div className="w-8 h-8 rounded-xl bg-amber-100/80 flex items-center justify-center text-amber-700">
+              <Clock className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-3xl font-extrabold mt-1.5 text-amber-700 font-mono">{pendingCount}</p>
+          <span className="text-[11px] text-amber-700/80 mt-1 block">Awaiting order approval</span>
         </Card>
-        <Card variant="glass" className="p-5 border-l-4 border-l-blue-500">
-          <h4 className="text-brand-text-secondary text-xs font-semibold uppercase tracking-wider">Processing / Dispatched</h4>
-          <p className="text-3xl font-bold mt-2 text-blue-600 font-mono">{inProgressCount}</p>
+
+        <Card variant="glass" hoverable className="p-5 border-l-4 border-l-blue-500">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-blue-800">In Transit / Routed</h4>
+            <div className="w-8 h-8 rounded-xl bg-blue-100/80 flex items-center justify-center text-blue-700">
+              <Truck className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-3xl font-extrabold mt-1.5 text-blue-700 font-mono">{inProgressCount}</p>
+          <span className="text-[11px] text-blue-700/80 mt-1 block">Processing or dispatched</span>
         </Card>
-        <Card variant="glass" className="p-5 border-l-4 border-l-emerald-500">
-          <h4 className="text-brand-text-secondary text-xs font-semibold uppercase tracking-wider">Delivered</h4>
-          <p className="text-3xl font-bold mt-2 text-emerald-600 font-mono">{deliveredCount}</p>
+
+        <Card variant="glass" hoverable className="p-5 border-l-4 border-l-emerald-500">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-emerald-800">Delivered</h4>
+            <div className="w-8 h-8 rounded-xl bg-emerald-100/80 flex items-center justify-center text-emerald-700">
+              <CheckCheck className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-3xl font-extrabold mt-1.5 text-emerald-700 font-mono">{deliveredCount}</p>
+          <span className="text-[11px] text-emerald-700/80 mt-1 block">Successfully completed</span>
         </Card>
       </div>
 
       {/* Table & Filter Card */}
-      <Card variant="dense" className="overflow-hidden">
-        <div className="p-4 sm:p-5 border-b border-brand-border/60 flex flex-col md:flex-row items-center justify-between gap-4 bg-brand-surface/40">
+      <Card variant="dense" noPadding className="overflow-hidden shadow-soft-sm">
+        <div className="p-4 sm:p-5 border-b border-brand-border/80 flex flex-col md:flex-row items-center justify-between gap-4 bg-white/60 backdrop-blur-md">
           <div className="relative w-full md:max-w-md">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-brand-text-secondary" />
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-text-secondary" />
             <Input 
               placeholder="Search by order number or destination..." 
               value={search}
@@ -185,17 +212,17 @@ export const Orders = () => {
 
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
             <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-brand-text-secondary" />
+              <Filter className="w-4 h-4 text-brand-text-secondary hidden sm:block" />
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-white/90 backdrop-blur-xs border border-brand-border/80 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 text-brand-text shadow-xs"
+                className="bg-white/85 backdrop-blur-xs border border-brand-border/90 rounded-xl px-3.5 py-2 text-xs font-semibold text-brand-text shadow-[inset_0_1px_2px_0_rgba(19,59,45,0.04)] focus:outline-none focus:ring-4 focus:ring-brand-primary/10 transition-all"
               >
-                <option value="all">All Statuses</option>
-                <option value="PENDING">Pending</option>
+                <option value="all">All Statuses ({totalCount})</option>
+                <option value="PENDING">Pending ({pendingCount})</option>
                 <option value="PROCESSING">Processing</option>
                 <option value="DISPATCHED">Dispatched</option>
-                <option value="DELIVERED">Delivered</option>
+                <option value="DELIVERED">Delivered ({deliveredCount})</option>
                 <option value="CANCELLED">Cancelled</option>
               </select>
             </div>
@@ -203,7 +230,7 @@ export const Orders = () => {
             <select
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
-              className="bg-white/90 backdrop-blur-xs border border-brand-border/80 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 text-brand-text shadow-xs"
+              className="bg-white/85 backdrop-blur-xs border border-brand-border/90 rounded-xl px-3.5 py-2 text-xs font-semibold text-brand-text shadow-[inset_0_1px_2px_0_rgba(19,59,45,0.04)] focus:outline-none focus:ring-4 focus:ring-brand-primary/10 transition-all"
             >
               <option value="all">All Priorities</option>
               <option value="URGENT">Urgent</option>
@@ -211,16 +238,29 @@ export const Orders = () => {
               <option value="MEDIUM">Medium</option>
               <option value="LOW">Low</option>
             </select>
+
+            {(search || statusFilter !== 'all' || priorityFilter !== 'all') && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { setSearch(''); setStatusFilter('all'); setPriorityFilter('all'); }}
+                className="text-xs text-brand-text-secondary hover:text-brand-text"
+              >
+                Reset
+              </Button>
+            )}
           </div>
         </div>
 
         {loading ? (
-          <div className="p-12 text-center text-brand-text-secondary">Loading orders...</div>
+          <div className="p-12 text-center text-sm text-brand-text-secondary">Loading orders...</div>
         ) : filtered.length === 0 ? (
           <div className="p-16 text-center text-brand-text-secondary flex flex-col items-center">
-            <ShoppingCart className="w-12 h-12 mb-4 opacity-40 text-brand-primary" />
-            <h3 className="font-semibold text-brand-text text-base">No orders found</h3>
-            <p className="text-sm mt-1 mb-4">No order matches the current filters.</p>
+            <div className="w-16 h-16 rounded-2xl bg-brand-surface/60 flex items-center justify-center mb-4">
+              <ShoppingCart className="w-8 h-8 opacity-40 text-brand-primary" />
+            </div>
+            <h3 className="font-bold text-brand-text text-base">No orders found</h3>
+            <p className="text-xs text-brand-text-secondary mt-1 mb-4">No order matches the current filter criteria.</p>
             <Link to="/orders/create">
               <Button variant="primary" size="sm">
                 <Plus className="w-4 h-4 mr-1" /> Place an Order
@@ -229,20 +269,20 @@ export const Orders = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-full text-left text-sm border-collapse">
               <thead className="bg-brand-surface/70 border-b border-brand-border/80 text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">
                 <tr>
-                  <th className="px-4 py-3">Order Number</th>
-                  <th className="px-4 py-3">Destination</th>
-                  <th className="px-4 py-3">Priority</th>
-                  <th className="px-4 py-3">Items</th>
-                  <th className="px-4 py-3 text-right">Total Amount</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Date</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
+                  <th className="px-5 py-3.5">Order Number</th>
+                  <th className="px-5 py-3.5">Destination</th>
+                  <th className="px-5 py-3.5">Priority</th>
+                  <th className="px-5 py-3.5">Items</th>
+                  <th className="px-5 py-3.5 text-right">Total Amount</th>
+                  <th className="px-5 py-3.5">Status</th>
+                  <th className="px-5 py-3.5">Date</th>
+                  <th className="px-5 py-3.5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-brand-border">
+              <tbody className="divide-y divide-brand-border/60 bg-white/40">
                 {filtered.map(order => {
                   const itemCount = order.order_items?.reduce((s, i) => s + i.quantity, 0) || 0;
                   const formattedDate = new Date(order.created_at).toLocaleDateString(undefined, {
@@ -252,33 +292,48 @@ export const Orders = () => {
                   });
 
                   return (
-                    <tr key={order.id} className="hover:bg-brand-surface/40 transition-colors">
-                      <td className="px-4 py-3 font-mono font-bold text-brand-primary">
-                        {order.order_number}
+                    <tr key={order.id} className="hover:bg-brand-soft/30 transition-colors group">
+                      <td className="px-5 py-3.5 font-mono text-xs font-bold text-brand-text group-hover:text-brand-primary transition-colors">
+                        <span className="bg-brand-surface/80 border border-brand-border/80 px-2 py-0.5 rounded-md">
+                          {order.order_number}
+                        </span>
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-brand-text">{order.delivery_location?.name || 'Unknown'}</div>
-                        <div className="text-xs text-brand-text-secondary truncate max-w-xs">{order.delivery_location?.address}</div>
+                      <td className="px-5 py-3.5">
+                        <div className="font-bold text-sm text-brand-text flex items-center gap-1.5">
+                          <MapPin className="w-3.5 h-3.5 text-brand-primary shrink-0" />
+                          <span>{order.delivery_location?.name || 'Unknown'}</span>
+                        </div>
+                        {order.delivery_location?.address && (
+                          <div className="text-[11px] text-brand-text-secondary truncate max-w-xs ml-5">
+                            {order.delivery_location.address}
+                          </div>
+                        )}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-5 py-3.5">
                         {getPriorityBadge(order.priority)}
                       </td>
-                      <td className="px-4 py-3 text-brand-text">
-                        <span className="font-semibold">{itemCount}</span> units
-                        <span className="text-xs text-brand-text-secondary block">({order.order_items?.length || 0} prods)</span>
+                      <td className="px-5 py-3.5">
+                        <span className="font-mono text-xs font-semibold px-2 py-0.5 bg-brand-surface rounded-md border border-brand-border/60">
+                          {itemCount} units
+                        </span>
                       </td>
-                      <td className="px-4 py-3 text-right font-bold text-brand-text font-mono">
+                      <td className="px-5 py-3.5 text-right font-mono font-bold text-brand-text">
                         ${Number(order.total_amount).toFixed(2)}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-5 py-3.5">
                         {getStatusBadge(order.status)}
                       </td>
-                      <td className="px-4 py-3 text-xs text-brand-text-secondary whitespace-nowrap">
+                      <td className="px-5 py-3.5 text-xs text-brand-text-secondary font-medium">
                         {formattedDate}
                       </td>
-                      <td className="px-4 py-3 text-right">
-                        <Button variant="outline" size="sm" onClick={() => openDetails(order)}>
-                          <Eye className="w-3.5 h-3.5 mr-1" /> View
+                      <td className="px-5 py-3.5 text-right">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => openDetails(order)}
+                          className="shadow-xs hover:shadow-glass"
+                        >
+                          <Eye className="w-3.5 h-3.5 mr-1 text-brand-primary" /> Inspect
                         </Button>
                       </td>
                     </tr>
@@ -292,10 +347,10 @@ export const Orders = () => {
 
       {/* Order Details Drawer / Modal */}
       {isDetailOpen && selectedOrder && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
-          <Card variant="dense" className="w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-glass-hover rounded-2xl border border-brand-border/80">
+        <div className="fixed inset-0 bg-black/35 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
+          <Card variant="modal" className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-white/80 shadow-[0_20px_50px_rgba(19,59,45,0.18)]">
             {/* Header */}
-            <div className="p-6 border-b border-brand-border/60 sticky top-0 bg-white/95 backdrop-blur-md z-10 flex justify-between items-start">
+            <div className="p-6 border-b border-brand-border/60 sticky top-0 bg-white/90 backdrop-blur-md z-10 flex justify-between items-start">
               <div>
                 <div className="flex items-center gap-3">
                   <h3 className="text-xl font-bold font-mono text-brand-text">{selectedOrder.order_number}</h3>
@@ -308,7 +363,7 @@ export const Orders = () => {
               </div>
               <button 
                 onClick={() => setIsDetailOpen(false)}
-                className="w-8 h-8 rounded-lg bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/60 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-all"
+                className="w-8 h-8 rounded-lg bg-white/80 hover:bg-white border border-brand-border/70 flex items-center justify-center text-brand-text-secondary hover:text-brand-text shadow-soft-xs active:scale-95 transition-all"
               >
                 ✕
               </button>

@@ -907,8 +907,8 @@ export const Planning: React.FC = () => {
 
       {/* CREATE PLAN MODAL */}
       {isCreateModalOpen && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-fade-in">
-          <div className="bg-white/95 backdrop-blur-md rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-glass-hover border border-brand-border/80 overflow-hidden">
+        <div className="fixed inset-0 bg-black/35 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-fade-in">
+          <div className="glass-modal rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden">
             {/* Modal Header */}
             <div className="p-6 border-b border-brand-border/60 flex items-center justify-between bg-brand-surface/40">
               <div className="flex items-center gap-3">
@@ -924,7 +924,7 @@ export const Planning: React.FC = () => {
               </div>
               <button 
                 onClick={() => setIsCreateModalOpen(false)}
-                className="w-8 h-8 rounded-lg bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/60 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-all"
+                className="w-8 h-8 rounded-lg bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/60 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-all active:scale-95"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1130,8 +1130,8 @@ export const Planning: React.FC = () => {
 
       {/* PLAN DETAILS, VEHICLE & ROUTE MODAL */}
       {isDetailModalOpen && selectedPlan && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-fade-in">
-          <div className="bg-white/95 backdrop-blur-md rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-glass-hover border border-brand-border/80 overflow-hidden">
+        <div className="fixed inset-0 bg-black/35 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-fade-in">
+          <div className="glass-modal rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden">
             {/* Header */}
             <div className="p-6 border-b border-brand-border/60 flex items-center justify-between bg-brand-surface/40">
               <div className="flex items-center gap-3">
@@ -1158,7 +1158,7 @@ export const Planning: React.FC = () => {
               </div>
               <button 
                 onClick={() => setIsDetailModalOpen(false)}
-                className="w-8 h-8 rounded-lg bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/60 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-all"
+                className="w-8 h-8 rounded-lg bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/60 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-all active:scale-95"
               >
                 <X className="w-4 h-4" />
               </button>

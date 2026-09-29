@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -6,12 +6,13 @@ import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
 import { api } from '../services/api';
 import type { Product } from '../types/database.types';
-import { Search, Plus, Edit2, PackageOpen } from 'lucide-react';
+import { Search, Plus, Edit2, PackageOpen, Package, Layers, DollarSign, Filter, RefreshCw } from 'lucide-react';
 
 export const Products = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [error, setError] = useState('');
@@ -69,38 +70,144 @@ export const Products = () => {
     }
   };
 
-  const filtered = products.filter(p => 
-    p.name.toLowerCase().includes(search.toLowerCase()) || 
-    p.sku.toLowerCase().includes(search.toLowerCase())
-  );
+  // Derive categories and metrics from real products data
+  const categories = useMemo(() => {
+    const cats = new Set(products.map(p => p.category?.trim() || 'General'));
+    return ['all', ...Array.from(cats).sort()];
+  }, [products]);
+
+  const metrics = useMemo(() => {
+    const totalCount = products.length;
+    const uniqueCatsCount = new Set(products.map(p => p.category?.trim() || 'General')).size;
+    const avgPrice = totalCount > 0 
+      ? (products.reduce((acc, p) => acc + Number(p.unit_price || 0), 0) / totalCount).toFixed(2)
+      : '0.00';
+    return { totalCount, uniqueCatsCount, avgPrice };
+  }, [products]);
+
+  const filtered = products.filter(p => {
+    const matchesSearch = 
+      p.name.toLowerCase().includes(search.toLowerCase()) || 
+      p.sku.toLowerCase().includes(search.toLowerCase()) ||
+      (p.description && p.description.toLowerCase().includes(search.toLowerCase()));
+    
+    const matchesCategory = selectedCategory === 'all' || (p.category?.trim() || 'General') === selectedCategory;
+
+    return matchesSearch && matchesCategory;
+  });
 
   return (
-    <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
+    <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8 animate-fade-in">
       <PageHeader 
         title="Products Catalog" 
         description="Manage product catalog, SKUs, and pricing across distribution networks"
-        actions={<Button onClick={() => openModal()}><Plus className="w-4 h-4 mr-2"/> Add Product</Button>}
+        actions={
+          <Button onClick={() => openModal()} className="flex items-center gap-2">
+            <Plus className="w-4 h-4"/>
+            <span>Add Product</span>
+          </Button>
+        }
       />
 
+      {/* Product Summary Metrics */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+        <Card variant="glass" hoverable className="p-5 sm:p-6 border-l-4 border-l-brand-primary">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">Catalog SKUs</span>
+            <div className="w-8 h-8 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary">
+              <Package className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-3xl font-extrabold text-brand-text mt-1.5 tracking-tight font-sans">{metrics.totalCount}</p>
+          <span className="text-[11px] text-brand-text-secondary/80 mt-1 block">Active distinct master SKUs</span>
+        </Card>
+
+        <Card variant="glass" hoverable className="p-5 sm:p-6 border-l-4 border-l-emerald-600">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">Product Categories</span>
+            <div className="w-8 h-8 rounded-xl bg-emerald-100/80 flex items-center justify-center text-emerald-700">
+              <Layers className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-3xl font-extrabold text-emerald-700 mt-1.5 tracking-tight font-sans">{metrics.uniqueCatsCount}</p>
+          <span className="text-[11px] text-emerald-700/80 mt-1 block">Active merchandise segments</span>
+        </Card>
+
+        <Card variant="glass" hoverable className="p-5 sm:p-6 border-l-4 border-l-amber-500">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Avg Unit Price</span>
+            <div className="w-8 h-8 rounded-xl bg-amber-100/80 flex items-center justify-center text-amber-700">
+              <DollarSign className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-3xl font-extrabold text-amber-700 mt-1.5 tracking-tight font-mono">${metrics.avgPrice}</p>
+          <span className="text-[11px] text-amber-700/80 mt-1 block">Standard catalog pricing</span>
+        </Card>
+      </div>
+
+      {/* Main Table Card */}
       <Card variant="dense" noPadding className="overflow-hidden shadow-soft-sm">
-        <div className="p-4 border-b border-brand-border flex items-center">
-          <div className="relative w-full max-w-sm">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-brand-text-secondary" />
+        <div className="p-4 sm:p-5 border-b border-brand-border/80 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/60 backdrop-blur-md">
+          <div className="relative w-full sm:max-w-sm">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-text-secondary" />
             <Input 
-              placeholder="Search by name or SKU..." 
+              placeholder="Search by name, SKU, or description..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-10"
             />
           </div>
+
+          <div className="flex w-full sm:w-auto items-center gap-3">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Filter className="w-4 h-4 text-brand-text-secondary hidden sm:block" />
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full sm:w-auto bg-white/85 backdrop-blur-xs border border-brand-border/90 rounded-xl px-3.5 py-2 text-xs font-semibold text-brand-text shadow-[inset_0_1px_2px_0_rgba(19,59,45,0.04)] focus:outline-none focus:ring-4 focus:ring-brand-primary/10 transition-all"
+              >
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat === 'all' ? 'All Categories' : cat}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {(search || selectedCategory !== 'all') && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { setSearch(''); setSelectedCategory('all'); }}
+                className="text-xs text-brand-text-secondary hover:text-brand-text"
+              >
+                Reset
+              </Button>
+            )}
+          </div>
         </div>
         
         {loading ? (
-          <div className="p-8 text-center text-brand-text-secondary">Loading products...</div>
+          <div className="p-12 text-center text-brand-text-secondary flex flex-col items-center gap-3">
+            <RefreshCw className="w-6 h-6 animate-spin text-brand-primary" />
+            <span className="text-sm font-medium">Loading products catalog...</span>
+          </div>
         ) : filtered.length === 0 ? (
           <div className="p-12 text-center text-brand-text-secondary flex flex-col items-center">
-            <PackageOpen className="w-12 h-12 mb-4 opacity-50" />
-            <p>No products found.</p>
+            <div className="w-16 h-16 rounded-2xl bg-brand-surface/60 flex items-center justify-center mb-3">
+              <PackageOpen className="w-8 h-8 opacity-40 text-brand-primary" />
+            </div>
+            <h4 className="font-bold text-brand-text text-base">No products found</h4>
+            <p className="text-xs text-brand-text-secondary mt-1 max-w-sm">
+              {search || selectedCategory !== 'all' 
+                ? 'Try adjusting your search criteria or resetting filters.' 
+                : 'Get started by creating your first product SKU.'}
+            </p>
+            {(!search && selectedCategory === 'all') && (
+              <Button onClick={() => openModal()} size="sm" className="mt-4">
+                <Plus className="w-3.5 h-3.5 mr-1" /> Add Product
+              </Button>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -117,17 +224,23 @@ export const Products = () => {
               <tbody className="divide-y divide-brand-border/60 bg-white/40">
                 {filtered.map(product => (
                   <tr key={product.id} className="hover:bg-brand-soft/30 transition-colors group">
-                    <td className="px-5 py-3.5 font-mono text-xs font-bold text-brand-text group-hover:text-brand-primary transition-colors">{product.sku}</td>
+                    <td className="px-5 py-3.5 font-mono text-xs font-bold text-brand-text group-hover:text-brand-primary transition-colors">
+                      <span className="bg-brand-surface/80 border border-brand-border/80 px-2 py-0.5 rounded-md">
+                        {product.sku}
+                      </span>
+                    </td>
                     <td className="px-5 py-3.5 font-semibold text-brand-text">
-                      <div>{product.name}</div>
+                      <div className="text-sm font-bold text-brand-text">{product.name}</div>
                       {product.description && <div className="text-xs text-brand-text-secondary font-normal truncate max-w-xs">{product.description}</div>}
                     </td>
                     <td className="px-5 py-3.5 text-xs text-brand-text-secondary">
                       <Badge variant="sage">{product.category || 'General'}</Badge>
                     </td>
-                    <td className="px-5 py-3.5 font-mono font-bold text-brand-text">${Number(product.unit_price).toFixed(2)}</td>
+                    <td className="px-5 py-3.5 font-mono font-bold text-brand-text">
+                      ${Number(product.unit_price).toFixed(2)}
+                    </td>
                     <td className="px-5 py-3.5 text-right">
-                      <Button variant="outline" size="sm" onClick={() => openModal(product)}>
+                      <Button variant="outline" size="sm" onClick={() => openModal(product)} className="shadow-xs hover:shadow-glass">
                         <Edit2 className="w-3.5 h-3.5 mr-1 text-brand-primary" /> Edit
                       </Button>
                     </td>
@@ -140,10 +253,16 @@ export const Products = () => {
       </Card>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <Card variant="dense" noPadding className="w-full max-w-md shadow-2xl rounded-2xl overflow-hidden border border-brand-border/90 bg-white">
+        <div className="fixed inset-0 bg-black/35 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
+          <Card variant="modal" noPadding className="w-full max-w-md rounded-2xl overflow-hidden">
             <div className="p-5 border-b border-brand-border/80 bg-brand-surface/40 flex items-center justify-between">
-              <h3 className="text-lg font-bold">{editingProduct ? 'Edit Product' : 'Add New Product'}</h3>
+              <h3 className="text-lg font-bold text-brand-text">{editingProduct ? 'Edit Product' : 'Add New Product'}</h3>
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="w-8 h-8 rounded-lg bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/60 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-all active:scale-95"
+              >
+                ✕
+              </button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               {error && <div className="p-3 bg-red-100 text-red-700 rounded text-sm">{error}</div>}

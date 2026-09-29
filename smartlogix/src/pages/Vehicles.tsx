@@ -409,8 +409,8 @@ export const Vehicles = () => {
 
       {/* Add / Edit Vehicle Modal */}
       {isFormModalOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
-          <Card variant="dense" className="w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-glass-hover rounded-2xl border border-brand-border/80">
+        <div className="fixed inset-0 bg-black/35 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
+          <Card variant="modal" noPadding className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl">
             <div className="p-6 border-b border-brand-border/60 sticky top-0 bg-white/95 backdrop-blur-md z-10 flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-bold text-brand-text">
@@ -422,7 +422,7 @@ export const Vehicles = () => {
               </div>
               <button 
                 onClick={() => setIsFormModalOpen(false)} 
-                className="w-8 h-8 rounded-lg bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/60 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-all"
+                className="w-8 h-8 rounded-lg bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/60 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-all active:scale-95"
               >
                 ✕
               </button>
@@ -540,8 +540,8 @@ export const Vehicles = () => {
 
       {/* Vehicle Details Modal */}
       {isDetailModalOpen && selectedVehicle && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
-          <Card variant="dense" className="w-full max-w-md max-h-[90vh] overflow-y-auto shadow-glass-hover rounded-2xl border border-brand-border/80">
+        <div className="fixed inset-0 bg-black/35 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
+          <Card variant="modal" noPadding className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl">
             <div className="p-6 border-b border-brand-border/60 sticky top-0 bg-white/95 backdrop-blur-md z-10 flex justify-between items-start">
               <div>
                 <div className="flex items-center gap-2">
@@ -552,7 +552,7 @@ export const Vehicles = () => {
               </div>
               <button 
                 onClick={() => setIsDetailModalOpen(false)} 
-                className="w-8 h-8 rounded-lg bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/60 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-all"
+                className="w-8 h-8 rounded-lg bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/60 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-all active:scale-95"
               >
                 ✕
               </button>

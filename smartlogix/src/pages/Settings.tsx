@@ -58,7 +58,7 @@ export const Settings: React.FC = () => {
               <select
                 value={defaultAlgorithm}
                 onChange={(e) => setDefaultAlgorithm(e.target.value as any)}
-                className="w-full bg-white/90 backdrop-blur-xs border border-brand-border/80 rounded-xl px-3 py-2 text-xs font-semibold text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/40 shadow-xs"
+                className="w-full bg-white/85 backdrop-blur-xs border border-brand-border/90 rounded-xl px-3.5 py-2 text-xs font-semibold text-brand-text shadow-[inset_0_1px_2px_0_rgba(19,59,45,0.04)] focus:outline-none focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary transition-all"
               >
                 <option value="BRANCH_AND_BOUND">Branch & Bound (Exact Tour with Lower-Bound Pruning)</option>
                 <option value="GREEDY_NEAREST_NEIGHBOR">Greedy Nearest Neighbor (Rapid Heuristic)</option>
@@ -78,7 +78,7 @@ export const Settings: React.FC = () => {
                 max={15}
                 value={maxNodesExact}
                 onChange={(e) => setMaxNodesExact(Number(e.target.value))}
-                className="w-full bg-white/90 backdrop-blur-xs border border-brand-border/80 rounded-xl px-3 py-2 text-xs font-semibold text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/40 shadow-xs"
+                className="w-full bg-white/85 backdrop-blur-xs border border-brand-border/90 rounded-xl px-3.5 py-2 text-xs font-semibold text-brand-text shadow-[inset_0_1px_2px_0_rgba(19,59,45,0.04)] focus:outline-none focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary transition-all"
               />
               <span className="text-[11px] text-brand-text-secondary mt-1 block">
                 Prevents browser thread blocking from factorial combinatorial state-space growth (default: 10 stops).
@@ -108,7 +108,7 @@ export const Settings: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="p-3.5 bg-white/70 backdrop-blur-xs rounded-xl border border-brand-border/80 shadow-xs space-y-1">
+          <div className="p-3.5 bg-white/80 backdrop-blur-md rounded-xl border border-brand-border/70 shadow-xs hover:shadow-glass hover:-translate-y-0.5 transition-all space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-brand-text">Supabase PostgreSQL</span>
               <Badge variant="success" dot>Active</Badge>
@@ -118,7 +118,7 @@ export const Settings: React.FC = () => {
             </p>
           </div>
 
-          <div className="p-3.5 bg-white/70 backdrop-blur-xs rounded-xl border border-brand-border/80 shadow-xs space-y-1">
+          <div className="p-3.5 bg-white/80 backdrop-blur-md rounded-xl border border-brand-border/70 shadow-xs hover:shadow-glass hover:-translate-y-0.5 transition-all space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-brand-text">OpenRouteService API</span>
               <Badge variant="lime" dot>Active</Badge>
@@ -128,7 +128,7 @@ export const Settings: React.FC = () => {
             </p>
           </div>
 
-          <div className="p-3.5 bg-white/70 backdrop-blur-xs rounded-xl border border-brand-border/80 shadow-xs space-y-1">
+          <div className="p-3.5 bg-white/80 backdrop-blur-md rounded-xl border border-brand-border/70 shadow-xs hover:shadow-glass hover:-translate-y-0.5 transition-all space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-brand-text">Leaflet Map & OSM</span>
               <Badge variant="success" dot>Operational</Badge>
@@ -138,7 +138,7 @@ export const Settings: React.FC = () => {
             </p>
           </div>
 
-          <div className="p-3.5 bg-white/70 backdrop-blur-xs rounded-xl border border-brand-border/80 shadow-xs space-y-1">
+          <div className="p-3.5 bg-white/80 backdrop-blur-md rounded-xl border border-brand-border/70 shadow-xs hover:shadow-glass hover:-translate-y-0.5 transition-all space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-brand-text">Distance Matrix Table</span>
               <Badge variant="success" dot>Synchronized</Badge>

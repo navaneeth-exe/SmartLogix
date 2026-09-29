@@ -345,7 +345,7 @@ export const Reports: React.FC = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="bg-white/90 backdrop-blur-xs border border-brand-border/80 rounded-xl px-3 py-1.5 text-xs font-semibold text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/40 shadow-xs"
+              className="bg-white/85 backdrop-blur-xs border border-brand-border/90 rounded-xl px-3.5 py-1.5 text-xs font-semibold text-brand-text shadow-[inset_0_1px_2px_0_rgba(19,59,45,0.04)] focus:outline-none focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary transition-all"
             >
               <option value="ALL">All Statuses ({plans.length})</option>
               <option value="PLANNED">Planned ({metrics.activePlans})</option>

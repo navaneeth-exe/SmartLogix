@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -6,13 +6,14 @@ import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
 import { api } from '../services/api';
 import type { Warehouse } from '../types/database.types';
-import { Search, Plus, Edit2 } from 'lucide-react';
+import { Search, Plus, Edit2, Building2, MapPin, Compass, Radio, Filter, RefreshCw } from 'lucide-react';
 import { MapLocationPicker } from '../components/MapLocationPicker';
 
 export const Warehouses = () => {
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingWarehouse, setEditingWarehouse] = useState<Warehouse | null>(null);
   const [error, setError] = useState('');
@@ -115,66 +116,164 @@ export const Warehouses = () => {
     }
   };
 
-  const filtered = warehouses.filter(w => 
-    w.name.toLowerCase().includes(search.toLowerCase()) || 
-    w.code.toLowerCase().includes(search.toLowerCase())
-  );
+  const metrics = useMemo(() => {
+    const totalCount = warehouses.length;
+    const activeCount = warehouses.filter(w => w.is_active).length;
+    const geoMappedCount = warehouses.filter(w => w.latitude !== null && w.longitude !== null).length;
+    return { totalCount, activeCount, geoMappedCount };
+  }, [warehouses]);
+
+  const filtered = warehouses.filter(w => {
+    const matchesSearch = 
+      w.name.toLowerCase().includes(search.toLowerCase()) || 
+      w.code.toLowerCase().includes(search.toLowerCase()) ||
+      (w.address && w.address.toLowerCase().includes(search.toLowerCase()));
+
+    const matchesStatus = 
+      statusFilter === 'all' || 
+      (statusFilter === 'active' && w.is_active) || 
+      (statusFilter === 'inactive' && !w.is_active);
+
+    return matchesSearch && matchesStatus;
+  });
 
   return (
-    <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
+    <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8 animate-fade-in">
       <PageHeader 
         title="Warehouses & Depots" 
         description="Manage regional warehouse facilities, geographic coordinates, and active dispatch status"
-        actions={<Button onClick={() => openModal()}><Plus className="w-4 h-4 mr-2"/> Add Warehouse</Button>}
+        actions={
+          <Button onClick={() => openModal()} className="flex items-center gap-2">
+            <Plus className="w-4 h-4"/>
+            <span>Add Warehouse</span>
+          </Button>
+        }
       />
 
+      {/* Summary KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+        <Card variant="glass" hoverable className="p-5 sm:p-6 border-l-4 border-l-brand-primary">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">Total Warehouses</span>
+            <div className="w-8 h-8 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary">
+              <Building2 className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-3xl font-extrabold text-brand-text mt-1.5 tracking-tight font-sans">{metrics.totalCount}</p>
+          <span className="text-[11px] text-brand-text-secondary/80 mt-1 block">Registered logistics facilities</span>
+        </Card>
+
+        <Card variant="glass" hoverable className="p-5 sm:p-6 border-l-4 border-l-emerald-600">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">Active Dispatch Hubs</span>
+            <div className="w-8 h-8 rounded-xl bg-emerald-100/80 flex items-center justify-center text-emerald-700">
+              <Radio className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-3xl font-extrabold text-emerald-700 mt-1.5 tracking-tight font-sans">{metrics.activeCount}</p>
+          <span className="text-[11px] text-emerald-700/80 mt-1 block">Live in DAA routing matrix</span>
+        </Card>
+
+        <Card variant="glass" hoverable className="p-5 sm:p-6 border-l-4 border-l-sky-500">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-sky-800 uppercase tracking-wider">GPS Mapped Nodes</span>
+            <div className="w-8 h-8 rounded-xl bg-sky-100/80 flex items-center justify-center text-sky-700">
+              <Compass className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-3xl font-extrabold text-sky-700 mt-1.5 tracking-tight font-mono">{metrics.geoMappedCount}</p>
+          <span className="text-[11px] text-sky-700/80 mt-1 block">Precise latitude/longitude</span>
+        </Card>
+      </div>
+
       <Card variant="dense" noPadding className="overflow-hidden shadow-soft-sm">
-        <div className="p-4 sm:p-5 border-b border-brand-border/80 flex items-center bg-white/50 backdrop-blur-xs">
-          <div className="relative w-full max-w-sm">
+        <div className="p-4 sm:p-5 border-b border-brand-border/80 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/60 backdrop-blur-md">
+          <div className="relative w-full sm:max-w-sm">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-text-secondary" />
             <Input 
-              placeholder="Search by name or code..." 
+              placeholder="Search by name, code, or address..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-10"
             />
           </div>
+
+          <div className="flex w-full sm:w-auto items-center gap-3">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Filter className="w-4 h-4 text-brand-text-secondary hidden sm:block" />
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as any)}
+                className="w-full sm:w-auto bg-white/85 backdrop-blur-xs border border-brand-border/90 rounded-xl px-3.5 py-2 text-xs font-semibold text-brand-text shadow-[inset_0_1px_2px_0_rgba(19,59,45,0.04)] focus:outline-none focus:ring-4 focus:ring-brand-primary/10 transition-all"
+              >
+                <option value="all">All Statuses ({warehouses.length})</option>
+                <option value="active">Active Hubs ({metrics.activeCount})</option>
+                <option value="inactive">Inactive Hubs ({metrics.totalCount - metrics.activeCount})</option>
+              </select>
+            </div>
+
+            {(search || statusFilter !== 'all') && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { setSearch(''); setStatusFilter('all'); }}
+                className="text-xs text-brand-text-secondary hover:text-brand-text"
+              >
+                Reset
+              </Button>
+            )}
+          </div>
         </div>
         
         {loading ? (
-          <div className="p-12 text-center text-sm text-brand-text-secondary">Loading warehouses...</div>
+          <div className="p-12 text-center text-sm text-brand-text-secondary flex flex-col items-center gap-3">
+            <RefreshCw className="w-6 h-6 animate-spin text-brand-primary" />
+            <span>Loading warehouses...</span>
+          </div>
         ) : filtered.length === 0 ? (
           <div className="p-12 text-center text-brand-text-secondary flex flex-col items-center">
             <div className="w-24 h-24 mb-3 rounded-2xl overflow-hidden soft-inset p-1 flex items-center justify-center shadow-soft-sm">
               <img src="/images/smartlogix/warehouse-small.jpg" alt="No warehouses" className="w-full h-full object-cover rounded-xl" />
             </div>
             <h4 className="font-bold text-brand-text">No warehouses found</h4>
-            <p className="text-xs text-brand-text-secondary mt-1">Get started by creating your first regional distribution hub.</p>
+            <p className="text-xs text-brand-text-secondary mt-1">
+              {search || statusFilter !== 'all' 
+                ? 'Try adjusting your search criteria or resetting filters.' 
+                : 'Get started by creating your first regional distribution hub.'}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-4 sm:p-6 bg-brand-surface/20">
             {filtered.map(warehouse => (
-              <Card key={warehouse.id} variant="glass" hoverable className="p-5 sm:p-6 flex flex-col justify-between h-full border border-brand-border/80">
+              <Card key={warehouse.id} variant="glass" hoverable className="p-5 sm:p-6 flex flex-col justify-between h-full border border-brand-border/80 shadow-soft-sm hover:shadow-glass-hover">
                 <div>
                   <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <h3 className="font-bold text-base text-brand-text">{warehouse.name}</h3>
-                      <p className="text-xs font-mono font-bold text-brand-primary mt-0.5">{warehouse.code}</p>
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center text-brand-primary shrink-0 shadow-soft-xs">
+                        <Building2 className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-base text-brand-text leading-tight">{warehouse.name}</h3>
+                        <p className="text-xs font-mono font-bold text-brand-primary mt-0.5">{warehouse.code}</p>
+                      </div>
                     </div>
                     <Badge variant={warehouse.is_active ? 'success' : 'default'} dot>
                       {warehouse.is_active ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>
                   
-                  <div className="text-xs text-brand-text-secondary mb-4 space-y-2">
+                  <div className="text-xs text-brand-text-secondary mb-4 space-y-2.5">
                     {warehouse.address ? (
-                      <p className="line-clamp-2 leading-relaxed">{warehouse.address}</p>
+                      <p className="line-clamp-2 leading-relaxed flex items-start gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-brand-text-muted shrink-0 mt-0.5" />
+                        <span>{warehouse.address}</span>
+                      </p>
                     ) : (
-                      <p className="italic text-brand-text-muted">No address provided</p>
+                      <p className="italic text-brand-text-muted">No physical address specified</p>
                     )}
                     {(warehouse.latitude !== null && warehouse.longitude !== null) && (
                       <div className="text-[11px] font-mono bg-brand-surface/90 px-2.5 py-1 rounded-lg border border-brand-border/70 inline-flex items-center gap-1.5 text-brand-text-secondary shadow-soft-xs">
-                        <span className="text-brand-text-muted">Geo:</span>
+                        <Compass className="w-3 h-3 text-brand-primary" />
                         <span className="text-brand-text font-semibold">{warehouse.latitude.toFixed(4)}°, {warehouse.longitude.toFixed(4)}°</span>
                       </div>
                     )}
@@ -182,9 +281,9 @@ export const Warehouses = () => {
                 </div>
                 
                 <div className="pt-3 border-t border-brand-border/60 flex justify-end">
-                  <Button variant="outline" size="sm" onClick={() => openModal(warehouse)}>
+                  <Button variant="outline" size="sm" onClick={() => openModal(warehouse)} className="shadow-xs hover:shadow-glass">
                     <Edit2 className="w-3.5 h-3.5 mr-1.5 text-brand-primary" />
-                    Edit Details
+                    Edit Hub
                   </Button>
                 </div>
               </Card>
@@ -194,11 +293,14 @@ export const Warehouses = () => {
       </Card>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <Card variant="dense" noPadding className="w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl rounded-2xl border border-brand-border/90 bg-white">
-            <div className="p-5 border-b border-brand-border/80 sticky top-0 bg-brand-surface/50 backdrop-blur-xs z-10 flex items-center justify-between">
+        <div className="fixed inset-0 bg-black/35 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
+          <Card variant="modal" noPadding className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl">
+            <div className="p-5 border-b border-brand-border/80 sticky top-0 bg-brand-surface/60 backdrop-blur-md z-10 flex items-center justify-between">
               <h3 className="text-base font-bold text-brand-text">{editingWarehouse ? 'Edit Warehouse Hub' : 'Add New Warehouse Hub'}</h3>
-              <button onClick={() => setIsModalOpen(false)} className="p-1 rounded-lg text-brand-text-secondary hover:text-brand-text">
+              <button 
+                onClick={() => setIsModalOpen(false)} 
+                className="w-8 h-8 rounded-lg bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/60 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-all active:scale-95"
+              >
                 ✕
               </button>
             </div>
