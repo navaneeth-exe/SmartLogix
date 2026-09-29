@@ -217,10 +217,13 @@ export const Dashboard = () => {
           
           <div className="hidden md:flex absolute right-0 top-0 bottom-0 w-1/2 items-center justify-end overflow-hidden">
             <img 
-              src="/images/smartlogix/smartlogix-3d-hero.jpg" 
-              alt="SmartLogix 3D Logistics Hub" 
+              src="/images/smartlogix/warehouse-distribution-hub.jpg" 
+              alt="SmartLogix Modern Isometric Warehouse & Distribution Center" 
               className="w-full h-full object-cover object-center transition-transform duration-700 hover:scale-105"
-              style={{ maskImage: 'linear-gradient(to right, transparent, black 25%)' }}
+              style={{ 
+                maskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.5) 18%, black 38%)',
+                WebkitMaskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.5) 18%, black 38%)'
+              }}
             />
           </div>
         </div>

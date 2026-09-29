@@ -7,6 +7,7 @@ import {
   LogOut
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { ScenicBackground } from './ScenicBackground';
 
 interface SidebarItemProps {
   icon: any;
@@ -248,7 +249,10 @@ export const Layout = () => {
       </aside>
 
       {/* Main Content Area — dynamically adapts width */}
-      <main className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
+      <main className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative">
+        {/* Layered Scenic 3D Logistics Landscape Background */}
+        <ScenicBackground />
+
         {/* Top Navbar */}
         <header className="h-16 glass-header flex items-center justify-between px-4 sm:px-8 flex-shrink-0 z-10 gap-4">
           <div className="flex items-center gap-3 sm:gap-4 flex-1">
