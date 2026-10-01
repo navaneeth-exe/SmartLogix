@@ -160,5 +160,36 @@
 - **Production Build**: 0 errors (`node ./node_modules/vite/bin/vite.js build`).
 - **Visual Browser Verification**: Automated browser subagent verified all 4 pages (`/map`, `/vehicles`, `/planning`, `/distance-matrix`) with zero layout breaks, overflow, or errors.
 
+---
+
+## Phase 5 — Reports, Charts & Settings UI Refinement (Completed)
+
+### 1. Operational Analytics & Logistics Reports (`src/pages/Reports.tsx`)
+- **Visual Hierarchy & Header**: Added PageHeader with action controls including real-time CSV export utility (`handleExportCSV`), animated data refresh, and direct route dispatch shortcut to `/planning`.
+- **Primary 4-Card KPI Grid**:
+  - Active Plans with fulfillment rate mini progress gauge and cancellation count.
+  - Total Route Distance with average distance per plan and routed tour count.
+  - Fleet Assignment & Utilization with visual utilization meter and assigned vs total vehicle counters.
+  - DAA Algorithm Solvers with counts for Branch & Bound (exact) vs Greedy Nearest-Neighbor.
+- **Secondary Operational Pulse Strip**: Real-time counters for delivered orders, active processing queue, pending orders, and active regional warehouse hubs.
+- **Visual Analytics & Charts**:
+  - DAA Solver Distribution Donut Chart (`PieChart`): Forest-green and amber color palette, center plans counter, and custom frosted glass tooltips (`bg-white/95 backdrop-blur-md`).
+  - Warehouse Hub Delivery Plans Bar Chart (`BarChart`): Forest-green rounded bars, clean axes, and origin depot tooltip.
+- **Interactive Search & Filter Bar**: Translucent search field for plan number/warehouse/vehicle, status filter dropdown, warehouse hub filter dropdown, and quick Reset button with real-time result counts.
+- **Delivery Plans Audit Ledger Table**: Responsive table with sticky headers, monospace plan numbers, warehouse hub badges, vehicle capacity info, algorithmic solver icons, tour distance (`km`), status tags, and action links.
+
+### 2. System Settings & Infrastructure (`src/pages/Settings.tsx`)
+- **Structured 4-Tab Workspace**:
+  - **DAA Solvers & Optimization**: Default algorithm selector (`BRANCH_AND_BOUND` vs `GREEDY_NEAREST_NEIGHBOR`), Branch & Bound safety stop limit input with real-time risk level indicators, and browser `localStorage` persistence.
+  - **Infrastructure & Connectivity Health**: 4 real-time service status cards (Supabase PostgreSQL, OpenRouteService Edge API, Leaflet OSM Tile Renderer, and Asymmetric Distance Matrix Engine).
+  - **Security & Business Rules**: Overview cards of active anti-collision fleet locking, atomic customer order locks, inventory stock deficit protections, and DAA factorial boundary limits.
+  - **Interface & Map Defaults**: Metric unit system verification (fixed km), ORS vehicle profile selector (`driving-car` vs `driving-hgv`), and startup navigation auto-collapse option.
+- **Interactive Feedback**: Instant green save notification toast and reset-to-defaults restoration.
+
+### 3. Verification & Testing
+- **TypeScript**: 0 errors (`node ./node_modules/typescript/bin/tsc -b`).
+- **Production Build**: 0 errors (`node ./node_modules/vite/bin/vite.js build`).
+- **Logic & Integrity**: 100% preservation of Supabase schema, authentication, DAA TSP algorithms, and ORS road matrix edge functions. Zero mock data.
+
 
 

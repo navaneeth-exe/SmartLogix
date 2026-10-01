@@ -219,3 +219,26 @@ This document tracks the progress, implementation audit, and verification of the
   - TypeScript check: `node ./node_modules/typescript/bin/tsc -b` passed with 0 errors.
   - Production build: `node ./node_modules/vite/bin/vite.js build` passed with 0 errors in 13.20s.
   - Browser subagent visually inspected `/map`, `/vehicles`, `/planning`, and `/distance-matrix`; all 4 pages rendered without error or overflow.
+
+---
+
+## K. Phase 5 — Reports, Charts & Settings UI Refinement (Completed)
+
+- [x] **Reports Page (`src/pages/Reports.tsx`)**:
+  - Refined page header with real-time CSV export utility, animated data refresh, and direct route dispatch shortcut to `/planning`.
+  - Upgraded 4 primary KPI cards: Active Plans (with fulfillment progress gauge), Total Route Distance, Fleet Utilization (with assignment progress meter), and DAA Solvers.
+  - Added secondary pulse strip displaying Delivered Orders, Processing Orders, Pending Queue, and Depot Warehouses.
+  - Built DAA Solver Distribution Donut Chart with custom frosted glass tooltips (`#154734`, `#d97706`, `#94a3b8`), center plans counter, and legend with percentage pills.
+  - Built Warehouse Hub Delivery Plans Bar Chart with rounded forest-green bars and axes.
+  - Added interactive search and multi-criteria filter toolbar (plan search, status filter, warehouse hub filter, and quick Reset button).
+  - Upgraded Delivery Plans Audit Ledger table with sticky headers, monospace plan numbers, warehouse hub badges, vehicle capacity info, algorithmic solver icons, tour distance (`km`), status tags, and action links.
+- [x] **Settings Page (`src/pages/Settings.tsx`)**:
+  - Built 4-tab structured workspace: DAA Solvers & Optimization, Infrastructure & Health, Business & Security Rules, and Interface & Map Defaults.
+  - Implemented configurable solver preferences (Default Algorithm, Branch & Bound Stop Limit safety guard) with browser `localStorage` persistence.
+  - Integrated 4 real-time service status cards: Supabase PostgreSQL, OpenRouteService Edge API, Leaflet OSM Tile Renderer, and Asymmetric Distance Matrix Engine.
+  - Implemented overview cards of active business policies (fleet anti-collision locking, atomic order locks, inventory stock deficit protections, and DAA factorial boundary limits).
+  - Added interface preferences (distance unit verification, ORS vehicle profile selector, and startup navigation auto-collapse option).
+  - Added instant green save notification toast and reset-to-defaults restoration.
+- [x] **Verification**:
+  - TypeScript check: `node ./node_modules/typescript/bin/tsc -b` passed with 0 errors.
+  - Production build: `node ./node_modules/vite/bin/vite.js build` passed with 0 errors in 18.21s.
