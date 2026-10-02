@@ -10,12 +10,16 @@ import type {
   DeliveryLocation, 
   Warehouse, 
   Inventory, 
-  OrderPriority 
+  OrderPriority,
+  FulfillmentRecommendation,
+  WarehouseFulfillmentCandidate
 } from '../types/database.types';
 import { 
   ShoppingCart, ArrowLeft, Plus, Trash2, AlertCircle, 
-  CheckCircle2, Info, Building2, Package, Layers
+  CheckCircle2, Info, Building2, Package, Layers,
+  Navigation, Sparkles, Check, RefreshCw
 } from 'lucide-react';
+import { solveDijkstra } from '../algorithms/dijkstra';
 
 interface SelectedItem {
   product_id: string;
@@ -46,6 +50,12 @@ export const CreateOrder = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [successResult, setSuccessResult] = useState<any>(null);
+
+  // Phase 3: Warehouse Fulfillment Recommendation (Dijkstra)
+  const [calculatingRecommendation, setCalculatingRecommendation] = useState(false);
+  const [fulfillmentRecommendation, setFulfillmentRecommendation] = useState<FulfillmentRecommendation | null>(null);
+  const [recommendationError, setRecommendationError] = useState<string | null>(null);
+  const [showRecommendationPanel, setShowRecommendationPanel] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -145,6 +155,137 @@ export const CreateOrder = () => {
 
   const handleRemoveItem = (productId: string) => {
     setItems(items.filter(item => item.product_id !== productId));
+  };
+
+  // Phase 3: Calculate Warehouse Fulfillment Recommendation via Dijkstra Shortest Path
+  const handleCalculateRecommendation = async () => {
+    setRecommendationError(null);
+    if (!selectedLocationId) {
+      setRecommendationError('Please select a delivery destination first.');
+      setShowRecommendationPanel(true);
+      return;
+    }
+
+    if (items.length === 0) {
+      setRecommendationError('Please add at least one line item to the order to evaluate warehouse stock.');
+      setShowRecommendationPanel(true);
+      return;
+    }
+
+    const destLocation = locations.find(l => l.id === selectedLocationId);
+    if (!destLocation) {
+      setRecommendationError('Selected delivery destination is invalid or inactive.');
+      setShowRecommendationPanel(true);
+      return;
+    }
+
+    setCalculatingRecommendation(true);
+    setShowRecommendationPanel(true);
+
+    try {
+      const startTime = performance.now();
+      // Fetch current location distances from database
+      const storedDistances = await api.distances.list();
+
+      // Build Dijkstra Graph
+      // Nodes = active warehouses + active delivery locations
+      const graphNodes = [
+        ...warehouses.filter(w => w.is_active).map(w => ({ id: w.id, name: w.name, type: 'warehouse' as const })),
+        ...locations.map(l => ({ id: l.id, name: l.name, type: 'delivery_location' as const }))
+      ];
+
+      // Edges = location_distances
+      const graphEdges = storedDistances.map(d => ({
+        from: d.origin_id,
+        to: d.destination_id,
+        weight: Number(d.distance)
+      }));
+
+      const activeWarehouses = warehouses.filter(w => w.is_active);
+      const candidates: WarehouseFulfillmentCandidate[] = [];
+
+      for (const wh of activeWarehouses) {
+        // 1. Stock check across all items in order
+        let hasSufficientStock = true;
+        let totalAvail = 0;
+        const stockBreakdown = items.map(item => {
+          const invRec = inventoryList.find(i => i.product_id === item.product_id && i.warehouse_id === wh.id);
+          const availQty = invRec ? invRec.quantity : 0;
+          totalAvail += availQty;
+          const isSufficient = availQty >= item.quantity;
+          if (!isSufficient) {
+            hasSufficientStock = false;
+          }
+          const prod = products.find(p => p.id === item.product_id);
+          return {
+            productId: item.product_id,
+            productName: prod?.name || 'Product',
+            requestedQty: item.quantity,
+            availableQty: availQty,
+            isSufficient
+          };
+        });
+
+        // 2. Dijkstra shortest path from warehouse to destination
+        const dijkstraRes = solveDijkstra(
+          { nodes: graphNodes, edges: graphEdges, isUndirected: true },
+          wh.id,
+          selectedLocationId
+        );
+
+        candidates.push({
+          warehouse: wh,
+          hasSufficientStock,
+          totalAvailableStock: totalAvail,
+          stockBreakdown,
+          shortestDistanceKm: dijkstraRes.hasPath ? dijkstraRes.distance : null,
+          path: dijkstraRes.path,
+          isReachable: dijkstraRes.hasPath,
+          transitEstimateHours: dijkstraRes.hasPath ? Number((dijkstraRes.distance / 50).toFixed(1)) : null
+        });
+      }
+
+      // Rank candidates:
+      // Priority 1: Has sufficient stock for ALL items (true before false)
+      // Priority 2: Is reachable (has shortest distance)
+      // Priority 3: Shortest distance in km ascending
+      // Priority 4: Warehouse name alphabetical tie-break
+      candidates.sort((a, b) => {
+        if (a.hasSufficientStock !== b.hasSufficientStock) {
+          return a.hasSufficientStock ? -1 : 1;
+        }
+        if (a.isReachable !== b.isReachable) {
+          return a.isReachable ? -1 : 1;
+        }
+        if (a.shortestDistanceKm !== null && b.shortestDistanceKm !== null) {
+          if (a.shortestDistanceKm !== b.shortestDistanceKm) {
+            return a.shortestDistanceKm - b.shortestDistanceKm;
+          }
+        }
+        return a.warehouse.name.localeCompare(b.warehouse.name);
+      });
+
+      // Best recommendation: first candidate that has sufficient stock and is reachable
+      const optimal = candidates.find(c => c.hasSufficientStock && c.isReachable) 
+        || candidates.find(c => c.hasSufficientStock) 
+        || candidates[0] 
+        || null;
+
+      const endTime = performance.now();
+
+      setFulfillmentRecommendation({
+        destinationLocation: destLocation,
+        candidates,
+        recommendedWarehouseId: optimal ? optimal.warehouse.id : null,
+        algorithmName: 'Dijkstra Shortest Path with Stock Verification',
+        executionTimeMs: Number((endTime - startTime).toFixed(3)),
+        edgeCountEvaluated: graphEdges.length
+      });
+    } catch (err: any) {
+      setRecommendationError(err.message || 'Failed to compute fulfillment recommendation.');
+    } finally {
+      setCalculatingRecommendation(false);
+    }
   };
 
   // Calculations for order preview
@@ -337,7 +478,18 @@ export const CreateOrder = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-brand-text block">Stock Validation Scope</label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-brand-text block">Stock Validation Scope</label>
+                  <button
+                    type="button"
+                    onClick={handleCalculateRecommendation}
+                    disabled={calculatingRecommendation || items.length === 0}
+                    className="text-[11px] font-bold text-brand-primary hover:text-brand-primary-hover flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <Sparkles className="w-3 h-3" />
+                    <span>Recommend Hub (Dijkstra)</span>
+                  </button>
+                </div>
                 <select
                   value={selectedWarehouseId}
                   onChange={(e) => setSelectedWarehouseId(e.target.value)}
@@ -353,6 +505,149 @@ export const CreateOrder = () => {
                 </p>
               </div>
             </div>
+
+            {/* Phase 3: Dijkstra Warehouse Fulfillment Recommendation Panel */}
+            {showRecommendationPanel && (
+              <div className="mt-5 pt-4 border-t border-brand-border/60 animate-fade-in space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-brand-primary/10 text-brand-primary">
+                      <Navigation className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-brand-text">Fulfillment Hub Optimization (Dijkstra Shortest Path)</h4>
+                      <p className="text-[10px] text-brand-text-secondary">
+                        Evaluates real network road distances and on-hand stock for all line items.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleCalculateRecommendation}
+                      loading={calculatingRecommendation}
+                      className="text-xs h-7 px-2.5"
+                    >
+                      <RefreshCw className="w-3 h-3 mr-1" />
+                      Recompute
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => setShowRecommendationPanel(false)}
+                      className="text-xs text-brand-text-secondary hover:text-brand-text px-1"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+
+                {recommendationError && (
+                  <div className="p-3 bg-amber-50/90 border border-amber-200 text-amber-900 rounded-xl text-xs flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                    <span>{recommendationError}</span>
+                  </div>
+                )}
+
+                {fulfillmentRecommendation && (
+                  <div className="space-y-2.5">
+                    <div className="flex flex-wrap items-center justify-between text-[11px] text-brand-text-secondary bg-brand-surface/40 p-2.5 rounded-xl border border-brand-border/40">
+                      <span>Destination: <strong className="text-brand-text">{fulfillmentRecommendation.destinationLocation.name}</strong></span>
+                      <span>Evaluated: <strong className="text-brand-text font-mono">{fulfillmentRecommendation.candidates.length} hubs</strong> ({fulfillmentRecommendation.edgeCountEvaluated} edges)</span>
+                      <span>Runtime: <strong className="text-brand-text font-mono">{fulfillmentRecommendation.executionTimeMs} ms</strong></span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {fulfillmentRecommendation.candidates.map((cand) => {
+                        const isRecommended = cand.warehouse.id === fulfillmentRecommendation.recommendedWarehouseId;
+                        const isSelected = cand.warehouse.id === selectedWarehouseId;
+
+                        return (
+                          <div
+                            key={cand.warehouse.id}
+                            className={`p-3 rounded-xl border transition-all text-xs flex flex-col justify-between ${
+                              isSelected
+                                ? 'bg-brand-primary/5 border-brand-primary shadow-xs'
+                                : isRecommended
+                                ? 'bg-emerald-50/70 border-emerald-300'
+                                : 'bg-white/80 border-brand-border/80'
+                            }`}
+                          >
+                            <div className="space-y-1.5">
+                              <div className="flex items-center justify-between">
+                                <div className="font-bold text-brand-text flex items-center gap-1.5">
+                                  <span>{cand.warehouse.name}</span>
+                                  <span className="font-mono text-[10px] text-brand-text-secondary">({cand.warehouse.code})</span>
+                                </div>
+                                {isRecommended && (
+                                  <Badge variant="success" className="text-[10px] px-1.5 py-0.5">
+                                    Recommended
+                                  </Badge>
+                                )}
+                              </div>
+
+                              <div className="flex items-center justify-between text-[11px] text-brand-text-secondary">
+                                <span>Shortest Road Distance:</span>
+                                <span className="font-mono font-bold text-brand-text">
+                                  {cand.shortestDistanceKm !== null ? `${cand.shortestDistanceKm} km` : 'No Route'}
+                                </span>
+                              </div>
+
+                              {cand.transitEstimateHours !== null && (
+                                <div className="flex items-center justify-between text-[11px] text-brand-text-secondary">
+                                  <span>Est. Transit:</span>
+                                  <span className="font-mono text-brand-text">~{cand.transitEstimateHours} hrs</span>
+                                </div>
+                              )}
+
+                              <div className="flex items-center justify-between text-[11px] text-brand-text-secondary">
+                                <span>Stock Status:</span>
+                                <Badge variant={cand.hasSufficientStock ? 'success' : 'danger'} className="text-[10px]">
+                                  {cand.hasSufficientStock ? 'Full Stock Ready' : 'Insufficient Stock'}
+                                </Badge>
+                              </div>
+
+                              {cand.stockBreakdown.length > 0 && (
+                                <div className="text-[10px] text-brand-text-secondary pt-1 border-t border-brand-border/40 space-y-0.5">
+                                  {cand.stockBreakdown.map((sb) => (
+                                    <div key={sb.productId} className="flex justify-between">
+                                      <span className="truncate max-w-[120px]">{sb.productName}:</span>
+                                      <span className={sb.isSufficient ? 'text-emerald-700 font-mono font-bold' : 'text-rose-600 font-mono font-bold'}>
+                                        {sb.availableQty} / {sb.requestedQty}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="pt-2 mt-2 border-t border-brand-border/40">
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant={isSelected ? 'primary' : isRecommended ? 'primary' : 'outline'}
+                                onClick={() => setSelectedWarehouseId(cand.warehouse.id)}
+                                className="w-full text-xs h-7"
+                              >
+                                {isSelected ? (
+                                  <span className="flex items-center gap-1">
+                                    <Check className="w-3 h-3" /> Selected Hub
+                                  </span>
+                                ) : (
+                                  <span>Fulfill From This Hub</span>
+                                )}
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </Card>
 
           {/* Section 2: Order Items */}

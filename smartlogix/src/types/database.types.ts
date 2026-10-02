@@ -18,6 +18,7 @@ export interface Warehouse {
   latitude: number | null;
   longitude: number | null;
   is_active: boolean;
+  storage_capacity?: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -196,6 +197,60 @@ export interface DeliveryPlan {
 export interface CreateDeliveryPlanInput {
   warehouse_id: string;
   order_ids: string[];
+}
+
+export interface RestockWarehouseCapacity {
+  warehouse: Warehouse;
+  currentStock: number; // total units currently stored
+  storageCapacity: number; // maximum unit storage capacity
+  availableCapacity: number; // max(0, storageCapacity - currentStock)
+}
+
+export interface WarehouseAllocationItem {
+  warehouseId: string;
+  warehouseName: string;
+  warehouseCode: string;
+  allocatedQuantity: number;
+  initialAvailableCapacity: number;
+  remainingCapacity: number;
+}
+
+export interface BinPackingResult {
+  algorithmName: string;
+  productId: string;
+  totalRequested: number;
+  totalAllocated: number;
+  unallocatedQuantity: number;
+  allocations: WarehouseAllocationItem[];
+  warehousesEvaluated: number;
+  warehousesUtilized: number;
+  executionTimeMs: number;
+}
+
+export interface WarehouseFulfillmentCandidate {
+  warehouse: Warehouse;
+  hasSufficientStock: boolean;
+  totalAvailableStock: number;
+  stockBreakdown: {
+    productId: string;
+    productName: string;
+    requestedQty: number;
+    availableQty: number;
+    isSufficient: boolean;
+  }[];
+  shortestDistanceKm: number | null;
+  path: string[];
+  isReachable: boolean;
+  transitEstimateHours?: number | null;
+}
+
+export interface FulfillmentRecommendation {
+  destinationLocation: DeliveryLocation;
+  candidates: WarehouseFulfillmentCandidate[];
+  recommendedWarehouseId: string | null;
+  algorithmName: string;
+  executionTimeMs: number;
+  edgeCountEvaluated: number;
 }
 
 

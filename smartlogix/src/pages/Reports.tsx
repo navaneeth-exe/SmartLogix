@@ -52,10 +52,6 @@ export const Reports: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'PLANNED' | 'CANCELLED'>('ALL');
   const [warehouseFilter, setWarehouseFilter] = useState<string>('ALL');
 
-  useEffect(() => {
-    loadReportsData();
-  }, []);
-
   const loadReportsData = async () => {
     try {
       setLoading(true);
@@ -76,6 +72,10 @@ export const Reports: React.FC = () => {
       setRefreshing(false);
     }
   };
+
+  useEffect(() => {
+    loadReportsData();
+  }, []);
 
   const handleRefresh = () => {
     setRefreshing(true);

@@ -127,6 +127,16 @@ export const api = {
         if (error) throw error;
         return data as Inventory;
       }
+    },
+    async applyRestockAllocation(productId: string, allocations: { warehouseId: string; quantity: number }[]) {
+      const results: Inventory[] = [];
+      for (const item of allocations) {
+        if (item.quantity > 0) {
+          const res = await this.addStock(item.warehouseId, productId, item.quantity);
+          results.push(res);
+        }
+      }
+      return results;
     }
   },
 

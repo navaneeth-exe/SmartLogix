@@ -26,13 +26,15 @@ export const Warehouses = () => {
     latitude: number | null;
     longitude: number | null;
     is_active: boolean;
+    storage_capacity: number | '' | null;
   }>({
     code: '',
     name: '',
     address: '',
     latitude: null,
     longitude: null,
-    is_active: true
+    is_active: true,
+    storage_capacity: ''
   });
 
   const fetchWarehouses = async () => {
@@ -61,11 +63,12 @@ export const Warehouses = () => {
         address: wh.address || '', 
         latitude: wh.latitude !== null && wh.latitude !== undefined ? Number(wh.latitude) : null, 
         longitude: wh.longitude !== null && wh.longitude !== undefined ? Number(wh.longitude) : null,
-        is_active: wh.is_active
+        is_active: wh.is_active,
+        storage_capacity: wh.storage_capacity !== null && wh.storage_capacity !== undefined ? Number(wh.storage_capacity) : ''
       });
     } else {
       setEditingWarehouse(null);
-      setFormData({ code: '', name: '', address: '', latitude: null, longitude: null, is_active: true });
+      setFormData({ code: '', name: '', address: '', latitude: null, longitude: null, is_active: true, storage_capacity: '' });
     }
     setIsModalOpen(true);
   };
@@ -89,6 +92,15 @@ export const Warehouses = () => {
       return;
     }
 
+    if (formData.storage_capacity !== '' && formData.storage_capacity !== null && Number(formData.storage_capacity) <= 0) {
+      setError('Storage capacity must be greater than 0.');
+      return;
+    }
+
+    const capacityValue = formData.storage_capacity !== '' && formData.storage_capacity !== null 
+      ? Number(formData.storage_capacity) 
+      : null;
+
     try {
       if (editingWarehouse) {
         await api.warehouses.update(editingWarehouse.id, {
@@ -97,7 +109,8 @@ export const Warehouses = () => {
           address: formData.address.trim() || undefined,
           latitude: formData.latitude,
           longitude: formData.longitude,
-          is_active: formData.is_active
+          is_active: formData.is_active,
+          storage_capacity: capacityValue
         });
       } else {
         await api.warehouses.create({
@@ -106,7 +119,8 @@ export const Warehouses = () => {
           address: formData.address.trim() || undefined,
           latitude: formData.latitude,
           longitude: formData.longitude,
-          is_active: formData.is_active
+          is_active: formData.is_active,
+          storage_capacity: capacityValue
         });
       }
       setIsModalOpen(false);
@@ -313,6 +327,19 @@ export const Warehouses = () => {
               
               <div className="space-y-1.5">
                 <Input label="Warehouse Name *" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. Central Distribution Center" />
+              </div>
+
+              <div className="space-y-1.5">
+                <Input 
+                  label="Storage Capacity" 
+                  type="number"
+                  min="1"
+                  step="any"
+                  value={formData.storage_capacity ?? ''} 
+                  onChange={e => setFormData({...formData, storage_capacity: e.target.value === '' ? '' : Number(e.target.value)})} 
+                  placeholder="e.g. 5000" 
+                />
+                <p className="text-[11px] text-brand-text-muted">Maximum storage capacity available at this warehouse.</p>
               </div>
               
               <div className="space-y-1.5">

@@ -6,8 +6,15 @@ import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
 
 import { api } from '../services/api';
-import type { Inventory, Product, Warehouse } from '../types/database.types';
-import { Search, Plus, Edit2, Box, Filter } from 'lucide-react';
+import type { 
+  Inventory, 
+  Product, 
+  Warehouse, 
+  BinPackingResult, 
+  RestockWarehouseCapacity 
+} from '../types/database.types';
+import { solveRestockBinPacking } from '../algorithms/binPacking';
+import { Search, Plus, Edit2, Box, Filter, Sparkles, CheckCircle2, AlertTriangle, Layers } from 'lucide-react';
 
 export const InventoryPage = () => {
   const [inventory, setInventory] = useState<Inventory[]>([]);
@@ -22,6 +29,16 @@ export const InventoryPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Inventory | null>(null);
   const [error, setError] = useState('');
+
+  // Restock Allocation Optimization State
+  const [isRestockModalOpen, setIsRestockModalOpen] = useState(false);
+  const [restockProductId, setRestockProductId] = useState('');
+  const [restockQuantity, setRestockQuantity] = useState<number | ''>('');
+  const [restockError, setRestockError] = useState('');
+  const [restockSuccess, setRestockSuccess] = useState('');
+  const [optimizingRestock, setOptimizingRestock] = useState(false);
+  const [restockProposal, setRestockProposal] = useState<BinPackingResult | null>(null);
+  const [applyingAllocation, setApplyingAllocation] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({ 
@@ -119,6 +136,102 @@ export const InventoryPage = () => {
     }
   };
 
+  const openRestockModal = () => {
+    setRestockError('');
+    setRestockSuccess('');
+    setRestockProposal(null);
+    setRestockQuantity('');
+    if (products.length > 0) {
+      setRestockProductId(products[0].id);
+    }
+    setIsRestockModalOpen(true);
+  };
+
+  const handleCalculateRestockAllocation = (e: React.FormEvent) => {
+    e.preventDefault();
+    setRestockError('');
+    setRestockSuccess('');
+
+    const qty = Number(restockQuantity);
+    if (!restockProductId) {
+      setRestockError('Please select a product to restock.');
+      return;
+    }
+    if (isNaN(qty) || qty <= 0) {
+      setRestockError('Please enter a valid incoming restock quantity greater than 0.');
+      return;
+    }
+
+    try {
+      setOptimizingRestock(true);
+
+      // 1. Gather active warehouses
+      const activeWarehouses = warehouses.filter(w => w.is_active);
+      if (activeWarehouses.length === 0) {
+        throw new Error('No active warehouses are configured to accept restocks.');
+      }
+
+      // 2. Compute occupied stock per warehouse across all inventory
+      const occupiedByWh = new Map<string, number>();
+      inventory.forEach(inv => {
+        const curr = occupiedByWh.get(inv.warehouse_id) || 0;
+        occupiedByWh.set(inv.warehouse_id, curr + (inv.quantity || 0));
+      });
+
+      // 3. Assemble RestockWarehouseCapacity bins
+      const warehouseBins: RestockWarehouseCapacity[] = activeWarehouses.map(wh => {
+        const currentStock = occupiedByWh.get(wh.id) || 0;
+        // If storage_capacity is unset or null, default to a generous baseline or currentStock
+        const storageCapacity = wh.storage_capacity != null ? Number(wh.storage_capacity) : 10000;
+        const availableCapacity = Math.max(0, storageCapacity - currentStock);
+
+        return {
+          warehouse: wh,
+          currentStock,
+          storageCapacity,
+          availableCapacity
+        };
+      });
+
+      // 4. Run First Fit Decreasing (FFD) Bin Packing Algorithm
+      const result = solveRestockBinPacking({
+        productId: restockProductId,
+        totalQuantity: qty,
+        warehouses: warehouseBins
+      });
+
+      setRestockProposal(result);
+    } catch (err: any) {
+      setRestockError(err.message || 'Failed to calculate restock allocation proposal.');
+    } finally {
+      setOptimizingRestock(false);
+    }
+  };
+
+  const handleApplyRestockAllocation = async () => {
+    if (!restockProposal || restockProposal.allocations.length === 0) return;
+    setRestockError('');
+    setRestockSuccess('');
+
+    try {
+      setApplyingAllocation(true);
+      const allocationPayload = restockProposal.allocations.map(a => ({
+        warehouseId: a.warehouseId,
+        quantity: a.allocatedQuantity
+      }));
+
+      await api.inventory.applyRestockAllocation(restockProposal.productId, allocationPayload);
+
+      setRestockSuccess(`Successfully applied restock allocation of ${restockProposal.totalAllocated} units across ${restockProposal.warehousesUtilized} warehouses.`);
+      setRestockProposal(null);
+      await fetchData();
+    } catch (err: any) {
+      setRestockError(err.message || 'Failed to apply restock allocation to inventory.');
+    } finally {
+      setApplyingAllocation(false);
+    }
+  };
+
   const filtered = useMemo(() => {
     return inventory.filter(item => {
       const matchSearch = 
@@ -155,9 +268,19 @@ export const InventoryPage = () => {
         title="Inventory Tracking" 
         description="Track and manage stock levels, unit thresholds, and reorder levels across all regional hubs"
         actions={
-          <Button onClick={() => openModal()} disabled={warehouses.length === 0 || products.length === 0}>
-            <Plus className="w-4 h-4 mr-2"/> Adjust Stock
-          </Button>
+          <div className="flex items-center gap-2.5">
+            <Button 
+              variant="secondary" 
+              onClick={openRestockModal} 
+              disabled={warehouses.length === 0 || products.length === 0}
+              className="border-emerald-600/30 text-emerald-800 bg-emerald-50/80 hover:bg-emerald-100/90 shadow-xs"
+            >
+              <Sparkles className="w-4 h-4 mr-2 text-emerald-600" /> Restock Allocation (DAA)
+            </Button>
+            <Button onClick={() => openModal()} disabled={warehouses.length === 0 || products.length === 0}>
+              <Plus className="w-4 h-4 mr-2"/> Adjust Stock
+            </Button>
+          </div>
         }
       />
 
@@ -393,6 +516,160 @@ export const InventoryPage = () => {
                 <Button type="submit" variant="primary">{editingItem ? 'Save Stock' : 'Add Record'}</Button>
               </div>
             </form>
+          </Card>
+        </div>
+      )}
+
+      {/* Restock Allocation Modal (DAA Bin Packing) */}
+      {isRestockModalOpen && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
+          <Card variant="modal" noPadding className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-soft-lg">
+            <div className="p-5 border-b border-brand-border/80 sticky top-0 bg-brand-surface/80 backdrop-blur-md z-10 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-brand-text">Restock Allocation Optimizer</h3>
+                  <p className="text-xs text-brand-text-secondary">First Fit Decreasing (FFD) Bin Packing across warehouse capacities</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsRestockModalOpen(false)} 
+                className="w-8 h-8 rounded-lg bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/60 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-all active:scale-95"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {restockError && (
+                <div className="p-3.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl text-xs font-semibold flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
+                  <span>{restockError}</span>
+                </div>
+              )}
+
+              {restockSuccess && (
+                <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-semibold flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                  <span>{restockSuccess}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleCalculateRestockAllocation} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-brand-text-secondary">Incoming Product SKU *</label>
+                    <select 
+                      className="w-full bg-white/90 border border-brand-border/90 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-4 focus:ring-brand-primary/10 text-brand-text shadow-soft-inset"
+                      value={restockProductId} 
+                      onChange={e => setRestockProductId(e.target.value)}
+                      required
+                    >
+                      {products.map(p => <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>)}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Input 
+                      label="Incoming Shipment Quantity *" 
+                      type="number" 
+                      min="1" 
+                      required 
+                      value={restockQuantity} 
+                      onChange={e => setRestockQuantity(e.target.value === '' ? '' : parseInt(e.target.value))} 
+                      placeholder="e.g. 500" 
+                    />
+                    <p className="text-[11px] text-brand-text-muted">Total units arriving for warehouse placement.</p>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-2">
+                  <Button 
+                    type="submit" 
+                    variant="primary" 
+                    loading={optimizingRestock}
+                    disabled={products.length === 0}
+                    className="flex items-center gap-1.5"
+                  >
+                    <Sparkles className="w-4 h-4" /> Calculate Optimal Allocation
+                  </Button>
+                </div>
+              </form>
+
+              {/* Proposed Allocation Review Section */}
+              {restockProposal && (
+                <div className="border border-brand-border/80 rounded-xl p-5 bg-brand-surface/40 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-brand-border/60">
+                    <div>
+                      <h4 className="text-sm font-bold text-brand-text flex items-center gap-2">
+                        <Layers className="w-4 h-4 text-brand-primary" />
+                        Proposed Allocation Plan
+                      </h4>
+                      <p className="text-xs text-brand-text-secondary mt-0.5">
+                        Solver: <span className="font-semibold text-brand-text">{restockProposal.algorithmName}</span> ({restockProposal.executionTimeMs} ms)
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={restockProposal.unallocatedQuantity === 0 ? 'success' : 'warning'}>
+                        {restockProposal.totalAllocated} / {restockProposal.totalRequested} Allocated
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {restockProposal.unallocatedQuantity > 0 && (
+                    <div className="p-3 bg-amber-50/90 border border-amber-200 text-amber-900 rounded-xl text-xs flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
+                      <div>
+                        <span className="font-bold">Capacity Overflow Warning: </span>
+                        {restockProposal.unallocatedQuantity} units could not be accommodated across active warehouse facilities. Remaining capacity across all hubs has been saturated.
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-2.5">
+                    <span className="text-xs font-semibold text-brand-text-secondary uppercase tracking-wider block">Warehouse Breakdown</span>
+                    <div className="grid grid-cols-1 gap-2.5">
+                      {restockProposal.allocations.map(a => (
+                        <div key={a.warehouseId} className="p-3.5 bg-white rounded-xl border border-brand-border/70 flex items-center justify-between gap-3 shadow-soft-xs">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-sm text-brand-text">{a.warehouseName}</span>
+                              <span className="text-[11px] font-mono text-brand-primary bg-brand-surface px-1.5 py-0.5 rounded font-bold">{a.warehouseCode}</span>
+                            </div>
+                            <p className="text-xs text-brand-text-secondary mt-1">
+                              Room before: <span className="font-semibold">{a.initialAvailableCapacity}</span> units · Remaining after: <span className="font-semibold">{a.remainingCapacity}</span> units
+                            </p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span className="text-xs text-brand-text-muted block">To Allocate</span>
+                            <span className="text-base font-extrabold text-emerald-700">+{a.allocatedQuantity} units</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-brand-border/60 flex items-center justify-between">
+                    <p className="text-xs text-brand-text-muted">
+                      Review proposed allocation. Click below to apply stock directly to inventory.
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Button 
+                        variant="primary" 
+                        onClick={handleApplyRestockAllocation}
+                        loading={applyingAllocation}
+                        disabled={restockProposal.totalAllocated === 0}
+                        className="bg-emerald-700 hover:bg-emerald-800"
+                      >
+                        <CheckCircle2 className="w-4 h-4 mr-1.5" /> Confirm & Apply to Inventory
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </Card>
         </div>
       )}
