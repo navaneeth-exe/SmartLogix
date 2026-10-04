@@ -214,6 +214,49 @@ export const Warehouses = () => {
         </Card>
       </div>
 
+      {/* Regional Hub Network & Cross-Docking Facility Banner */}
+      <div className="soft-card rounded-2xl p-5 sm:p-6 relative overflow-hidden border border-brand-border/80 shadow-soft-sm bg-gradient-to-r from-white/90 via-white/80 to-emerald-50/40">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+          <div className="max-w-xl space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/90 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                Regional Hub Infrastructure
+              </span>
+              <span className="text-[11px] text-brand-text-secondary">Multi-Bay Dock Logistics</span>
+            </div>
+            <h3 className="text-lg sm:text-xl font-bold text-brand-text tracking-tight">
+              Fulfillment Hubs & Cross-Docking Terminals
+            </h3>
+            <p className="text-xs sm:text-sm text-brand-text-secondary leading-relaxed">
+              Distribution depots serve as the source vertices ($v_0$) for delivery tours and bounded bins for inventory restock lots. Each facility features geocoded coordinates, configured unit capacities, and dedicated outbound dispatch bays.
+            </p>
+            <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px]">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-brand-surface/80 border border-brand-border/60 text-brand-text font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                Storage Capacity Tracking
+              </span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-brand-surface/80 border border-brand-border/60 text-brand-text font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
+                GPS Geofenced Depots
+              </span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-brand-surface/80 border border-brand-border/60 text-brand-text font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                Cross-Dock Staging
+              </span>
+            </div>
+          </div>
+
+          <div className="w-full md:w-64 h-36 md:h-40 rounded-xl overflow-hidden soft-inset p-1.5 flex-shrink-0 shadow-soft-sm bg-white/60">
+            <img 
+              src="/images/smartlogix/warehouse-hero.jpg" 
+              alt="Modern regional warehouse distribution center with multi-bay loading docks and transport trucks" 
+              loading="lazy"
+              className="w-full h-full object-cover rounded-lg hover:scale-105 transition-transform duration-500"
+            />
+          </div>
+        </div>
+      </div>
+
       <Card variant="dense" noPadding className="overflow-hidden shadow-soft-sm">
         <div className="p-4 sm:p-5 border-b border-brand-border/80 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/60 backdrop-blur-md">
           <div className="relative w-full sm:max-w-sm">

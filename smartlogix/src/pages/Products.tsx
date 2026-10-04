@@ -145,6 +145,49 @@ export const Products = () => {
         </Card>
       </div>
 
+      {/* Product Catalog & Packaging Showcase Banner */}
+      <div className="soft-card rounded-2xl p-5 sm:p-6 relative overflow-hidden border border-brand-border/80 shadow-soft-sm bg-gradient-to-r from-white/90 via-white/80 to-emerald-50/40">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+          <div className="max-w-xl space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/90 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                Merchandise & Packaging Standard
+              </span>
+              <span className="text-[11px] text-brand-text-secondary">SKU-Calibrated Lot Sizing</span>
+            </div>
+            <h3 className="text-lg sm:text-xl font-bold text-brand-text tracking-tight">
+              Standardized Distribution Catalog & Eco-Packaging
+            </h3>
+            <p className="text-xs sm:text-sm text-brand-text-secondary leading-relaxed">
+              Every master product SKU in SmartLogix is mapped with unit weights and standard packaging dimensions, ensuring accurate volumetric load balancing during vehicle dispatch and automated restocking.
+            </p>
+            <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px]">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-brand-surface/80 border border-brand-border/60 text-brand-text font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                Eco-Forest Cartons
+              </span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-brand-surface/80 border border-brand-border/60 text-brand-text font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                Automated QR Serialization
+              </span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-brand-surface/80 border border-brand-border/60 text-brand-text font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                Multi-Depot Storage Sizing
+              </span>
+            </div>
+          </div>
+
+          <div className="w-full md:w-64 h-36 md:h-40 rounded-xl overflow-hidden soft-inset p-1.5 flex-shrink-0 shadow-soft-sm bg-white/60">
+            <img 
+              src="/images/smartlogix/package-cluster.jpg" 
+              alt="Standardized sustainable packaged inventory cartons ready for dispatch" 
+              loading="lazy"
+              className="w-full h-full object-cover rounded-lg hover:scale-105 transition-transform duration-500"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Main Table Card */}
       <Card variant="dense" noPadding className="overflow-hidden shadow-soft-sm">
         <div className="p-4 sm:p-5 border-b border-brand-border/80 flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/60 backdrop-blur-md">

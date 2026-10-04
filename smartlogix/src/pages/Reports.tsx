@@ -1014,8 +1014,8 @@ export const Reports: React.FC = () => {
           {/* Top DAA Intelligence Banner */}
           <motion.div variants={itemVariants}>
             <Card variant="glass" className="p-6 border-l-4 border-l-purple-600 bg-gradient-to-r from-purple-50/40 via-white to-brand-surface/40">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <div className="space-y-1.5 max-w-2xl">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="space-y-2 max-w-xl">
                   <div className="flex items-center gap-2">
                     <Badge variant="purple" className="text-[10px] font-bold">
                       DAA Architecture Spec
@@ -1030,21 +1030,30 @@ export const Reports: React.FC = () => {
                   <p className="text-xs text-brand-text-secondary leading-relaxed">
                     SmartLogix implements 7 distinct, verified algorithm components covering combinatorial vehicle routing, dynamic network optimization, and greedy capacity approximation. Each algorithm operates directly over persistent Postgres graph topologies and road-distance matrices.
                   </p>
+                  
+                  <div className="grid grid-cols-3 gap-3 bg-white/90 p-2.5 rounded-xl border border-brand-border/80 shadow-xs text-center">
+                    <div className="px-2">
+                      <span className="text-[10px] text-brand-text-secondary uppercase font-bold block">Solvers</span>
+                      <span className="text-xl font-extrabold text-purple-900 font-mono">7</span>
+                    </div>
+                    <div className="px-2 border-l border-brand-border/60">
+                      <span className="text-[10px] text-brand-text-secondary uppercase font-bold block">Graph Nodes |V|</span>
+                      <span className="text-xl font-extrabold text-emerald-800 font-mono">{metrics.vertexCount}</span>
+                    </div>
+                    <div className="px-2 border-l border-brand-border/60">
+                      <span className="text-[10px] text-brand-text-secondary uppercase font-bold block">Road Edges |E|</span>
+                      <span className="text-xl font-extrabold text-sky-800 font-mono">{metrics.edgeCount}</span>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 bg-white/90 p-3 rounded-xl border border-brand-border/80 shadow-xs text-center shrink-0">
-                  <div className="px-2">
-                    <span className="text-[10px] text-brand-text-secondary uppercase font-bold block">Solvers</span>
-                    <span className="text-xl font-extrabold text-purple-900 font-mono">7</span>
-                  </div>
-                  <div className="px-2 border-l border-brand-border/60">
-                    <span className="text-[10px] text-brand-text-secondary uppercase font-bold block">Graph Nodes |V|</span>
-                    <span className="text-xl font-extrabold text-emerald-800 font-mono">{metrics.vertexCount}</span>
-                  </div>
-                  <div className="px-2 border-l border-brand-border/60">
-                    <span className="text-[10px] text-brand-text-secondary uppercase font-bold block">Road Edges |E|</span>
-                    <span className="text-xl font-extrabold text-sky-800 font-mono">{metrics.edgeCount}</span>
-                  </div>
+                <div className="w-full lg:w-72 h-40 rounded-xl overflow-hidden soft-inset p-1.5 flex-shrink-0 shadow-soft-sm bg-white/70">
+                  <img 
+                    src="/images/smartlogix/supply-analytics-intelligence.jpg" 
+                    alt="DAA telemetry and logistics intelligence analytics dashboard" 
+                    loading="lazy"
+                    className="w-full h-full object-cover rounded-lg hover:scale-105 transition-transform duration-500"
+                  />
                 </div>
               </div>
             </Card>

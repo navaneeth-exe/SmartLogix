@@ -877,6 +877,29 @@ export const CreateOrder = () => {
               </p>
             )}
           </Card>
+
+          {/* Sustainable Order Staging Card */}
+          <Card variant="glass" className="p-4 rounded-2xl border border-brand-border/80 shadow-soft-sm overflow-hidden bg-gradient-to-br from-white/90 to-emerald-50/30">
+            <div className="flex items-center gap-3">
+              <div className="w-20 h-20 rounded-xl overflow-hidden soft-inset p-1 flex-shrink-0 bg-white/70 shadow-xs">
+                <img 
+                  src="/images/smartlogix/package-cluster.jpg" 
+                  alt="Certified sustainable packaging cartons for outbound orders" 
+                  loading="lazy"
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              </div>
+              <div className="text-xs space-y-1">
+                <span className="font-bold text-brand-text flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  Certified Eco-Packaging
+                </span>
+                <p className="text-[11px] text-brand-text-secondary leading-snug">
+                  Orders are consolidated into recyclable high-strength cartons with serialized barcode labels for swift courier dispatch.
+                </p>
+              </div>
+            </div>
+          </Card>
         </div>
       </form>
     </div>

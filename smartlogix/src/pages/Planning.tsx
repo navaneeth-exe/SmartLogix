@@ -710,6 +710,49 @@ export const Planning: React.FC = () => {
         </Card>
       </div>
 
+      {/* Algorithmic Route Optimization & Multi-Stop Dispatch Showcase Banner */}
+      <div className="soft-card rounded-2xl p-5 sm:p-6 relative overflow-hidden border border-brand-border/80 shadow-soft-sm bg-gradient-to-r from-white/90 via-white/80 to-emerald-50/40">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+          <div className="max-w-xl space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/90 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                Algorithmic Route Dispatch
+              </span>
+              <span className="text-[11px] text-brand-text-secondary">Branch & Bound + Greedy TSP</span>
+            </div>
+            <h3 className="text-lg sm:text-xl font-bold text-brand-text tracking-tight">
+              Multi-Stop Dispatch Planning & TSP Optimization
+            </h3>
+            <p className="text-xs sm:text-sm text-brand-text-secondary leading-relaxed">
+              Consolidate pending customer orders into structured warehouse delivery tours. Our dual-mode TSP engine solves for the exact minimal road distance using Branch & Bound with admissible lower bound pruning or instant Greedy heuristics.
+            </p>
+            <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px]">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-brand-surface/80 border border-brand-border/60 text-brand-text font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                Exact Branch & Bound Pruning
+              </span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-brand-surface/80 border border-brand-border/60 text-brand-text font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                ORS Road Distance Validation
+              </span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-brand-surface/80 border border-brand-border/60 text-brand-text font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                Atomic Route Persistence
+              </span>
+            </div>
+          </div>
+
+          <div className="w-full md:w-64 h-36 md:h-40 rounded-xl overflow-hidden soft-inset p-1.5 flex-shrink-0 shadow-soft-sm bg-white/60">
+            <img 
+              src="/images/smartlogix/route-optimization-network.jpg" 
+              alt="3D digital route optimization map showing connected warehouse hubs and delivery waypoints" 
+              loading="lazy"
+              className="w-full h-full object-cover rounded-lg hover:scale-105 transition-transform duration-500"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Main Delivery Plans Section */}
       <Card variant="dense" className="p-6 space-y-6 overflow-hidden">
         {/* Filters & Search Toolbar */}

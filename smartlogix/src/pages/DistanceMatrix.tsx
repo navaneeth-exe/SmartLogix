@@ -657,6 +657,49 @@ export const DistanceMatrix: React.FC = () => {
         </div>
       )}
 
+      {/* Network Topology & Graph Adjacency Showcase Banner */}
+      <div className="soft-card rounded-2xl p-5 sm:p-6 relative overflow-hidden border border-brand-border/80 shadow-soft-sm bg-gradient-to-r from-white/90 via-white/80 to-emerald-50/40">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+          <div className="max-w-xl space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/90 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                Graph Theory & Adjacency Model
+              </span>
+              <span className="text-[11px] text-brand-text-secondary">Weighted Matrix $G = (V, E, W)$</span>
+            </div>
+            <h3 className="text-lg sm:text-xl font-bold text-brand-text tracking-tight">
+              Network Road Adjacency Matrix & Algorithmic Solvers
+            </h3>
+            <p className="text-xs sm:text-sm text-brand-text-secondary leading-relaxed">
+              Every warehouse and delivery hub corresponds to a graph vertex. Real driving kilometers from OpenRouteService form directional edge weights, driving single-pair Dijkstra paths, Floyd-Warshall all-pairs dynamic programming, and Kruskal Minimum Spanning Trees.
+            </p>
+            <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px]">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-brand-surface/80 border border-brand-border/60 text-brand-text font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                Dijkstra Shortest Path
+              </span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-brand-surface/80 border border-brand-border/60 text-brand-text font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                Floyd-Warshall $O(V^3)$ DP
+              </span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-brand-surface/80 border border-brand-border/60 text-brand-text font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                Kruskal MST Backbone
+              </span>
+            </div>
+          </div>
+
+          <div className="w-full md:w-64 h-36 md:h-40 rounded-xl overflow-hidden soft-inset p-1.5 flex-shrink-0 shadow-soft-sm bg-white/60">
+            <img 
+              src="/images/smartlogix/smartlogix-3d-hero.jpg" 
+              alt="3D isometric smart fulfillment hub with automated conveyor routing and logistics network" 
+              loading="lazy"
+              className="w-full h-full object-cover rounded-lg hover:scale-105 transition-transform duration-500"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Active Distance Source & Profile Banner */}
       <div className={`rounded-2xl p-4 sm:p-5 border flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs ${
         distanceSource === 'ORS_ROAD'

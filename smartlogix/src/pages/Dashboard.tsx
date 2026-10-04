@@ -618,6 +618,24 @@ export const Dashboard = () => {
                 </div>
               </Link>
             </div>
+
+            {/* Sustainable Logistics Network Spotlight */}
+            <div className="mt-3.5 p-3 rounded-xl border border-brand-border/70 bg-gradient-to-r from-emerald-50/70 to-teal-50/50 flex items-center gap-3">
+              <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 soft-inset p-0.5 bg-white/80 shadow-xs">
+                <img 
+                  src="/images/smartlogix/dashboard-hero-nature.jpg" 
+                  alt="Sustainable green distribution hub" 
+                  loading="lazy"
+                  className="w-full h-full object-cover rounded-md"
+                />
+              </div>
+              <div className="text-[11px] space-y-0.5">
+                <span className="font-bold text-brand-text block">Eco-Logistics Network</span>
+                <p className="text-brand-text-secondary leading-snug">
+                  Solar-powered distribution hubs with algorithmic fleet routing.
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="mt-4 pt-3 border-t border-brand-border/50 flex items-center justify-between text-[11px] text-brand-text-secondary">
