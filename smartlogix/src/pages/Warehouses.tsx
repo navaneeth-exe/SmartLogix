@@ -6,7 +6,7 @@ import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
 import { api } from '../services/api';
 import type { Warehouse } from '../types/database.types';
-import { Search, Plus, Edit2, Building2, MapPin, Compass, Radio, Filter, RefreshCw } from 'lucide-react';
+import { Search, Plus, Edit2, Building2, MapPin, Compass, Radio, Filter, RefreshCw, Layers } from 'lucide-react';
 import { MapLocationPicker } from '../components/MapLocationPicker';
 
 export const Warehouses = () => {
@@ -134,7 +134,8 @@ export const Warehouses = () => {
     const totalCount = warehouses.length;
     const activeCount = warehouses.filter(w => w.is_active).length;
     const geoMappedCount = warehouses.filter(w => w.latitude !== null && w.longitude !== null).length;
-    return { totalCount, activeCount, geoMappedCount };
+    const totalCapacity = warehouses.reduce((sum, w) => sum + (w.storage_capacity ? Number(w.storage_capacity) : 0), 0);
+    return { totalCount, activeCount, geoMappedCount, totalCapacity };
   }, [warehouses]);
 
   const filtered = warehouses.filter(w => {
@@ -165,7 +166,7 @@ export const Warehouses = () => {
       />
 
       {/* Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card variant="glass" hoverable className="p-5 sm:p-6 border-l-4 border-l-brand-primary">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-brand-text-secondary uppercase tracking-wider">Total Warehouses</span>
@@ -186,6 +187,19 @@ export const Warehouses = () => {
           </div>
           <p className="text-3xl font-extrabold text-emerald-700 mt-1.5 tracking-tight font-sans">{metrics.activeCount}</p>
           <span className="text-[11px] text-emerald-700/80 mt-1 block">Live in DAA routing matrix</span>
+        </Card>
+
+        <Card variant="glass" hoverable className="p-5 sm:p-6 border-l-4 border-l-indigo-500">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-indigo-800 uppercase tracking-wider">Storage Capacity</span>
+            <div className="w-8 h-8 rounded-xl bg-indigo-100/80 flex items-center justify-center text-indigo-700">
+              <Layers className="w-4 h-4" />
+            </div>
+          </div>
+          <p className="text-3xl font-extrabold text-indigo-700 mt-1.5 tracking-tight font-mono">
+            {metrics.totalCapacity > 0 ? metrics.totalCapacity.toLocaleString() : 'Uncapped'}
+          </p>
+          <span className="text-[11px] text-indigo-700/80 mt-1 block">Total configured unit limit</span>
         </Card>
 
         <Card variant="glass" hoverable className="p-5 sm:p-6 border-l-4 border-l-sky-500">
@@ -291,6 +305,15 @@ export const Warehouses = () => {
                         <span className="text-brand-text font-semibold">{warehouse.latitude.toFixed(4)}°, {warehouse.longitude.toFixed(4)}°</span>
                       </div>
                     )}
+                    <div className="text-[11px] bg-brand-surface/90 px-2.5 py-1 rounded-lg border border-brand-border/70 inline-flex items-center justify-between w-full text-brand-text-secondary shadow-soft-xs">
+                      <span className="flex items-center gap-1.5">
+                        <Layers className="w-3 h-3 text-indigo-600" />
+                        <span>Storage Capacity:</span>
+                      </span>
+                      <span className="font-mono font-bold text-brand-text">
+                        {warehouse.storage_capacity ? `${Number(warehouse.storage_capacity).toLocaleString()} units` : 'Default (10,000 units)'}
+                      </span>
+                    </div>
                   </div>
                 </div>
                 

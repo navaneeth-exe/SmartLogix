@@ -25,7 +25,15 @@ import {
   Save, 
   Compass, 
   Move,
-  Info
+  Info,
+  Network,
+  GitBranch,
+  Boxes,
+  ArrowRight,
+  Cpu,
+  Activity,
+  Share2,
+  AlertCircle
 } from 'lucide-react';
 import { api } from '../services/api';
 import type { 
@@ -35,17 +43,24 @@ import type {
   RouteStop, 
   LocationDistance,
   RouteOptimizationAlgorithm,
-  MatrixLocation
+  MatrixLocation,
+  Inventory
 } from '../types/database.types';
 import { 
   validateTSPMatrix, 
   solveBranchAndBoundTSP, 
   solveGreedyNearestNeighbor 
 } from '../algorithms/tsp';
+import { solveDijkstra } from '../algorithms/dijkstra';
+import { solveFloydWarshall } from '../algorithms/floydWarshall';
+import { solveKruskalMST } from '../algorithms/kruskal';
+import { solveRestockBinPacking } from '../algorithms/binPacking';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Input } from '../components/ui/Input';
+
+export type MapIntelligenceMode = 'tsp' | 'dijkstra' | 'floyd' | 'kruskal' | 'bin_packing';
 
 // --- Custom Leaflet DivIcons ---
 
@@ -144,6 +159,84 @@ const createRouteStopIcon = (seq: number, isWarehouse: boolean = false, isSelect
   });
 };
 
+const createDijkstraMarkerIcon = (role: 'source' | 'target' | 'hop', label: string) => {
+  const bg = role === 'source' ? '#154734' : role === 'target' ? '#d97706' : '#0284c7';
+  const shadowColor = role === 'source' ? 'rgba(16, 185, 129, 0.7)' : 'rgba(2, 132, 199, 0.7)';
+  return L.divIcon({
+    className: 'custom-dijkstra-marker',
+    html: `
+      <div style="
+        background: ${bg};
+        color: #ffffff;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2.5px solid #ffffff;
+        box-shadow: 0 0 14px ${shadowColor};
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 10px;
+        cursor: pointer;
+      ">
+        ${label}
+      </div>
+    `,
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    popupAnchor: [0, -16],
+  });
+};
+
+const createCapacityWarehouseIcon = (utilizationPct: number, isSelected: boolean = false) => {
+  const ringColor = utilizationPct > 90 ? '#f43f5e' : utilizationPct > 75 ? '#f59e0b' : '#10b981';
+  return L.divIcon({
+    className: 'custom-capacity-wh-marker',
+    html: `
+      <div style="
+        position: relative;
+        background: #154734;
+        color: #ffffff;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 3px solid ${ringColor};
+        box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-weight: 800;
+        font-size: 11px;
+        cursor: pointer;
+        transform: ${isSelected ? 'scale(1.15)' : 'scale(1)'};
+        transition: transform 0.2s ease;
+      ">
+        WH
+        <span style="
+          position: absolute;
+          bottom: -8px;
+          background: ${ringColor};
+          color: #ffffff;
+          font-size: 8px;
+          font-weight: 700;
+          padding: 1px 4px;
+          border-radius: 6px;
+          white-space: nowrap;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        ">
+          ${utilizationPct}%
+        </span>
+      </div>
+    `,
+    iconSize: [38, 38],
+    iconAnchor: [19, 19],
+    popupAnchor: [0, -20],
+  });
+};
+
 const createDraftIcon = (type: 'warehouse' | 'delivery_location') => {
   const bg = type === 'warehouse' ? '#154734' : '#0284c7';
   return L.divIcon({
@@ -219,7 +312,17 @@ export const MapWorkspace: React.FC = () => {
   const [locations, setLocations] = useState<DeliveryLocation[]>([]);
   const [plans, setPlans] = useState<DeliveryPlan[]>([]);
   const [distances, setDistances] = useState<LocationDistance[]>([]);
+  const [inventory, setInventory] = useState<Inventory[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // --- DAA Map Intelligence Layer State ---
+  const [intelligenceMode, setIntelligenceMode] = useState<MapIntelligenceMode>('tsp');
+  const [dijkstraSourceId, setDijkstraSourceId] = useState<string>('');
+  const [dijkstraDestId, setDijkstraDestId] = useState<string>('');
+  const [fwOriginId, setFwOriginId] = useState<string>('');
+  const [fwDestId, setFwDestId] = useState<string>('');
+  const [showLegend, setShowLegend] = useState(true);
+  const [restockSimulationQty, setRestockSimulationQty] = useState(250);
 
   // --- Map Controls ---
   const [showWarehouses, setShowWarehouses] = useState(true);
@@ -230,7 +333,7 @@ export const MapWorkspace: React.FC = () => {
 
   // --- Drawer / Context State ---
   const [drawerOpen, setDrawerOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState<'plans' | 'locations' | 'add'>('plans');
+  const [activeTab, setActiveTab] = useState<'plans' | 'locations' | 'add' | 'intelligence'>('plans');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Selected Entities
@@ -265,16 +368,18 @@ export const MapWorkspace: React.FC = () => {
   const loadAllData = async () => {
     try {
       setLoading(true);
-      const [whData, locData, plansData, distData] = await Promise.all([
+      const [whData, locData, plansData, distData, invData] = await Promise.all([
         api.warehouses.list(),
         api.locations.list(),
         api.plans.list(),
-        api.distances.list()
+        api.distances.list(),
+        api.inventory.list()
       ]);
       setWarehouses(whData);
       setLocations(locData);
       setPlans(plansData);
       setDistances(distData);
+      setInventory(invData);
 
       // Default select first planned plan if available
       const active = plansData.find(p => p.status === 'PLANNED' && p.route_distance);
@@ -290,6 +395,26 @@ export const MapWorkspace: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Synchronize initial DAA parameters with loaded data
+  useEffect(() => {
+    if (warehouses.length > 0) {
+      if (!dijkstraSourceId || !warehouses.some(w => w.id === dijkstraSourceId)) {
+        setDijkstraSourceId(warehouses[0].id);
+      }
+      if (!fwOriginId || !warehouses.some(w => w.id === fwOriginId)) {
+        setFwOriginId(warehouses[0].id);
+      }
+    }
+    if (locations.length > 0) {
+      if (!dijkstraDestId || !locations.some(l => l.id === dijkstraDestId)) {
+        setDijkstraDestId(locations[0].id);
+      }
+      if (!fwDestId) {
+        setFwDestId(locations.length > 1 ? locations[1].id : locations[0].id);
+      }
+    }
+  }, [warehouses, locations, dijkstraSourceId, dijkstraDestId, fwOriginId, fwDestId]);
 
   // Selected Plan Object
   const selectedPlan = useMemo(() => {
@@ -622,6 +747,184 @@ export const MapWorkspace: React.FC = () => {
     return L.latLngBounds(routePolylineCoords.map(c => L.latLng(c[0], c[1])));
   }, [routePolylineCoords]);
 
+  // --- DAA GRAPH & ALGORITHM COMPUTATIONS (MEMOIZED FOR MAP INTELLIGENCE) ---
+
+  // Unified Graph Nodes & Coordinate Lookup
+  const graphNodes = useMemo(() => {
+    const list: { id: string; name: string; type: 'warehouse' | 'delivery_location'; latitude?: number | null; longitude?: number | null }[] = [];
+    warehouses.forEach(w => list.push({ id: w.id, name: w.name, type: 'warehouse', latitude: w.latitude, longitude: w.longitude }));
+    locations.forEach(l => list.push({ id: l.id, name: l.name, type: 'delivery_location', latitude: l.latitude, longitude: l.longitude }));
+    return list;
+  }, [warehouses, locations]);
+
+  const nodeCoordMap = useMemo(() => {
+    const map = new Map<string, [number, number]>();
+    warehouses.forEach(w => {
+      if (w.latitude != null && w.longitude != null && !isNaN(Number(w.latitude)) && !isNaN(Number(w.longitude))) {
+        map.set(w.id, [Number(w.latitude), Number(w.longitude)]);
+      }
+    });
+    locations.forEach(l => {
+      if (l.latitude != null && l.longitude != null && !isNaN(Number(l.latitude)) && !isNaN(Number(l.longitude))) {
+        map.set(l.id, [Number(l.latitude), Number(l.longitude)]);
+      }
+    });
+    return map;
+  }, [warehouses, locations]);
+
+  const nodeNameMap = useMemo(() => {
+    const map = new Map<string, string>();
+    warehouses.forEach(w => map.set(w.id, w.name));
+    locations.forEach(l => map.set(l.id, l.name));
+    return map;
+  }, [warehouses, locations]);
+
+  const graphEdges = useMemo(() => {
+    return distances
+      .filter(d => d.origin_id && d.destination_id && d.origin_id !== d.destination_id && d.distance > 0 && d.distance !== Infinity)
+      .map(d => ({ from: d.origin_id, to: d.destination_id, weight: d.distance }));
+  }, [distances]);
+
+  // Dijkstra Shortest Path Computation
+  const dijkstraResult = useMemo(() => {
+    if (!dijkstraSourceId || !dijkstraDestId || graphNodes.length === 0 || graphEdges.length === 0) {
+      return null;
+    }
+    try {
+      return solveDijkstra(
+        { nodes: graphNodes, edges: graphEdges, isUndirected: true },
+        dijkstraSourceId,
+        dijkstraDestId
+      );
+    } catch (err) {
+      console.warn('Dijkstra computation error:', err);
+      return null;
+    }
+  }, [graphNodes, graphEdges, dijkstraSourceId, dijkstraDestId]);
+
+  const dijkstraPolylineCoords = useMemo(() => {
+    if (!dijkstraResult || !dijkstraResult.hasPath) return [];
+    return dijkstraResult.path
+      .map((id: string) => nodeCoordMap.get(id))
+      .filter((coord: [number, number] | undefined): coord is [number, number] => coord !== undefined);
+  }, [dijkstraResult, nodeCoordMap]);
+
+  // Floyd-Warshall All-Pairs Path Computation
+  const fwResult = useMemo(() => {
+    if (graphNodes.length === 0 || graphEdges.length === 0) return null;
+    try {
+      return solveFloydWarshall({ nodes: graphNodes, edges: graphEdges, isUndirected: true });
+    } catch (err) {
+      console.warn('Floyd-Warshall computation error:', err);
+      return null;
+    }
+  }, [graphNodes, graphEdges]);
+
+  const fwPathInfo = useMemo(() => {
+    if (!fwResult || !fwOriginId || !fwDestId) return null;
+    return fwResult.getPath(fwOriginId, fwDestId);
+  }, [fwResult, fwOriginId, fwDestId]);
+
+  const fwPolylineCoords = useMemo(() => {
+    if (!fwPathInfo || !fwPathInfo.hasPath) return [];
+    return fwPathInfo.pathIds
+      .map((id: string) => nodeCoordMap.get(id))
+      .filter((coord: [number, number] | undefined): coord is [number, number] => coord !== undefined);
+  }, [fwPathInfo, nodeCoordMap]);
+
+  // Kruskal Minimum Spanning Tree Computation
+  const kruskalResult = useMemo(() => {
+    if (graphNodes.length === 0 || graphEdges.length === 0) return null;
+    try {
+      return solveKruskalMST({ nodes: graphNodes, edges: graphEdges });
+    } catch (err) {
+      console.warn('Kruskal computation error:', err);
+      return null;
+    }
+  }, [graphNodes, graphEdges]);
+
+  const kruskalPlottedEdges = useMemo(() => {
+    if (!kruskalResult) return [];
+    return kruskalResult.mstEdges.map(e => {
+      const fromCoord = nodeCoordMap.get(e.from);
+      const toCoord = nodeCoordMap.get(e.to);
+      return {
+        edge: e,
+        hasCoords: !!(fromCoord && toCoord),
+        positions: (fromCoord && toCoord ? [fromCoord, toCoord] : []) as [number, number][]
+      };
+    }).filter(e => e.hasCoords);
+  }, [kruskalResult, nodeCoordMap]);
+
+  // Warehouse Capacity & Stock Utilization Metrics
+  const warehouseCapacityMetrics = useMemo(() => {
+    const stockMap = new Map<string, number>();
+    inventory.forEach(item => {
+      stockMap.set(item.warehouse_id, (stockMap.get(item.warehouse_id) || 0) + item.quantity);
+    });
+
+    return warehouses.map(w => {
+      const occupied = stockMap.get(w.id) || 0;
+      const capacity = w.storage_capacity && w.storage_capacity > 0 ? w.storage_capacity : 10000;
+      const available = Math.max(0, capacity - occupied);
+      const utilizationPct = Math.min(100, Math.round((occupied / capacity) * 100));
+      return {
+        warehouse: w,
+        occupied,
+        capacity,
+        available,
+        utilizationPct
+      };
+    });
+  }, [warehouses, inventory]);
+
+  // Bin Packing FFD Restock Simulation
+  const restockBinPackingSimulation = useMemo(() => {
+    if (warehouses.length === 0) return null;
+    const restockWarehouses = warehouseCapacityMetrics.map(wh => ({
+      warehouse: wh.warehouse,
+      currentStock: wh.occupied,
+      storageCapacity: wh.capacity,
+      availableCapacity: wh.available
+    }));
+    return solveRestockBinPacking({
+      productId: 'simulated-batch',
+      totalQuantity: restockSimulationQty,
+      warehouses: restockWarehouses
+    });
+  }, [warehouseCapacityMetrics, restockSimulationQty, warehouses]);
+
+  // Dynamic Map Bounds matching active intelligence mode
+  const activeModeBounds = useMemo(() => {
+    if (intelligenceMode === 'tsp') {
+      return routeBounds;
+    }
+    if (intelligenceMode === 'dijkstra') {
+      if (dijkstraPolylineCoords.length < 2) return null;
+      return L.latLngBounds(dijkstraPolylineCoords.map((c: [number, number]) => L.latLng(c[0], c[1])));
+    }
+    if (intelligenceMode === 'floyd') {
+      if (fwPolylineCoords.length < 2) return null;
+      return L.latLngBounds(fwPolylineCoords.map((c: [number, number]) => L.latLng(c[0], c[1])));
+    }
+    if (intelligenceMode === 'kruskal') {
+      const coords: [number, number][] = [];
+      kruskalPlottedEdges.forEach(e => {
+        coords.push(e.positions[0], e.positions[1]);
+      });
+      if (coords.length < 2) return null;
+      return L.latLngBounds(coords.map((c: [number, number]) => L.latLng(c[0], c[1])));
+    }
+    if (intelligenceMode === 'bin_packing') {
+      const whCoords = warehouses
+        .filter(w => w.latitude != null && w.longitude != null)
+        .map(w => [Number(w.latitude!), Number(w.longitude!)] as [number, number]);
+      if (whCoords.length === 0) return null;
+      return L.latLngBounds(whCoords.map((c: [number, number]) => L.latLng(c[0], c[1])));
+    }
+    return null;
+  }, [intelligenceMode, routeBounds, dijkstraPolylineCoords, fwPolylineCoords, kruskalPlottedEdges, warehouses]);
+
   // Search Results
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return [];
@@ -665,7 +968,7 @@ export const MapWorkspace: React.FC = () => {
           <MapClickHandler onClick={handleMapClick} />
 
           {/* View Controller */}
-          <MapViewController targetCoords={targetFlyCoords} bounds={routeBounds} />
+          <MapViewController targetCoords={targetFlyCoords} bounds={activeModeBounds || routeBounds} />
 
           {/* 1. WAREHOUSES MARKERS */}
           {showWarehouses && warehouses.map(wh => {
@@ -803,8 +1106,10 @@ export const MapWorkspace: React.FC = () => {
             </Marker>
           )}
 
-          {/* 4. ACTIVE ROUTE POLYLINE & NUMBERED STOPS */}
-          {showRoute && routePolylineCoords.length > 1 && (
+          {/* 4. DAA MAP INTELLIGENCE LAYERS */}
+
+          {/* 4A. TSP DELIVERY TOUR */}
+          {intelligenceMode === 'tsp' && showRoute && routePolylineCoords.length > 1 && (
             <Polyline
               positions={routePolylineCoords}
               pathOptions={{
@@ -817,7 +1122,7 @@ export const MapWorkspace: React.FC = () => {
             />
           )}
 
-          {showRoute && activeRouteStops.map((stop, idx) => {
+          {intelligenceMode === 'tsp' && showRoute && activeRouteStops.map((stop, idx) => {
             if (stop.lat == null || stop.lng == null) return null;
             const isWarehouse = stop.type === 'warehouse';
             const isSelected = selectedStopSeq === stop.sequence;
@@ -858,91 +1163,406 @@ export const MapWorkspace: React.FC = () => {
               </Marker>
             );
           })}
+
+          {/* 4B. DIJKSTRA SHORTEST PATH */}
+          {intelligenceMode === 'dijkstra' && dijkstraPolylineCoords.length > 1 && (
+            <Polyline
+              positions={dijkstraPolylineCoords}
+              pathOptions={{
+                color: '#0284c7',
+                weight: 5,
+                opacity: 0.9,
+                lineJoin: 'round'
+              }}
+            />
+          )}
+
+          {intelligenceMode === 'dijkstra' && dijkstraResult?.hasPath && dijkstraResult.path.map((nodeId: string, idx: number) => {
+            const coord = nodeCoordMap.get(nodeId);
+            if (!coord) return null;
+            const isSource = idx === 0;
+            const isTarget = idx === dijkstraResult.path.length - 1;
+            const node = graphNodes.find(n => n.id === nodeId);
+            const label = isSource ? 'SRC' : isTarget ? 'TGT' : `${idx}`;
+
+            return (
+              <Marker
+                key={`dijkstra-node-${nodeId}-${idx}`}
+                position={coord}
+                icon={createDijkstraMarkerIcon(isSource ? 'source' : isTarget ? 'target' : 'hop', label)}
+              >
+                <Popup>
+                  <div className="p-1 text-xs">
+                    <span className="font-bold text-sky-800">
+                      {isSource ? 'Dijkstra Source Hub' : isTarget ? 'Dijkstra Target Destination' : `Intermediate Hop #${idx}`}
+                    </span>
+                    <h4 className="font-bold text-stone-900">{node?.name}</h4>
+                  </div>
+                </Popup>
+              </Marker>
+            );
+          })}
+
+          {/* 4C. FLOYD-WARSHALL PAIRWISE SHORTEST PATH */}
+          {intelligenceMode === 'floyd' && fwPolylineCoords.length > 1 && (
+            <Polyline
+              positions={fwPolylineCoords}
+              pathOptions={{
+                color: '#7c3aed',
+                weight: 5,
+                opacity: 0.9,
+                lineJoin: 'round'
+              }}
+            />
+          )}
+
+          {/* 4D. KRUSKAL LOGISTICS BACKBONE (MST) */}
+          {intelligenceMode === 'kruskal' && kruskalPlottedEdges.map(({ edge, positions }, idx) => (
+            <Polyline
+              key={`mst-kruskal-edge-${edge.from}-${edge.to}-${idx}`}
+              positions={positions}
+              pathOptions={{
+                color: '#059669',
+                weight: 4,
+                opacity: 0.85,
+                lineCap: 'round',
+                lineJoin: 'round'
+              }}
+            >
+              <Popup>
+                <div className="p-2 space-y-1 text-xs">
+                  <div className="font-bold text-emerald-800 flex items-center gap-1.5">
+                    <Layers className="w-3.5 h-3.5" />
+                    <span>MST Backbone Edge</span>
+                  </div>
+                  <div className="text-brand-text font-semibold">
+                    {edge.fromName} ↔ {edge.toName}
+                  </div>
+                  <div className="text-brand-text-secondary font-mono text-[11px]">
+                    Direct Road Distance: <span className="font-bold text-brand-dark">{edge.weight} km</span>
+                  </div>
+                </div>
+              </Popup>
+            </Polyline>
+          ))}
+
+          {/* 4E. WAREHOUSE CAPACITY RINGS (BIN PACKING) */}
+          {intelligenceMode === 'bin_packing' && warehouseCapacityMetrics.map(item => {
+            const w = item.warehouse;
+            if (w.latitude == null || w.longitude == null) return null;
+            return (
+              <Marker
+                key={`cap-wh-${w.id}`}
+                position={[Number(w.latitude), Number(w.longitude)]}
+                icon={createCapacityWarehouseIcon(item.utilizationPct)}
+              >
+                <Popup>
+                  <div className="p-2 min-w-[200px] text-xs font-sans space-y-1.5">
+                    <div className="flex items-center justify-between pb-1 border-b border-stone-200">
+                      <span className="font-bold text-brand-primary">{w.name}</span>
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                        item.utilizationPct > 90 ? 'bg-rose-100 text-rose-800' : item.utilizationPct > 75 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+                      }`}>
+                        {item.utilizationPct}% Cap
+                      </span>
+                    </div>
+                    <div className="space-y-0.5 text-[11px]">
+                      <div className="flex justify-between">
+                        <span className="text-stone-500">Storage Capacity:</span>
+                        <span className="font-mono font-bold">{item.capacity} units</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-stone-500">Occupied Stock:</span>
+                        <span className="font-mono font-bold text-stone-900">{item.occupied} units</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-stone-500">Available Space:</span>
+                        <span className="font-mono font-bold text-emerald-700">{item.available} units</span>
+                      </div>
+                    </div>
+                  </div>
+                </Popup>
+              </Marker>
+            );
+          })}
+
         </MapContainer>
 
-        {/* MAP OVERLAY: CATEGORY CONTROLS & LEGEND */}
+        {/* TOP-CENTER DAA MAP INTELLIGENCE MODE SELECTOR */}
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[500] bg-white/95 backdrop-blur-md rounded-2xl p-1.5 border border-brand-border/90 shadow-soft-lg flex items-center gap-1 text-xs">
+          <button
+            type="button"
+            onClick={() => setIntelligenceMode('tsp')}
+            className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 ${
+              intelligenceMode === 'tsp'
+                ? 'bg-brand-primary text-white shadow-sm'
+                : 'text-brand-text-secondary hover:text-brand-text hover:bg-brand-surface'
+            }`}
+          >
+            <Route className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">TSP Tour</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIntelligenceMode('dijkstra')}
+            className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 ${
+              intelligenceMode === 'dijkstra'
+                ? 'bg-sky-600 text-white shadow-sm'
+                : 'text-brand-text-secondary hover:text-brand-text hover:bg-brand-surface'
+            }`}
+          >
+            <Compass className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Dijkstra Shortest</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIntelligenceMode('floyd')}
+            className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 ${
+              intelligenceMode === 'floyd'
+                ? 'bg-purple-600 text-white shadow-sm'
+                : 'text-brand-text-secondary hover:text-brand-text hover:bg-brand-surface'
+            }`}
+          >
+            <Network className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Floyd-Warshall</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIntelligenceMode('kruskal')}
+            className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 ${
+              intelligenceMode === 'kruskal'
+                ? 'bg-emerald-600 text-white shadow-sm'
+                : 'text-brand-text-secondary hover:text-brand-text hover:bg-brand-surface'
+            }`}
+          >
+            <GitBranch className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Kruskal MST</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIntelligenceMode('bin_packing')}
+            className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 ${
+              intelligenceMode === 'bin_packing'
+                ? 'bg-amber-600 text-white shadow-sm'
+                : 'text-brand-text-secondary hover:text-brand-text hover:bg-brand-surface'
+            }`}
+          >
+            <Boxes className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Capacity & Stock</span>
+          </button>
+        </div>
+
+        {/* MAP OVERLAY: CATEGORY CONTROLS & DAA LEGEND */}
         <div className="absolute top-4 left-4 z-[500] glass-floating rounded-2xl p-3.5 border border-brand-border/90 shadow-soft-lg text-xs space-y-2.5 max-w-xs">
           <div className="flex items-center justify-between border-b border-brand-border/60 pb-1.5">
             <span className="font-bold text-brand-text flex items-center gap-1.5">
               <Layers className="w-3.5 h-3.5 text-brand-primary" />
-              Layer Visibility
+              Map Intelligence Layer
             </span>
-            <span className="text-[10px] text-brand-text-secondary">Click map to add</span>
+            <button
+              onClick={() => setShowLegend(prev => !prev)}
+              className="text-[10px] text-brand-text-secondary hover:text-brand-text flex items-center gap-0.5"
+            >
+              {showLegend ? 'Collapse' : 'Expand'}
+            </button>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="flex items-center gap-2 cursor-pointer text-brand-text">
-              <input
-                type="checkbox"
-                checked={showWarehouses}
-                onChange={e => setShowWarehouses(e.target.checked)}
-                className="rounded text-brand-primary focus:ring-brand-primary w-3.5 h-3.5"
-              />
-              <span className="w-3.5 h-3.5 rounded-full bg-[#154734] border border-white flex items-center justify-center text-[8px] text-white font-bold">
-                WH
-              </span>
-              <span>Warehouses ({warehouses.length})</span>
-            </label>
+          {showLegend && (
+            <>
+              <div className="space-y-1.5">
+                <label className="flex items-center gap-2 cursor-pointer text-brand-text">
+                  <input
+                    type="checkbox"
+                    checked={showWarehouses}
+                    onChange={e => setShowWarehouses(e.target.checked)}
+                    className="rounded text-brand-primary focus:ring-brand-primary w-3.5 h-3.5"
+                  />
+                  <span className="w-3.5 h-3.5 rounded-full bg-[#154734] border border-white flex items-center justify-center text-[8px] text-white font-bold">
+                    WH
+                  </span>
+                  <span>Warehouses ({warehouses.length})</span>
+                </label>
 
-            <label className="flex items-center gap-2 cursor-pointer text-brand-text">
-              <input
-                type="checkbox"
-                checked={showLocations}
-                onChange={e => setShowLocations(e.target.checked)}
-                className="rounded text-brand-primary focus:ring-brand-primary w-3.5 h-3.5"
-              />
-              <span className="w-3.5 h-3.5 rounded-full bg-[#0284c7] border border-white flex items-center justify-center text-white">
-                <MapPin className="w-2.5 h-2.5" />
-              </span>
-              <span>Delivery Destinations ({locations.length})</span>
-            </label>
+                <label className="flex items-center gap-2 cursor-pointer text-brand-text">
+                  <input
+                    type="checkbox"
+                    checked={showLocations}
+                    onChange={e => setShowLocations(e.target.checked)}
+                    className="rounded text-brand-primary focus:ring-brand-primary w-3.5 h-3.5"
+                  />
+                  <span className="w-3.5 h-3.5 rounded-full bg-[#0284c7] border border-white flex items-center justify-center text-white">
+                    <MapPin className="w-2.5 h-2.5" />
+                  </span>
+                  <span>Delivery Destinations ({locations.length})</span>
+                </label>
 
-            <label className="flex items-center gap-2 cursor-pointer text-brand-text">
-              <input
-                type="checkbox"
-                checked={showRoute}
-                onChange={e => setShowRoute(e.target.checked)}
-                className="rounded text-brand-primary focus:ring-brand-primary w-3.5 h-3.5"
-              />
-              <span className="w-3.5 h-3.5 rounded-full bg-[#d97706] border border-white flex items-center justify-center text-[8px] text-white font-bold">
-                #
-              </span>
-              <span>Optimized Route Sequence</span>
-            </label>
+                <label className="flex items-center gap-2 cursor-pointer text-brand-text">
+                  <input
+                    type="checkbox"
+                    checked={showRoute}
+                    onChange={e => setShowRoute(e.target.checked)}
+                    className="rounded text-brand-primary focus:ring-brand-primary w-3.5 h-3.5"
+                  />
+                  <span className="w-3.5 h-3.5 rounded-full bg-[#d97706] border border-white flex items-center justify-center text-[8px] text-white font-bold">
+                    #
+                  </span>
+                  <span>Active Tour / DAA Layer</span>
+                </label>
 
-            <label className="flex items-center gap-2 cursor-pointer text-brand-text-secondary pt-1 border-t border-brand-border/40 text-[11px]">
-              <input
-                type="checkbox"
-                checked={activeOnly}
-                onChange={e => setActiveOnly(e.target.checked)}
-                className="rounded text-brand-primary focus:ring-brand-primary w-3.5 h-3.5"
-              />
-              <span>Active Locations Only</span>
-            </label>
-          </div>
+                <label className="flex items-center gap-2 cursor-pointer text-brand-text-secondary pt-1 border-t border-brand-border/40 text-[11px]">
+                  <input
+                    type="checkbox"
+                    checked={activeOnly}
+                    onChange={e => setActiveOnly(e.target.checked)}
+                    className="rounded text-brand-primary focus:ring-brand-primary w-3.5 h-3.5"
+                  />
+                  <span>Active Locations Only</span>
+                </label>
+              </div>
+
+              {/* DAA Color Legend */}
+              <div className="pt-2 border-t border-brand-border/60 space-y-1 text-[10px]">
+                <span className="font-bold text-brand-text block mb-1">Color Coding Legend:</span>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-1 bg-[#154734] rounded inline-block" />
+                  <span className="text-brand-text-secondary">TSP Delivery Tour (Dashed)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-1 bg-[#0284c7] rounded inline-block" />
+                  <span className="text-brand-text-secondary">Dijkstra Shortest Path</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-1 bg-[#7c3aed] rounded inline-block" />
+                  <span className="text-brand-text-secondary">Floyd-Warshall Path</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-1 bg-[#059669] rounded inline-block" />
+                  <span className="text-brand-text-secondary">Kruskal MST Backbone</span>
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
-        {/* MAP OVERLAY: ROUTE SUMMARY BANNER */}
-        {selectedPlan && selectedPlan.route_distance && (
-          <div className="absolute bottom-4 left-4 z-[500] glass-floating rounded-2xl p-3.5 border border-brand-border/90 shadow-soft-lg text-xs flex items-center gap-4">
-            <div>
-              <span className="text-[10px] text-brand-text-secondary font-bold uppercase block">
-                Plan {selectedPlan.plan_number} Tour
-              </span>
-              <span className="font-extrabold text-base text-brand-primary font-mono">
-                {selectedPlan.route_distance} km
-              </span>
-            </div>
-            <div className="border-l border-brand-border/70 pl-3">
-              <span className="text-[10px] text-brand-text-secondary font-medium block">
-                {selectedPlan.route_algorithm === 'BRANCH_AND_BOUND' ? 'Branch & Bound (Exact)' : 'Greedy Heuristic'}
-              </span>
-              <span className="text-[11px] font-bold text-brand-text">
-                {activeRouteStops.length} stops in tour
-              </span>
-            </div>
-          </div>
-        )}
+        {/* MAP OVERLAY: DYNAMIC DAA TELEMETRY BANNER */}
+        <div className="absolute bottom-4 left-4 z-[500] glass-floating rounded-2xl p-3.5 border border-brand-border/90 shadow-soft-lg text-xs flex items-center gap-4">
+          {intelligenceMode === 'tsp' && (
+            selectedPlan && selectedPlan.route_distance ? (
+              <>
+                <div>
+                  <span className="text-[10px] text-brand-text-secondary font-bold uppercase block">
+                    Plan {selectedPlan.plan_number} Tour
+                  </span>
+                  <span className="font-extrabold text-base text-brand-primary font-mono">
+                    {selectedPlan.route_distance} km
+                  </span>
+                </div>
+                <div className="border-l border-brand-border/70 pl-3">
+                  <span className="text-[10px] text-brand-text-secondary font-medium block">
+                    {selectedPlan.route_algorithm === 'BRANCH_AND_BOUND' ? 'Branch & Bound (Exact)' : 'Greedy Heuristic'}
+                  </span>
+                  <span className="text-[11px] font-bold text-brand-text">
+                    {activeRouteStops.length} stops in tour
+                  </span>
+                </div>
+              </>
+            ) : (
+              <span className="text-brand-text-secondary italic">Select a delivery plan in the sidebar to visualize TSP tour.</span>
+            )
+          )}
+
+          {intelligenceMode === 'dijkstra' && (
+            dijkstraResult ? (
+              <>
+                <div>
+                  <span className="text-[10px] text-sky-800 font-bold uppercase block">
+                    Dijkstra Shortest Path
+                  </span>
+                  <span className="font-extrabold text-base text-sky-900 font-mono">
+                    {dijkstraResult.hasPath ? `${dijkstraResult.distance} km` : 'Unreachable'}
+                  </span>
+                </div>
+                <div className="border-l border-brand-border/70 pl-3 text-[11px]">
+                  <span className="text-brand-text font-bold block">
+                    {dijkstraResult.path.length - 1} hops ({dijkstraResult.executionTimeMs} ms)
+                  </span>
+                  <span className="text-[10px] text-brand-text-secondary">Complexity: O((V+E) log V)</span>
+                </div>
+              </>
+            ) : (
+              <span className="text-brand-text-secondary italic">Configuring Dijkstra shortest-path query...</span>
+            )
+          )}
+
+          {intelligenceMode === 'floyd' && (
+            fwPathInfo ? (
+              <>
+                <div>
+                  <span className="text-[10px] text-purple-800 font-bold uppercase block">
+                    Floyd-Warshall Path
+                  </span>
+                  <span className="font-extrabold text-base text-purple-900 font-mono">
+                    {fwPathInfo.hasPath ? `${fwPathInfo.distance} km` : 'No Route'}
+                  </span>
+                </div>
+                <div className="border-l border-brand-border/70 pl-3 text-[11px]">
+                  <span className="text-brand-text font-bold block">
+                    {fwPathInfo.hopCount} hops ({fwResult?.executionTimeMs} ms)
+                  </span>
+                  <span className="text-[10px] text-brand-text-secondary">Dynamic Programming O(V³)</span>
+                </div>
+              </>
+            ) : (
+              <span className="text-brand-text-secondary italic">Configuring Floyd-Warshall path query...</span>
+            )
+          )}
+
+          {intelligenceMode === 'kruskal' && (
+            kruskalResult ? (
+              <>
+                <div>
+                  <span className="text-[10px] text-emerald-800 font-bold uppercase block">
+                    Kruskal MST Backbone
+                  </span>
+                  <span className="font-extrabold text-base text-emerald-900 font-mono">
+                    {kruskalResult.totalCost} km
+                  </span>
+                </div>
+                <div className="border-l border-brand-border/70 pl-3 text-[11px]">
+                  <span className="text-brand-text font-bold block">
+                    {kruskalResult.selectedEdgeCount} edges ({kruskalResult.isConnected ? 'Connected Tree' : 'Forest'})
+                  </span>
+                  <span className="text-[10px] text-brand-text-secondary">Union-Find O(E log E)</span>
+                </div>
+              </>
+            ) : (
+              <span className="text-brand-text-secondary italic">Building Kruskal minimum spanning tree...</span>
+            )
+          )}
+
+          {intelligenceMode === 'bin_packing' && (
+            <>
+              <div>
+                <span className="text-[10px] text-amber-800 font-bold uppercase block">
+                  Warehouse Storage Capacity
+                </span>
+                <span className="font-extrabold text-base text-amber-900 font-mono">
+                  {warehouseCapacityMetrics.reduce((s, m) => s + m.occupied, 0)} / {warehouseCapacityMetrics.reduce((s, m) => s + m.capacity, 0)}
+                </span>
+              </div>
+              <div className="border-l border-brand-border/70 pl-3 text-[11px]">
+                <span className="text-brand-text font-bold block">
+                  {warehouseCapacityMetrics.length} Active Storage Hubs
+                </span>
+                <span className="text-[10px] text-brand-text-secondary">First-Fit Decreasing (FFD)</span>
+              </div>
+            </>
+          )}
+        </div>
 
         {/* TOGGLE DRAWER BUTTON (WHEN CLOSED) */}
         {!drawerOpen && (
@@ -1015,6 +1635,18 @@ export const MapWorkspace: React.FC = () => {
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Pin</span>
+            </button>
+
+            <button
+              onClick={() => { setActiveTab('intelligence'); }}
+              className={`flex-1 py-2.5 text-center border-b-2 transition-colors flex items-center justify-center gap-1.5 ${
+                activeTab === 'intelligence' 
+                  ? 'border-brand-primary text-brand-primary bg-brand-soft/20' 
+                  : 'border-transparent text-brand-text-secondary hover:text-brand-text'
+              }`}
+            >
+              <Cpu className="w-3.5 h-3.5 text-brand-primary" />
+              <span>DAA Intelligence</span>
             </button>
           </div>
 
@@ -1569,6 +2201,561 @@ export const MapWorkspace: React.FC = () => {
                   </Button>
                 </div>
               </form>
+            )}
+
+            {/* TAB 4: MAP INTELLIGENCE LAYER */}
+            {activeTab === 'intelligence' && (
+              <div className="space-y-4">
+                {/* Mode Selector within Drawer */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-brand-text flex items-center gap-1.5">
+                    <Activity className="w-3.5 h-3.5 text-brand-primary" />
+                    DAA Intelligence Mode
+                  </label>
+                  <div className="grid grid-cols-2 gap-1.5 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setIntelligenceMode('tsp')}
+                      className={`p-2 rounded-lg border text-left font-semibold transition-all ${
+                        intelligenceMode === 'tsp'
+                          ? 'border-brand-primary bg-brand-soft/20 text-brand-primary font-bold'
+                          : 'border-brand-border bg-white text-stone-600 hover:bg-stone-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <Truck className="w-3.5 h-3.5 text-brand-primary" />
+                        <span>TSP Tour</span>
+                      </div>
+                      <span className="text-[10px] text-stone-500 font-normal block mt-0.5">Route Plan & Stops</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setIntelligenceMode('dijkstra')}
+                      className={`p-2 rounded-lg border text-left font-semibold transition-all ${
+                        intelligenceMode === 'dijkstra'
+                          ? 'border-emerald-600 bg-emerald-50 text-emerald-900 font-bold'
+                          : 'border-brand-border bg-white text-stone-600 hover:bg-stone-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <Compass className="w-3.5 h-3.5 text-emerald-700" />
+                        <span>Dijkstra</span>
+                      </div>
+                      <span className="text-[10px] text-stone-500 font-normal block mt-0.5">Single-Source Path</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setIntelligenceMode('floyd')}
+                      className={`p-2 rounded-lg border text-left font-semibold transition-all ${
+                        intelligenceMode === 'floyd'
+                          ? 'border-sky-600 bg-sky-50 text-sky-900 font-bold'
+                          : 'border-brand-border bg-white text-stone-600 hover:bg-stone-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <Route className="w-3.5 h-3.5 text-sky-600" />
+                        <span>Floyd-Warshall</span>
+                      </div>
+                      <span className="text-[10px] text-stone-500 font-normal block mt-0.5">All-Pairs Query</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setIntelligenceMode('kruskal')}
+                      className={`p-2 rounded-lg border text-left font-semibold transition-all ${
+                        intelligenceMode === 'kruskal'
+                          ? 'border-amber-600 bg-amber-50 text-amber-900 font-bold'
+                          : 'border-brand-border bg-white text-stone-600 hover:bg-stone-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <Share2 className="w-3.5 h-3.5 text-amber-700" />
+                        <span>Kruskal MST</span>
+                      </div>
+                      <span className="text-[10px] text-stone-500 font-normal block mt-0.5">Logistics Backbone</span>
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIntelligenceMode('bin_packing')}
+                    className={`w-full p-2 mt-1 rounded-lg border text-left font-semibold transition-all ${
+                      intelligenceMode === 'bin_packing'
+                        ? 'border-purple-600 bg-purple-50 text-purple-900 font-bold'
+                        : 'border-brand-border bg-white text-stone-600 hover:bg-stone-50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-xs">
+                        <Boxes className="w-3.5 h-3.5 text-purple-700" />
+                        <span>Bin Packing / Capacity Allocation</span>
+                      </div>
+                      <Badge variant="purple" className="text-[10px]">FFD Restock</Badge>
+                    </div>
+                    <span className="text-[10px] text-stone-500 font-normal block mt-0.5">Warehouse capacity utilization & packing solver</span>
+                  </button>
+                </div>
+
+                {/* MODE 1: TSP INFO */}
+                {intelligenceMode === 'tsp' && (
+                  <Card className="p-3.5 border-brand-primary/40 bg-brand-soft/10 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-brand-text flex items-center gap-1.5">
+                        <Truck className="w-3.5 h-3.5 text-brand-primary" />
+                        TSP Tour Visualization
+                      </span>
+                      <Badge variant="sage" className="text-[10px]">Frozen DAA</Badge>
+                    </div>
+                    <p className="text-[11px] text-stone-600 leading-relaxed">
+                      Computes the optimal delivery tour departing the warehouse depot, servicing each customer stop, and returning to the depot using Branch & Bound (exact) or Greedy Nearest Neighbor heuristic.
+                    </p>
+                    {selectedPlan ? (
+                      <div className="p-2.5 rounded-lg bg-white border border-brand-border space-y-1 text-xs">
+                        <div className="flex justify-between">
+                          <span className="text-stone-500">Active Plan:</span>
+                          <span className="font-mono font-bold text-brand-text">{selectedPlan.plan_number}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-stone-500">Stops:</span>
+                          <span className="font-semibold text-brand-text">{activeRouteStops.length} stops</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-stone-500">Total Distance:</span>
+                          <span className="font-mono font-bold text-emerald-800">{selectedPlan.route_distance ? `${selectedPlan.route_distance} km` : 'Pending solve'}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2">
+                        <AlertCircle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-semibold">No Delivery Plan Active</p>
+                          <p className="text-[11px] mt-0.5 text-amber-800">
+                            Switch to the "Route Plans" tab to select a delivery plan or generate an optimized tour.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </Card>
+                )}
+
+                {/* MODE 2: DIJKSTRA SHORTEST PATH */}
+                {intelligenceMode === 'dijkstra' && (
+                  <div className="space-y-3">
+                    <Card className="p-3.5 border-emerald-300 bg-emerald-50/40 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+                          <Compass className="w-3.5 h-3.5 text-emerald-700" />
+                          Dijkstra Shortest Path
+                        </span>
+                        <Badge variant="success" className="text-[10px]">O((V+E) log V)</Badge>
+                      </div>
+
+                      {/* Source Hub */}
+                      <div>
+                        <label className="text-[11px] font-bold text-emerald-900 block mb-1">
+                          Source Origin Hub / Node:
+                        </label>
+                        <select
+                          value={dijkstraSourceId}
+                          onChange={e => setDijkstraSourceId(e.target.value)}
+                          className="w-full bg-white border border-emerald-300 rounded-lg px-2.5 py-1.5 text-xs text-brand-text"
+                        >
+                          <option value="">-- Choose Origin --</option>
+                          <optgroup label="Warehouses">
+                            {warehouses.map(w => (
+                              <option key={w.id} value={w.id}>
+                                🏬 {w.name} ({w.code})
+                              </option>
+                            ))}
+                          </optgroup>
+                          <optgroup label="Delivery Destinations">
+                            {locations.map(loc => (
+                              <option key={loc.id} value={loc.id}>
+                                📍 {loc.name}
+                              </option>
+                            ))}
+                          </optgroup>
+                        </select>
+                      </div>
+
+                      {/* Destination */}
+                      <div>
+                        <label className="text-[11px] font-bold text-emerald-900 block mb-1">
+                          Target Destination:
+                        </label>
+                        <select
+                          value={dijkstraDestId}
+                          onChange={e => setDijkstraDestId(e.target.value)}
+                          className="w-full bg-white border border-emerald-300 rounded-lg px-2.5 py-1.5 text-xs text-brand-text"
+                        >
+                          <option value="">-- Choose Destination --</option>
+                          <optgroup label="Delivery Destinations">
+                            {locations.map(loc => (
+                              <option key={loc.id} value={loc.id}>
+                                📍 {loc.name}
+                              </option>
+                            ))}
+                          </optgroup>
+                          <optgroup label="Warehouses">
+                            {warehouses.map(w => (
+                              <option key={w.id} value={w.id}>
+                                🏬 {w.name} ({w.code})
+                              </option>
+                            ))}
+                          </optgroup>
+                        </select>
+                      </div>
+                    </Card>
+
+                    {/* Dijkstra Telemetry Result */}
+                    {dijkstraResult && (
+                      <Card className="p-3.5 border-brand-border bg-white space-y-2.5">
+                        <div className="flex items-center justify-between border-b border-brand-border/60 pb-2">
+                          <span className="text-xs font-bold text-brand-text">Path Telemetry</span>
+                          {dijkstraResult.hasPath ? (
+                            <Badge variant="success" className="text-[10px]">Reachable</Badge>
+                          ) : (
+                            <Badge variant="danger" className="text-[10px]">Disconnected</Badge>
+                          )}
+                        </div>
+
+                        {dijkstraResult.hasPath ? (
+                          <div className="space-y-2 text-xs">
+                            <div className="flex justify-between">
+                              <span className="text-stone-500">Shortest Distance:</span>
+                              <span className="font-mono font-bold text-emerald-800 text-sm">
+                                {dijkstraResult.distance.toFixed(1)} km
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-stone-500">Total Hops:</span>
+                              <span className="font-semibold text-brand-text">
+                                {dijkstraResult.path.length - 1} hops ({dijkstraResult.path.length} nodes)
+                              </span>
+                            </div>
+
+                            {/* Node Trail */}
+                            <div className="pt-2 border-t border-brand-border/50">
+                              <span className="text-[11px] font-bold text-stone-600 block mb-1">
+                                Dijkstra Waypoint Sequence:
+                              </span>
+                              <div className="space-y-1">
+                                {dijkstraResult.path.map((nodeId: string, idx: number) => {
+                                  const name = nodeNameMap.get(nodeId) || nodeId;
+                                  const isLast = idx === dijkstraResult.path.length - 1;
+                                  return (
+                                    <div key={idx} className="flex items-center gap-1.5 text-[11px]">
+                                      <span className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-900 flex items-center justify-center text-[9px] font-bold shrink-0">
+                                        {idx + 1}
+                                      </span>
+                                      <span className="font-medium text-brand-text truncate">{name}</span>
+                                      {!isLast && <ArrowRight className="w-3 h-3 text-stone-400 shrink-0 ml-auto" />}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-rose-800 py-1">
+                            No valid path exists between this origin and destination in the network distance matrix.
+                          </p>
+                        )}
+                      </Card>
+                    )}
+                  </div>
+                )}
+
+                {/* MODE 3: FLOYD-WARSHALL ALL-PAIRS PATH */}
+                {intelligenceMode === 'floyd' && (
+                  <div className="space-y-3">
+                    <Card className="p-3.5 border-sky-300 bg-sky-50/40 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-sky-950 flex items-center gap-1.5">
+                          <Route className="w-3.5 h-3.5 text-sky-600" />
+                          Floyd-Warshall Path Query
+                        </span>
+                        <Badge variant="purple" className="text-[10px]">O(V³) Dynamic</Badge>
+                      </div>
+
+                      <p className="text-[11px] text-sky-900 leading-relaxed">
+                        Evaluates all-pairs shortest paths via dynamic programming. Select an origin and destination to trace the reconstructed path and distance.
+                      </p>
+
+                      {/* Origin */}
+                      <div>
+                        <label className="text-[11px] font-bold text-sky-950 block mb-1">
+                          Query Origin:
+                        </label>
+                        <select
+                          value={fwOriginId}
+                          onChange={e => setFwOriginId(e.target.value)}
+                          className="w-full bg-white border border-sky-300 rounded-lg px-2.5 py-1.5 text-xs text-brand-text"
+                        >
+                          <option value="">-- Choose Origin --</option>
+                          {graphNodes.map(node => (
+                            <option key={node.id} value={node.id}>
+                              {node.type === 'warehouse' ? '🏬' : '📍'} {node.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Destination */}
+                      <div>
+                        <label className="text-[11px] font-bold text-sky-950 block mb-1">
+                          Query Destination:
+                        </label>
+                        <select
+                          value={fwDestId}
+                          onChange={e => setFwDestId(e.target.value)}
+                          className="w-full bg-white border border-sky-300 rounded-lg px-2.5 py-1.5 text-xs text-brand-text"
+                        >
+                          <option value="">-- Choose Destination --</option>
+                          {graphNodes.map(node => (
+                            <option key={node.id} value={node.id}>
+                              {node.type === 'warehouse' ? '🏬' : '📍'} {node.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </Card>
+
+                    {/* Floyd Path Output */}
+                    {fwPathInfo && (
+                      <Card className="p-3.5 border-brand-border bg-white space-y-2.5">
+                        <div className="flex items-center justify-between border-b border-brand-border/60 pb-2">
+                          <span className="text-xs font-bold text-brand-text">Reconstructed Path</span>
+                          {fwPathInfo.hasPath ? (
+                            <Badge variant="success" className="text-[10px]">Connected</Badge>
+                          ) : (
+                            <Badge variant="danger" className="text-[10px]">Unreachable</Badge>
+                          )}
+                        </div>
+
+                        {fwPathInfo.hasPath ? (
+                          <div className="space-y-2 text-xs">
+                            <div className="flex justify-between">
+                              <span className="text-stone-500">Shortest Distance:</span>
+                              <span className="font-mono font-bold text-sky-800 text-sm">
+                                {fwPathInfo.distance.toFixed(1)} km
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-stone-500">Hops:</span>
+                              <span className="font-semibold text-brand-text">
+                                {fwPathInfo.hopCount} hops ({fwPathInfo.pathIds.length} nodes)
+                              </span>
+                            </div>
+
+                            <div className="pt-2 border-t border-brand-border/50">
+                              <span className="text-[11px] font-bold text-stone-600 block mb-1">
+                                Reconstructed Nodes:
+                              </span>
+                              <div className="space-y-1">
+                                {fwPathInfo.pathIds.map((nodeId: string, idx: number) => {
+                                  const name = nodeNameMap.get(nodeId) || nodeId;
+                                  const isLast = idx === fwPathInfo.pathIds.length - 1;
+                                  return (
+                                    <div key={idx} className="flex items-center gap-1.5 text-[11px]">
+                                      <span className="w-4 h-4 rounded-full bg-sky-100 text-sky-900 flex items-center justify-center text-[9px] font-bold shrink-0">
+                                        {idx + 1}
+                                      </span>
+                                      <span className="font-medium text-brand-text truncate">{name}</span>
+                                      {!isLast && <ArrowRight className="w-3 h-3 text-stone-400 shrink-0 ml-auto" />}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-rose-800 py-1">
+                            Nodes are disconnected according to all-pairs distance matrices.
+                          </p>
+                        )}
+                      </Card>
+                    )}
+                  </div>
+                )}
+
+                {/* MODE 4: KRUSKAL MST LOGISTICS BACKBONE */}
+                {intelligenceMode === 'kruskal' && (
+                  <div className="space-y-3">
+                    <Card className="p-3.5 border-amber-300 bg-amber-50/40 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-amber-950 flex items-center gap-1.5">
+                          <Share2 className="w-3.5 h-3.5 text-amber-700" />
+                          Kruskal Spanning Tree
+                        </span>
+                        <Badge variant="warning" className="text-[10px]">Union-Find</Badge>
+                      </div>
+
+                      <p className="text-[11px] text-amber-900 leading-relaxed">
+                        Computes the minimum-cost network backbone connecting all hubs and delivery nodes without cycles using greedy edge sorting and Disjoint-Set union-find.
+                      </p>
+
+                      {kruskalResult && (
+                        <div className="p-2.5 rounded-lg bg-white border border-amber-200/80 space-y-1.5 text-xs">
+                          <div className="flex justify-between">
+                            <span className="text-stone-500">MST Status:</span>
+                            <span className={`font-bold ${kruskalResult.isConnected ? 'text-emerald-800' : 'text-amber-800'}`}>
+                              {kruskalResult.isConnected ? 'Connected Spanning Tree' : 'Spanning Forest'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-stone-500">Total Backbone Cost:</span>
+                            <span className="font-mono font-bold text-amber-900 text-sm">
+                              {kruskalResult.totalCost.toFixed(1)} km
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-stone-500">Backbone Edges:</span>
+                            <span className="font-semibold text-brand-text">
+                              {kruskalResult.mstEdges.length} edges (out of {graphEdges.length})
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </Card>
+
+                    {/* Kruskal Edge List */}
+                    {kruskalResult && kruskalResult.mstEdges.length > 0 && (
+                      <Card className="p-3 border-brand-border bg-white space-y-2">
+                        <span className="text-[11px] font-bold text-brand-text block">
+                          Spanning Backbone Connections ({kruskalResult.mstEdges.length}):
+                        </span>
+                        <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+                          {kruskalResult.mstEdges.map((edge, idx) => {
+                            const uName = nodeNameMap.get(edge.from) || edge.fromName || edge.from;
+                            const vName = nodeNameMap.get(edge.to) || edge.toName || edge.to;
+                            return (
+                              <div
+                                key={idx}
+                                className="p-1.5 rounded bg-brand-surface border border-brand-border/60 text-[11px] flex items-center justify-between"
+                              >
+                                <div className="truncate flex-1 pr-2">
+                                  <span className="font-semibold text-brand-text">{uName}</span>
+                                  <span className="text-stone-400 mx-1">↔</span>
+                                  <span className="font-semibold text-brand-text">{vName}</span>
+                                </div>
+                                <span className="font-mono font-bold text-amber-900 shrink-0">
+                                  {edge.weight.toFixed(1)} km
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </Card>
+                    )}
+                  </div>
+                )}
+
+                {/* MODE 5: BIN PACKING / WAREHOUSE ALLOCATION */}
+                {intelligenceMode === 'bin_packing' && (
+                  <div className="space-y-3">
+                    <Card className="p-3.5 border-purple-300 bg-purple-50/40 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-purple-950 flex items-center gap-1.5">
+                          <Boxes className="w-3.5 h-3.5 text-purple-700" />
+                          Warehouse Capacity & Allocation
+                        </span>
+                        <Badge variant="purple" className="text-[10px]">FFD Bin Packing</Badge>
+                      </div>
+
+                      <p className="text-[11px] text-purple-900 leading-relaxed">
+                        Visualizes live warehouse storage capacity metrics and simulates First-Fit Decreasing restock allocation across all regional hubs.
+                      </p>
+
+                      {/* Simulation input */}
+                      <div className="p-2.5 rounded-lg bg-white border border-purple-200 space-y-2">
+                        <label className="text-[11px] font-bold text-purple-950 block">
+                          Simulate Restock Batch Allocation (Units):
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            min="10"
+                            max="5000"
+                            step="50"
+                            value={restockSimulationQty}
+                            onChange={e => setRestockSimulationQty(Math.max(10, parseInt(e.target.value) || 100))}
+                            className="w-24 bg-brand-surface border border-purple-300 rounded px-2 py-1 text-xs font-mono font-bold text-purple-900"
+                          />
+                          <span className="text-[11px] text-stone-500">units to allocate via FFD</span>
+                        </div>
+                      </div>
+
+                      {/* FFD Simulation Results */}
+                      {restockBinPackingSimulation && (
+                        <div className="p-2.5 rounded-lg bg-white border border-purple-200 space-y-1.5 text-xs">
+                          <div className="flex justify-between font-semibold">
+                            <span className="text-stone-600">Total Allocated:</span>
+                            <span className="font-mono text-purple-900">
+                              {restockBinPackingSimulation.totalAllocated} / {restockBinPackingSimulation.totalRequested} units
+                            </span>
+                          </div>
+                          {restockBinPackingSimulation.unallocatedQuantity > 0 && (
+                            <div className="flex justify-between text-rose-700 font-semibold">
+                              <span>Overflow / Unassigned:</span>
+                              <span className="font-mono">{restockBinPackingSimulation.unallocatedQuantity} units</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between text-[11px] text-stone-500">
+                            <span>Hubs Utilized:</span>
+                            <span>{restockBinPackingSimulation.warehousesUtilized} of {restockBinPackingSimulation.warehousesEvaluated} hubs</span>
+                          </div>
+                        </div>
+                      )}
+                    </Card>
+
+                    {/* Live Warehouse Capacity Breakdown */}
+                    <div className="space-y-2">
+                      <span className="text-xs font-bold text-brand-text block">
+                        Hub Capacities & Allocation Status:
+                      </span>
+                      {warehouseCapacityMetrics.map(item => {
+                        const wh = item.warehouse;
+                        return (
+                          <Card key={wh.id} className="p-3 border-brand-border bg-white space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-1.5">
+                                <WarehouseIcon className="w-3.5 h-3.5 text-purple-700" />
+                                <span className="font-bold text-xs text-brand-text">{wh.name}</span>
+                              </div>
+                              <span className="text-[10px] font-mono font-bold text-purple-900 bg-purple-100 px-1.5 py-0.5 rounded">
+                                {item.utilizationPct}% Full
+                              </span>
+                            </div>
+
+                            {/* Capacity bar */}
+                            <div className="w-full bg-stone-100 rounded-full h-2 overflow-hidden border border-stone-200">
+                              <div
+                                className={`h-full transition-all duration-500 ${
+                                  item.utilizationPct > 90
+                                    ? 'bg-rose-500'
+                                    : item.utilizationPct > 70
+                                    ? 'bg-amber-500'
+                                    : 'bg-purple-600'
+                                }`}
+                                style={{ width: `${Math.min(100, item.utilizationPct)}%` }}
+                              />
+                            </div>
+
+                            <div className="flex justify-between text-[11px] text-stone-600 pt-0.5">
+                              <span>Used: <strong>{item.occupied}</strong></span>
+                              <span>Available: <strong className="text-emerald-700">{item.available}</strong></span>
+                              <span>Total: <strong>{item.capacity} units</strong></span>
+                            </div>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
 
           </div>

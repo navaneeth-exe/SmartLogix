@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { NavLink, Outlet, Link } from 'react-router-dom';
 import { 
   LayoutGrid, Package, Box, Warehouse, ShoppingCart, 
@@ -395,9 +395,16 @@ export const Layout = () => {
           </div>
         </header>
 
-        {/* Page Content Viewport */}
+        {/* Page Content Viewport with Suspense Route Transition */}
         <div className="flex-1 overflow-auto relative">
-          <Outlet />
+          <Suspense fallback={
+            <div className="flex flex-col items-center justify-center min-h-[380px] p-8 gap-3 animate-fade-in">
+              <div className="w-8 h-8 rounded-full border-2 border-brand-primary/20 border-t-brand-primary animate-spin" />
+              <span className="text-xs font-semibold text-brand-text-secondary">Loading view...</span>
+            </div>
+          }>
+            <Outlet />
+          </Suspense>
         </div>
       </main>
     </div>

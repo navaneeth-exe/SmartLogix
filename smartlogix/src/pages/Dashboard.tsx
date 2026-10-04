@@ -119,6 +119,7 @@ export const Dashboard = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [warehouses, setWarehouses] = useState<WarehouseType[]>([]);
   const [plans, setPlans] = useState<DeliveryPlan[]>([]);
+  const [inventoryList, setInventoryList] = useState<any[]>([]);
   const [totalInventoryQty, setTotalInventoryQty] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -144,6 +145,7 @@ export const Dashboard = () => {
       setProducts(pData);
       setWarehouses(wData);
       setPlans(plansData);
+      setInventoryList(iData);
 
       const invQty = iData.reduce((sum, item) => sum + item.quantity, 0);
       setTotalInventoryQty(invQty);
@@ -180,11 +182,14 @@ export const Dashboard = () => {
     { name: 'Delivered', value: deliveredOrders, color: '#10b981' },
   ];
 
-  // Warehouse inventory breakdown
+  // Warehouse inventory breakdown: sum actual inventory for each warehouse
   const inventoryByWarehouse = warehouses.map(w => {
+    const whStock = inventoryList
+      .filter(item => item.warehouse_id === w.id)
+      .reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
     return {
       name: w.name.length > 14 ? `${w.name.substring(0, 14)}...` : w.name,
-      quantity: totalInventoryQty > 0 ? Math.round(totalInventoryQty / (warehouses.length || 1)) : 0
+      quantity: whStock
     };
   });
 

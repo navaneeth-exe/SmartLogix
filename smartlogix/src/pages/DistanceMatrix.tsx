@@ -17,10 +17,19 @@ import {
   solveGreedyNearestNeighbor 
 } from '../algorithms/tsp';
 import { 
+  solveFloydWarshall, 
+  type FloydWarshallResult 
+} from '../algorithms/floydWarshall';
+import { 
+  solveKruskalMST, 
+  type KruskalResult 
+} from '../algorithms/kruskal';
+import { MstNetworkMap } from '../components/MstNetworkMap';
+import { 
   Warehouse as WarehouseIcon, MapPin, Save, Play, 
   CheckCircle2, AlertCircle, ArrowRight, Clock, 
   Cpu, Zap, SlidersHorizontal, RefreshCw, Info, Layers,
-  Check, X, Car
+  Check, X, Car, Network, Route, Eye, EyeOff, GitBranch, Map as MapIcon
 } from 'lucide-react';
 
 const MAX_BB_LOCATIONS = 10;
@@ -52,6 +61,18 @@ export const DistanceMatrix: React.FC = () => {
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [bbResult, setBbResult] = useState<AlgorithmResult | null>(null);
   const [greedyResult, setGreedyResult] = useState<AlgorithmResult | null>(null);
+
+  // Floyd-Warshall State
+  const [runningFW, setRunningFW] = useState(false);
+  const [fwResult, setFwResult] = useState<FloydWarshallResult | null>(null);
+  const [fwSourceId, setFwSourceId] = useState<string>('');
+  const [fwTargetId, setFwTargetId] = useState<string>('');
+  const [showFwMatrix, setShowFwMatrix] = useState(false);
+
+  // Kruskal MST State
+  const [runningKruskal, setRunningKruskal] = useState(false);
+  const [kruskalResult, setKruskalResult] = useState<KruskalResult | null>(null);
+  const [showMstMap, setShowMstMap] = useState(true);
 
   useEffect(() => {
     loadInitialData();
@@ -411,6 +432,142 @@ export const DistanceMatrix: React.FC = () => {
         setRunningAlgo(false);
       }
     }, 50);
+  };
+
+  // Run Floyd-Warshall All-Pairs Shortest Path
+  const runFloydWarshall = () => {
+    if (activeLocations.length < 2) {
+      setStatusMessage({ type: 'error', text: 'Select at least 2 locations before running Floyd-Warshall.' });
+      return;
+    }
+
+    setRunningFW(true);
+    setStatusMessage(null);
+
+    setTimeout(() => {
+      try {
+        const nodes = activeLocations.map(loc => ({
+          id: loc.id,
+          name: loc.name,
+          type: loc.type
+        }));
+
+        const edges = [];
+        const n = activeLocations.length;
+        for (let i = 0; i < n; i++) {
+          for (let j = 0; j < n; j++) {
+            if (i !== j && matrix[i]?.[j] !== undefined && matrix[i][j] >= 0 && matrix[i][j] !== Infinity) {
+              edges.push({
+                from: activeLocations[i].id,
+                to: activeLocations[j].id,
+                weight: matrix[i][j]
+              });
+            }
+          }
+        }
+
+        const res = solveFloydWarshall({
+          nodes,
+          edges,
+          isUndirected: isSymmetric
+        });
+
+        setFwResult(res);
+        if (!fwSourceId && nodes.length > 0) {
+          setFwSourceId(nodes[0].id);
+        }
+        if (!fwTargetId && nodes.length > 1) {
+          setFwTargetId(nodes[1].id);
+        }
+
+        setStatusMessage({
+          type: 'success',
+          text: `Floyd-Warshall all-pairs shortest paths computed across ${n} vertices in ${res.executionTimeMs} ms.`
+        });
+      } catch (err: unknown) {
+        console.error('Floyd-Warshall execution error:', err);
+        setStatusMessage({ type: 'error', text: 'An unexpected error occurred during Floyd-Warshall execution.' });
+      } finally {
+        setRunningFW(false);
+      }
+    }, 40);
+  };
+
+  // Synchronize Floyd-Warshall inspector source and target with active locations
+  useEffect(() => {
+    if (activeLocations.length > 0) {
+      if (!fwSourceId || !activeLocations.some(l => l.id === fwSourceId)) {
+        setFwSourceId(activeLocations[0].id);
+      }
+      if (!fwTargetId || !activeLocations.some(l => l.id === fwTargetId)) {
+        setFwTargetId(activeLocations.length > 1 ? activeLocations[1].id : activeLocations[0].id);
+      }
+    }
+  }, [activeLocations, fwSourceId, fwTargetId]);
+
+  const fwPathInfo = useMemo(() => {
+    if (!fwResult || !fwSourceId || !fwTargetId) return null;
+    return fwResult.getPath(fwSourceId, fwTargetId);
+  }, [fwResult, fwSourceId, fwTargetId]);
+
+  const directPairDistance = useMemo(() => {
+    if (!fwResult || !fwSourceId || !fwTargetId) return null;
+    const u = fwResult.nodeIndexMap[fwSourceId];
+    const v = fwResult.nodeIndexMap[fwTargetId];
+    if (u === undefined || v === undefined) return null;
+    if (u === v) return 0;
+    const val = matrix[u]?.[v];
+    return val !== undefined && val !== Infinity ? val : null;
+  }, [fwResult, fwSourceId, fwTargetId, matrix]);
+
+  // Run Kruskal's Minimum Spanning Tree
+  const runKruskal = () => {
+    if (activeLocations.length < 2) {
+      setStatusMessage({ type: 'error', text: 'Select at least 2 locations before running Kruskal MST.' });
+      return;
+    }
+
+    setRunningKruskal(true);
+    setStatusMessage(null);
+
+    setTimeout(() => {
+      try {
+        const nodes = activeLocations.map(loc => ({
+          id: loc.id,
+          name: loc.name,
+          type: loc.type,
+          latitude: loc.latitude,
+          longitude: loc.longitude
+        }));
+
+        const edges = [];
+        const n = activeLocations.length;
+        for (let i = 0; i < n; i++) {
+          for (let j = 0; j < n; j++) {
+            if (i !== j && matrix[i]?.[j] !== undefined && matrix[i][j] >= 0 && matrix[i][j] !== Infinity) {
+              edges.push({
+                from: activeLocations[i].id,
+                to: activeLocations[j].id,
+                weight: matrix[i][j]
+              });
+            }
+          }
+        }
+
+        const res = solveKruskalMST({ nodes, edges });
+        setKruskalResult(res);
+
+        setStatusMessage({
+          type: 'success',
+          text: `Kruskal's algorithm computed ${res.isConnected ? 'Minimum Spanning Tree' : 'Minimum Spanning Forest'} (${res.selectedEdgeCount} edges, ${res.totalCost} km) in ${res.executionTimeMs} ms.`
+        });
+      } catch (err: unknown) {
+        console.error('Kruskal execution error:', err);
+        setStatusMessage({ type: 'error', text: 'An unexpected error occurred during Kruskal algorithm execution.' });
+      } finally {
+        setRunningKruskal(false);
+      }
+    }, 40);
   };
 
   const toggleLocationSelection = (id: string) => {
@@ -839,6 +996,24 @@ export const DistanceMatrix: React.FC = () => {
               <Play className="w-4 h-4 text-brand-primary fill-brand-primary" />
               <span>{runningAlgo ? 'Optimizing...' : 'Run Both & Benchmark'}</span>
             </Button>
+
+            <Button
+              onClick={runFloydWarshall}
+              disabled={runningFW || activeLocations.length < 2}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-md flex items-center gap-2 text-xs px-4 py-2.5 transition-transform active:scale-95 border border-emerald-400/40"
+            >
+              <Network className="w-4 h-4 text-emerald-100" />
+              <span>{runningFW ? 'Solving O(V³)...' : 'Run Floyd-Warshall (All-Pairs O(V³))'}</span>
+            </Button>
+
+            <Button
+              onClick={runKruskal}
+              disabled={runningKruskal || activeLocations.length < 2}
+              className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-md flex items-center gap-2 text-xs px-4 py-2.5 transition-transform active:scale-95 border border-indigo-400/40"
+            >
+              <GitBranch className="w-4 h-4 text-indigo-100" />
+              <span>{runningKruskal ? 'Computing MST...' : "Run Kruskal's MST (O(E log E))"}</span>
+            </Button>
           </div>
         </div>
       </Card>
@@ -1111,6 +1286,487 @@ export const DistanceMatrix: React.FC = () => {
               })()}
             </Card>
           )}
+        </div>
+      )}
+
+      {/* Floyd-Warshall All-Pairs Shortest Path Section */}
+      {fwResult && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between border-b border-brand-border/80 pb-3">
+            <div>
+              <h2 className="text-xl font-bold text-brand-text flex items-center gap-2">
+                <Network className="w-5 h-5 text-emerald-700" />
+                <span>Floyd-Warshall All-Pairs Shortest Path Analysis</span>
+              </h2>
+              <p className="text-xs text-brand-text-secondary mt-0.5">
+                Exact all-pairs shortest paths computed via dynamic programming recurrence: dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j]).
+              </p>
+            </div>
+            <Badge variant="default" className="bg-emerald-50 text-emerald-800 border border-emerald-300 font-mono text-xs">
+              DAA: O(V³) Time • O(V²) Space
+            </Badge>
+          </div>
+
+          {/* DAA Telemetry Card */}
+          <Card variant="glass" className="p-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="p-3 bg-white rounded-lg border border-brand-border space-y-1">
+                <span className="text-[11px] font-semibold text-brand-text-secondary block">Algorithm & Paradigm</span>
+                <span className="text-sm font-bold text-brand-text flex items-center gap-1.5">
+                  <Cpu className="w-4 h-4 text-emerald-600" />
+                  Floyd-Warshall DP
+                </span>
+                <span className="text-[10px] text-brand-text-secondary block font-mono">Dynamic Programming</span>
+              </div>
+
+              <div className="p-3 bg-white rounded-lg border border-brand-border space-y-1">
+                <span className="text-[11px] font-semibold text-brand-text-secondary block">Graph Topology</span>
+                <span className="text-sm font-bold text-brand-text flex items-center gap-1.5 font-mono">
+                  <MapPin className="w-4 h-4 text-brand-primary" />
+                  {fwResult.nodes.length} Vertices • {activeLocations.length * (activeLocations.length - 1)} Edges
+                </span>
+                <span className="text-[10px] text-brand-text-secondary block font-mono">Road distance network</span>
+              </div>
+
+              <div className="p-3 bg-white rounded-lg border border-brand-border space-y-1">
+                <span className="text-[11px] font-semibold text-brand-text-secondary block">Solver Runtime</span>
+                <span className="text-sm font-bold text-emerald-800 flex items-center gap-1.5 font-mono">
+                  <Clock className="w-4 h-4 text-emerald-600" />
+                  {fwResult.executionTimeMs} ms
+                </span>
+                <span className="text-[10px] text-brand-text-secondary block font-mono">O(V³) execution</span>
+              </div>
+
+              <div className="p-3 bg-white rounded-lg border border-brand-border space-y-1">
+                <span className="text-[11px] font-semibold text-brand-text-secondary block">Reachable Pairs</span>
+                <span className="text-sm font-bold text-brand-text flex items-center gap-1.5 font-mono">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  {fwResult.reachablePairsCount} / {fwResult.totalPossiblePairs}
+                </span>
+                <span className="text-[10px] text-brand-text-secondary block font-mono">
+                  {fwResult.hasNegativeCycle ? 'Negative cycle detected!' : 'Non-negative road graph'}
+                </span>
+              </div>
+            </div>
+          </Card>
+
+          {/* Interactive Pairwise Path Reconstruction & Distance Inspector */}
+          <Card variant="glass" className="p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-brand-border/60 pb-4">
+              <div>
+                <h3 className="font-bold text-brand-text text-base flex items-center gap-2">
+                  <Route className="w-5 h-5 text-brand-primary" />
+                  Pairwise Shortest-Path & Hop Reconstruction Inspector
+                </h3>
+                <p className="text-xs text-brand-text-secondary mt-0.5">
+                  Query the reconstructed sequence of vertex hops and compare direct road distance against the Floyd-Warshall shortest path.
+                </p>
+              </div>
+
+              {/* Node Selectors */}
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-brand-text">Origin (A):</span>
+                  <select
+                    value={fwSourceId}
+                    onChange={(e) => setFwSourceId(e.target.value)}
+                    className="text-xs font-medium rounded-lg border border-brand-border bg-white px-2.5 py-1.5 text-brand-text focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                  >
+                    {activeLocations.map((loc, idx) => (
+                      <option key={loc.id} value={loc.id}>
+                        [{idx}] {loc.name} {loc.type === 'warehouse' ? '(Depot)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-brand-text">Target (B):</span>
+                  <select
+                    value={fwTargetId}
+                    onChange={(e) => setFwTargetId(e.target.value)}
+                    className="text-xs font-medium rounded-lg border border-brand-border bg-white px-2.5 py-1.5 text-brand-text focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                  >
+                    {activeLocations.map((loc, idx) => (
+                      <option key={loc.id} value={loc.id}>
+                        [{idx}] {loc.name} {loc.type === 'warehouse' ? '(Depot)' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Path Inspection Result */}
+            {fwPathInfo && (
+              <div className="space-y-4">
+                {!fwPathInfo.hasPath ? (
+                  <div className="p-4 bg-rose-50 border border-rose-200 rounded-lg flex items-center gap-3 text-rose-800 text-xs font-medium">
+                    <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
+                    <div>
+                      <span className="font-bold">No Route / Disconnected Pair:</span> No directed path exists in the current network from the selected origin to destination. Distance is infinite (∞).
+                    </div>
+                  </div>
+                ) : fwSourceId === fwTargetId ? (
+                  <div className="p-4 bg-brand-surface border border-brand-border rounded-lg flex items-center gap-3 text-brand-text text-xs">
+                    <Info className="w-5 h-5 text-brand-primary flex-shrink-0" />
+                    <div>
+                      <span className="font-bold">Identity Route (Source = Destination):</span> Distance is <span className="font-mono font-bold">0.00 km</span>. No intermediate traversal is required.
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {/* Distance Comparison Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="p-4 bg-white rounded-lg border border-brand-border space-y-1">
+                        <span className="text-[11px] font-semibold text-brand-text-secondary block">
+                          DIRECT ROAD DISTANCE
+                        </span>
+                        <div className="text-xl font-mono font-extrabold text-brand-text">
+                          {directPairDistance !== null ? `${directPairDistance} km` : 'No direct link'}
+                        </div>
+                        <span className="text-[10px] text-brand-text-secondary">
+                          Single edge directly from A to B
+                        </span>
+                      </div>
+
+                      <div className="p-4 bg-emerald-50/60 rounded-lg border border-emerald-200 space-y-1">
+                        <span className="text-[11px] font-semibold text-emerald-800 block">
+                          FLOYD-WARSHALL SHORTEST PATH
+                        </span>
+                        <div className="text-xl font-mono font-extrabold text-emerald-800">
+                          {fwPathInfo.distance} km
+                        </div>
+                        <span className="text-[10px] text-emerald-700">
+                          Globally optimal path across all graph vertices
+                        </span>
+                      </div>
+
+                      <div className="p-4 bg-white rounded-lg border border-brand-border space-y-1">
+                        <span className="text-[11px] font-semibold text-brand-text-secondary block">
+                          PATH TRAVERSAL HOPS
+                        </span>
+                        <div className="text-xl font-mono font-extrabold text-brand-primary">
+                          {fwPathInfo.hopCount} {fwPathInfo.hopCount === 1 ? 'hop' : 'hops'}
+                        </div>
+                        <span className="text-[10px] text-brand-text-secondary">
+                          {fwPathInfo.pathNames.length} nodes traversed
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* DAA Optimization Insight Banner */}
+                    {directPairDistance !== null && fwPathInfo.distance < directPairDistance && (
+                      <div className="p-3.5 bg-emerald-100/70 border border-emerald-300 rounded-lg text-xs text-emerald-900 flex items-center gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-700 flex-shrink-0" />
+                        <div>
+                          <span className="font-bold">DAA Intermediate Detour Optimization:</span> Floyd-Warshall identified an indirect route via intermediate nodes that is <span className="font-mono font-bold">{(directPairDistance - fwPathInfo.distance).toFixed(2)} km shorter</span> than the direct road connection!
+                        </div>
+                      </div>
+                    )}
+
+                    {directPairDistance !== null && fwPathInfo.distance === directPairDistance && (
+                      <div className="p-3 bg-brand-surface/60 border border-brand-border rounded-lg text-xs text-brand-text-secondary flex items-center gap-2">
+                        <Info className="w-4 h-4 text-brand-primary flex-shrink-0" />
+                        <span>The direct single-hop edge is already the global shortest path in the network.</span>
+                      </div>
+                    )}
+
+                    {/* Reconstructed Path Sequence */}
+                    <div className="space-y-2 pt-2">
+                      <span className="text-xs font-bold text-brand-text block">
+                        Reconstructed Hop Sequence (Predecessor Chain):
+                      </span>
+                      <div className="flex flex-wrap items-center gap-2 p-3 bg-brand-surface/50 border border-brand-border rounded-lg">
+                        {fwPathInfo.pathNames.map((nodeName, idx) => (
+                          <React.Fragment key={idx}>
+                            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold border ${
+                              idx === 0 
+                                ? 'bg-emerald-100 text-emerald-900 border-emerald-300' 
+                                : idx === fwPathInfo.pathNames.length - 1
+                                ? 'bg-brand-primary text-white border-brand-primary'
+                                : 'bg-white text-brand-text border-brand-border'
+                            }`}>
+                              <span className="font-mono text-[10px] opacity-70">[{idx}]</span>
+                              <span>{nodeName}</span>
+                            </div>
+                            {idx < fwPathInfo.pathNames.length - 1 && (
+                              <ArrowRight className="w-3.5 h-3.5 text-brand-text-secondary flex-shrink-0" />
+                            )}
+                          </React.Fragment>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Toggle Full Matrix View */}
+            <div className="pt-2 border-t border-brand-border/60 flex items-center justify-between">
+              <span className="text-xs text-brand-text-secondary">
+                View complete calculated D^(V) matrix for all {fwResult.nodes.length}×{fwResult.nodes.length} vertex pairs
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowFwMatrix(prev => !prev)}
+                className="text-xs flex items-center gap-1.5"
+              >
+                {showFwMatrix ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                <span>{showFwMatrix ? 'Hide All-Pairs Shortest Matrix' : 'View All-Pairs Shortest Matrix'}</span>
+              </Button>
+            </div>
+
+            {/* Collapsible All-Pairs Shortest-Distance Matrix Table */}
+            {showFwMatrix && (
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-brand-text">
+                    Floyd-Warshall All-Pairs Shortest Distance Matrix (D_ij) in km
+                  </span>
+                  <div className="flex items-center gap-3 text-[11px] text-brand-text-secondary">
+                    <span className="flex items-center gap-1">
+                      <span className="w-2.5 h-2.5 rounded bg-emerald-100 border border-emerald-300 inline-block" />
+                      Multi-hop shorter than direct
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-2.5 h-2.5 rounded bg-brand-surface border border-brand-border inline-block" />
+                      Diagonal (0 km)
+                    </span>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto border border-brand-border rounded-lg max-h-96">
+                  <table className="min-w-full divide-y divide-brand-border text-xs">
+                    <thead className="bg-brand-surface sticky top-0 z-10">
+                      <tr>
+                        <th className="py-2 px-3 text-left font-bold text-brand-text bg-brand-surface">
+                          Origin \ Dest
+                        </th>
+                        {fwResult.nodes.map((n, j) => (
+                          <th key={n.id} className="py-2 px-3 text-center font-bold text-brand-text truncate max-w-[120px]" title={n.name}>
+                            [{j}] {n.name.length > 12 ? `${n.name.slice(0, 12)}...` : n.name}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-brand-border bg-white text-brand-text">
+                      {fwResult.nodes.map((rowNode, i) => (
+                        <tr key={rowNode.id} className="hover:bg-brand-surface/40 transition-colors">
+                          <td className="py-2 px-3 font-semibold text-brand-text bg-brand-surface/20 whitespace-nowrap">
+                            [{i}] {rowNode.name}
+                          </td>
+                          {fwResult.nodes.map((colNode, j) => {
+                            const shortestDist = fwResult.distances[i][j];
+                            const directDist = matrix[i]?.[j];
+                            const isMultiHopShorter = i !== j && directDist !== undefined && directDist !== Infinity && shortestDist < directDist;
+                            const isDiagonal = i === j;
+                            const isUnreachable = shortestDist === Infinity;
+
+                            return (
+                              <td
+                                key={colNode.id}
+                                className={`py-2 px-3 text-center font-mono text-xs ${
+                                  isDiagonal
+                                    ? 'bg-brand-surface/50 text-brand-text-secondary font-semibold'
+                                    : isMultiHopShorter
+                                    ? 'bg-emerald-50 text-emerald-900 font-bold border border-emerald-200'
+                                    : isUnreachable
+                                    ? 'text-rose-600 font-semibold'
+                                    : 'text-brand-text'
+                                }`}
+                              >
+                                {isDiagonal ? (
+                                  '0 km'
+                                ) : isUnreachable ? (
+                                  '∞'
+                                ) : (
+                                  <div>
+                                    <span>{shortestDist} km</span>
+                                    {isMultiHopShorter && (
+                                      <span className="block text-[9px] text-emerald-700 font-sans font-medium">
+                                        (save {(directDist - shortestDist).toFixed(1)} km)
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </Card>
+        </div>
+      )}
+
+      {/* Kruskal Minimum Spanning Tree Section */}
+      {kruskalResult && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between border-b border-brand-border/80 pb-3">
+            <div>
+              <h2 className="text-xl font-bold text-brand-text flex items-center gap-2">
+                <GitBranch className="w-5 h-5 text-indigo-700" />
+                <span>Kruskal's Minimum Spanning Tree (Logistics Backbone Network)</span>
+              </h2>
+              <p className="text-xs text-brand-text-secondary mt-0.5">
+                Greedy minimum-cost network construction with Disjoint Set (Union-Find) cycle detection.
+              </p>
+            </div>
+            <Badge variant="default" className="bg-indigo-50 text-indigo-800 border border-indigo-300 font-mono text-xs">
+              DAA: O(E log E) Time • O(V + E) Space
+            </Badge>
+          </div>
+
+          {/* DAA Telemetry Card */}
+          <Card variant="glass" className="p-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="p-3 bg-white rounded-lg border border-brand-border space-y-1">
+                <span className="text-[11px] font-semibold text-brand-text-secondary block">Algorithm & Paradigm</span>
+                <span className="text-sm font-bold text-brand-text flex items-center gap-1.5">
+                  <Cpu className="w-4 h-4 text-indigo-600" />
+                  Kruskal (Greedy)
+                </span>
+                <span className="text-[10px] text-brand-text-secondary block font-mono">Cycle Detection: Union-Find</span>
+              </div>
+
+              <div className="p-3 bg-white rounded-lg border border-brand-border space-y-1">
+                <span className="text-[11px] font-semibold text-brand-text-secondary block">Network Scale</span>
+                <span className="text-sm font-bold text-brand-text flex items-center gap-1.5 font-mono">
+                  <MapPin className="w-4 h-4 text-brand-primary" />
+                  {kruskalResult.vertexCount} Vertices • {kruskalResult.inputEdgeCount} Undirected Edges
+                </span>
+                <span className="text-[10px] text-brand-text-secondary block font-mono">Consolidated road graph</span>
+              </div>
+
+              <div className="p-3 bg-white rounded-lg border border-brand-border space-y-1">
+                <span className="text-[11px] font-semibold text-brand-text-secondary block">Backbone Total Distance</span>
+                <span className="text-sm font-bold text-indigo-800 flex items-center gap-1.5 font-mono">
+                  <Layers className="w-4 h-4 text-indigo-600" />
+                  {kruskalResult.totalCost} km
+                </span>
+                <span className="text-[10px] text-brand-text-secondary block font-mono">
+                  {kruskalResult.selectedEdgeCount} selected of {kruskalResult.inputEdgeCount} edges
+                </span>
+              </div>
+
+              <div className="p-3 bg-white rounded-lg border border-brand-border space-y-1">
+                <span className="text-[11px] font-semibold text-brand-text-secondary block">Topology Status</span>
+                <span className={`text-sm font-bold flex items-center gap-1.5 font-mono ${kruskalResult.isConnected ? 'text-emerald-700' : 'text-amber-700'}`}>
+                  <CheckCircle2 className="w-4 h-4" />
+                  {kruskalResult.isConnected ? 'Connected MST' : `Spanning Forest (${kruskalResult.componentCount} Trees)`}
+                </span>
+                <span className="text-[10px] text-brand-text-secondary block font-mono">
+                  {kruskalResult.rejectedEdgesCount} cycle edges pruned
+                </span>
+              </div>
+            </div>
+          </Card>
+
+          {/* Map Visualization & Selected Edges Ledger */}
+          <Card variant="glass" className="p-6 space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-brand-border/60 pb-4">
+              <div>
+                <h3 className="font-bold text-brand-text text-base flex items-center gap-2">
+                  <MapIcon className="w-5 h-5 text-indigo-600" />
+                  Logistics Network Backbone Infrastructure
+                </h3>
+                <p className="text-xs text-brand-text-secondary mt-0.5">
+                  Visualizes the optimal minimum-cost acyclic network connecting warehouse depots and delivery clusters.
+                </p>
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowMstMap(prev => !prev)}
+                className="text-xs flex items-center gap-1.5"
+              >
+                {showMstMap ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                <span>{showMstMap ? 'Hide Map View' : 'Show Map View'}</span>
+              </Button>
+            </div>
+
+            {/* Leaflet Map Preview */}
+            {showMstMap && (
+              <MstNetworkMap
+                nodes={activeLocations.map(loc => ({
+                  id: loc.id,
+                  name: loc.name,
+                  type: loc.type,
+                  latitude: loc.latitude,
+                  longitude: loc.longitude
+                }))}
+                mstEdges={kruskalResult.mstEdges}
+                height="360px"
+              />
+            )}
+
+            {/* Selected Edges Ledger Table */}
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-brand-text">
+                  Selected Minimum Spanning Tree Edges ({kruskalResult.mstEdges.length} Edges)
+                </span>
+                <span className="text-[11px] text-brand-text-secondary font-mono">
+                  Total Backbone Distance: <strong className="text-indigo-800 font-bold">{kruskalResult.totalCost} km</strong>
+                </span>
+              </div>
+
+              <div className="overflow-x-auto border border-brand-border rounded-lg max-h-72">
+                <table className="min-w-full divide-y divide-brand-border text-xs">
+                  <thead className="bg-brand-surface sticky top-0 z-10 font-bold text-brand-text">
+                    <tr>
+                      <th className="py-2.5 px-3 text-center">Edge #</th>
+                      <th className="py-2.5 px-4 text-left">Origin Node (u)</th>
+                      <th className="py-2.5 px-4 text-left">Destination Node (v)</th>
+                      <th className="py-2.5 px-4 text-right">Edge Distance (km)</th>
+                      <th className="py-2.5 px-4 text-right">Cumulative Length</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-brand-border bg-white text-brand-text">
+                    {(() => {
+                      let cumulative = 0;
+                      return kruskalResult.mstEdges.map((edge, idx) => {
+                        cumulative += edge.weight;
+                        return (
+                          <tr key={`kruskal-edge-${edge.from}-${edge.to}-${idx}`} className="hover:bg-brand-surface/40 transition-colors">
+                            <td className="py-2 px-3 text-center font-mono font-bold text-indigo-700 bg-indigo-50/40">
+                              #{idx + 1}
+                            </td>
+                            <td className="py-2 px-4 font-semibold text-brand-text">
+                              {edge.fromName}
+                            </td>
+                            <td className="py-2 px-4 font-semibold text-brand-text">
+                              {edge.toName}
+                            </td>
+                            <td className="py-2 px-4 text-right font-mono font-bold text-emerald-800">
+                              {edge.weight} km
+                            </td>
+                            <td className="py-2 px-4 text-right font-mono text-brand-text-secondary">
+                              {cumulative.toFixed(2)} km
+                            </td>
+                          </tr>
+                        );
+                      });
+                    })()}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="p-3 bg-brand-surface/50 border border-brand-border rounded-lg text-[11px] text-brand-text-secondary flex items-center gap-2">
+                <Info className="w-4 h-4 text-brand-primary flex-shrink-0" />
+                <span>
+                  <strong>Architectural Clarification:</strong> Kruskal's algorithm identifies the minimal physical infrastructure required to connect all points. It is not an order-fulfillment sequence or delivery route (which is solved by TSP).
+                </span>
+              </div>
+            </div>
+          </Card>
         </div>
       )}
     </div>

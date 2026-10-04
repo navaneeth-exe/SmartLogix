@@ -253,4 +253,28 @@ export interface FulfillmentRecommendation {
   edgeCountEvaluated: number;
 }
 
+export interface FloydWarshallAnalysisResult {
+  algorithmName: string;
+  nodesCount: number;
+  edgesCount: number;
+  reachablePairsCount: number;
+  totalPossiblePairs: number;
+  distances: number[][];
+  executionTimeMs: number;
+}
+
+export interface KruskalAnalysisResult {
+  algorithmName: string;
+  totalCostKm: number;
+  vertexCount: number;
+  inputEdgeCount: number;
+  selectedEdgeCount: number;
+  rejectedEdgesCount: number;
+  isConnected: boolean;
+  componentCount: number;
+  isForest: boolean;
+  executionTimeMs: number;
+}
+
+
 

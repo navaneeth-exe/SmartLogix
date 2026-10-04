@@ -1,245 +1,195 @@
-# SmartLogix Phase 0 Baseline Audit
+# SmartLogix Phase 0 Baseline Audit & Existing Implementation Check
 
 > **Document Type:** Pre-Flight Architectural Baseline & System Lock  
-> **Baseline Commit Hash:** `884becbb14eb4d2254e265498a4e35f4e387fae6`  
-> **Authoritative Baseline Reference:** `EXISTING_VERSION.md` (Version 1.0.0-FREEZE)  
-> **Audit Status:** Complete & Verified — All Baseline Invariants Locked  
+> **Repository Commit (HEAD):** `f67034d715d2dbf13a0eec335c05c31623912a20`  
+> **Authoritative Baseline Reference:** `EXISTING_VERSION(2).md` / `EXISTING_VERSION.md`  
+> **Audit Date:** 2026-10-03  
+> **Status:** AUDIT COMPLETE — REPOSITORY VERIFIED & LOCKED  
 
 ---
 
-## 1. Current Repository State
+## 1. Baseline
 
 - **Repository Root:** `c:\Users\NAVANEETH\Documents\Academic Projects\Smart Inventory & Delivery Optimization System`
 - **Application Directory:** `smartlogix/`
-- **Package Architecture:** Vite 8.3.0 + React 19.2.8 + TypeScript 6.0.2 + TailwindCSS 3.4.19
+- **Current Git HEAD Commit:** `f67034d` (`feat(phase-1-3): warehouse capacity, bin packing, and dijkstra fulfillment selection`)
+- **Git Working Tree Status:** Clean (`nothing to commit, working tree clean`, up to date with `origin/main`).
+- **Package Architecture:** Vite 8.3.1 + React 19.2.8 + TypeScript 6.0.2 + TailwindCSS 3.4.19
 - **Core Technology Stack:**
   - Client Database SDK: `@supabase/supabase-js` (`^2.117.2`)
   - Mapping Engine: `leaflet` (`^1.9.4`) & `react-leaflet` (`^5.0.0`)
-  - Motion & Polish: `framer-motion` (`^13.4.4`)
+  - Motion: `framer-motion` (`^13.4.4`)
   - Visualizations: `recharts` (`^3.10.1`)
   - Icons: `lucide-react` (`^1.48.0`)
 
 ---
 
-## 2. Git State
+## 2. Existing Architecture Status
 
-- **Current Branch:** `main`
-- **Current HEAD Commit:** `884becbb14eb4d2254e265498a4e35f4e387fae6` (`feat(ui): complete phase 5 reports, charts and settings redesign`)
-- **Working Tree Status:** Clean working directory with non-breaking UI refinements and uncommitted snapshot files:
-  - `M smartlogix/UI_REDESIGN_PHASES.md`
-  - `M smartlogix/UI_REDESIGN_TASKS.md`
-  - `M smartlogix/src/pages/Planning.tsx`
-  - `M smartlogix/src/pages/Reports.tsx`
-  - `?? EXISTING_VERSION.md`
-- **Change Control Rule:** No commits, resets, or stash operations executed during Phase 0.
+SmartLogix is an enterprise-grade intelligent warehouse management, inventory optimization, and route planning system. The architecture is cleanly divided into:
+1. **Frontend Layer:** React SPA with Vite, glassmorphic design system (`Card`, `Button`, `Badge`, `PageHeader`, `Input`), Lucide icons, and Recharts.
+2. **Algorithm Engine (`src/algorithms/`):** Dedicated pure-TypeScript algorithms with performance telemetry and determinism.
+3. **Service Layer (`src/services/api.ts`):** Typed API client communicating with Supabase PostgreSQL and Edge Functions.
+4. **Backend Layer:** Supabase PostgreSQL with transactional `SECURITY DEFINER` RPCs, RLS policies, and OpenRouteService (ORS) road matrix edge function.
+5. **GIS / Map Layer:** OpenStreetMap via Leaflet and React-Leaflet with custom interactive markers, route polylines, and bounding-box zoom.
 
 ---
 
-## 3. Existing Algorithms
+## 3. Existing Algorithm Audit
 
-Exhaustive audit of `smartlogix/src/algorithms/` and surrounding files:
-
-1. **Branch and Bound TSP Solver (`solveBranchAndBoundTSP`)**:
-   - Location: `smartlogix/src/algorithms/tsp.ts`
-   - Role: Exact solver for the Traveling Salesperson Problem.
-   - Initial Bound: Solves Greedy Nearest Neighbor first to seed `bestDistance` with an initial upper bound for aggressive pruning.
-   - Bounding Strategy: Calculates an admissible lower bound:
-     $$\text{currentCost} + \min_{\text{unvisited}}(\text{outgoing from current}) + \sum_{\text{unvisited}} \min(\text{outgoing to unvisited or depot})$$
-   - Candidate Ordering: Dynamically sorts unvisited edges in ascending distance order.
-   - Pruning: Immediately aborts recursive sub-branches if $\text{estimatedBound} \ge \text{bestDistance}$.
-   - Complexity: Worst-case $O(n!)$, constrained to $n \le 10$ nodes in UI for browser safety.
-
-2. **Greedy Nearest Neighbor Heuristic (`solveGreedyNearestNeighbor`)**:
-   - Location: `smartlogix/src/algorithms/tsp.ts`
-   - Role: Fast polynomial approximation heuristic.
-   - Strategy: Begins at depot node 0, iteratively visits the closest unvisited node, and returns to depot 0.
-   - Complexity: $O(n^2)$ time, $O(n)$ space.
-
-3. **Input Matrix Validation (`validateTSPMatrix`)**:
-   - Location: `smartlogix/src/algorithms/tsp.ts`
-   - Verifies dimension matching, non-negative edge weights, zero self-loops, and absence of `NaN`/`null` values.
+| Algorithm / Feature | Current Status | Existing File(s) | Action for Later Phases |
+| :--- | :--- | :--- | :--- |
+| **Branch & Bound TSP** | **ALREADY IMPLEMENTED** | `src/algorithms/tsp.ts` (`solveBranchAndBoundTSP`) | **REUSE EXISTING IMPLEMENTATION** (Strictly Frozen) |
+| **Greedy Nearest Neighbor TSP** | **ALREADY IMPLEMENTED** | `src/algorithms/tsp.ts` (`solveGreedyNearestNeighbor`) | **REUSE EXISTING IMPLEMENTATION** (Strictly Frozen) |
+| **TSP Input Matrix Validation** | **ALREADY IMPLEMENTED** | `src/algorithms/tsp.ts` (`validateTSPMatrix`) | **REUSE EXISTING IMPLEMENTATION** (Strictly Frozen) |
+| **Bin Packing (FFD Restock Allocation)** | **ALREADY IMPLEMENTED** | `src/algorithms/binPacking.ts` (`solveRestockBinPacking`) | **REUSE EXISTING IMPLEMENTATION** (Do not duplicate) |
+| **Dijkstra Shortest Path** | **ALREADY IMPLEMENTED** | `src/algorithms/dijkstra.ts` (`solveDijkstra`, `solveDijkstraAllTargets`) | **REUSE EXISTING IMPLEMENTATION** (Do not duplicate) |
+| **Floyd–Warshall (All-Pairs)** | **NOT IMPLEMENTED** | *None* | Implement in designated phase |
+| **Kruskal (MST)** | **NOT IMPLEMENTED** | *None* | Implement in designated phase |
+| **Union-Find / Disjoint Set** | **NOT IMPLEMENTED** | *None* | Implement in designated phase |
+| **Fractional Knapsack** | **NOT IMPLEMENTED** | *None* | Implement in designated phase |
+| **Prim (MST)** | **NOT IMPLEMENTED** | *None* | Implement in designated phase |
 
 ---
 
-## 4. Frozen Components
-
-The following codebase components are **FROZEN** and must not be refactored, renamed, re-implemented, or modified:
-
-| Component | File Path | Freeze Policy |
-| :--- | :--- | :--- |
-| **TSP Algorithms** | `smartlogix/src/algorithms/tsp.ts` | **STRICTLY FROZEN**. No signature, heuristic, complexity, or logic edits. |
-| **Historical Migrations** | `smartlogix/supabase/migrations/*.sql` | **STRICTLY FROZEN**. Never edit migrations `000000` through `000007`. |
-| **ORS Edge Function** | `smartlogix/supabase/functions/ors-matrix/index.ts` | **STRICTLY FROZEN**. Contract `{ locations, profile }` must be preserved. |
-| **Core Database RPCs** | `smartlogix/supabase/migrations/` | **STRICTLY FROZEN**. `create_order_atomic`, `update_order_status`, `create_delivery_plan_atomic`, `assign_vehicle_to_delivery_plan`, `save_delivery_plan_route`. |
-| **Existing App Routes** | `smartlogix/src/App.tsx` | **STRICTLY FROZEN**. All 13 URL paths remain unchanged. |
-| **Existing Map Stack** | `smartlogix/src/components/RouteMap.tsx`, `MapLocationPicker.tsx` | **STRICTLY FROZEN**. Do not build redundant map systems. |
-
----
-
-## 5. Existing Database Schema
-
-The database consists of 8 tables across 10 migration files:
-
-1. **`warehouses`**: `id`, `name`, `code` (UNIQUE), `address`, `latitude`, `longitude`, `is_active`, `created_at`, `updated_at`.
-   - **CONFIRMED:** There is **NO** warehouse capacity, volume, or storage limit column.
-2. **`products`**: `id`, `sku` (UNIQUE), `name`, `description`, `category`, `unit_price`, `weight_kg` (default 10.0), `created_at`, `updated_at`.
-3. **`inventory`**: `id`, `warehouse_id` (FK), `product_id` (FK), `quantity`, `reorder_level`, `updated_at`. Composite unique `(warehouse_id, product_id)`.
-4. **`delivery_locations`**: `id`, `name`, `address`, `latitude`, `longitude`, `is_active`, `created_at`, `updated_at`.
-5. **`orders`**: `id`, `order_number` (UNIQUE), `delivery_location_id` (FK), `status`, `priority`, `total_amount`, `created_at`, `updated_at`.
-6. **`order_items`**: `id`, `order_id` (FK), `product_id` (FK), `quantity`, `unit_price`, `created_at`.
-7. **`vehicles`**: `id`, `name`, `registration_number` (UNIQUE), `vehicle_type` ('Motorcycle', 'Van', 'Small Truck', 'Large Truck'), `capacity`, `capacity_unit` ('kg', 'units', 'm3'), `status` ('AVAILABLE', 'ON_ROUTE', 'MAINTENANCE', 'OFF_DUTY'), `created_at`, `updated_at`.
-8. **`delivery_plans`**: `id`, `plan_number` (UNIQUE), `warehouse_id` (FK), `vehicle_id` (FK), `status` ('PLANNED', 'CANCELLED'), `route_algorithm`, `route_stops` (JSONB), `route_distance`, `route_execution_time_ms`, `route_generated_at`, `created_at`, `updated_at`.
-   - Partial unique index: `idx_delivery_plans_active_vehicle` on `(vehicle_id) WHERE status = 'PLANNED' AND vehicle_id IS NOT NULL`.
-9. **`delivery_plan_orders`**: `id`, `delivery_plan_id` (FK), `order_id` (FK), `created_at`. Composite unique `(delivery_plan_id, order_id)`.
-10. **`location_distances`**: `id`, `origin_id`, `destination_id`, `distance`, `distance_meters`, `distance_source`, `routing_profile`, `duration_seconds`, `generated_at`, `created_at`, `updated_at`. Composite unique `(origin_id, destination_id)`.
-
----
-
-## 6. Existing Supabase RPCs
-
-All transactional logic is encapsulated in PostgreSQL `SECURITY DEFINER` stored procedures:
-
-1. `create_order_atomic(p_delivery_location_id, p_priority, p_items, p_warehouse_id)`: Atomically validates stock, inserts order and line items.
-2. `update_order_status(p_order_id, p_new_status)`: Enforces valid state machine transitions (`PENDING` -> `PROCESSING` -> `DISPATCHED` -> `DELIVERED` or `CANCELLED`).
-3. `create_delivery_plan_atomic(p_warehouse_id, p_order_ids)`: Creates delivery plan, verifies orders are not in another active plan.
-4. `assign_vehicle_to_delivery_plan(p_plan_id, p_vehicle_id)`: Validates vehicle availability and capacity ($\sum \le \text{capacity}$), transitions vehicle to `ON_ROUTE`.
-5. `remove_vehicle_from_delivery_plan(p_plan_id)`: Unassigns vehicle and restores status to `AVAILABLE`.
-6. `cancel_delivery_plan(p_plan_id)`: Cancels plan and automatically releases any assigned vehicle back to `AVAILABLE`.
-7. `save_delivery_plan_route(p_plan_id, p_algorithm, p_stops, p_distance, p_time_ms)`: Persists route telemetry against plan.
-8. `save_location_distance(p_origin_id, p_destination_id, p_distance, p_symmetric, ...)`: Upserts road distance matrix edge entries.
-9. `update_inventory_stock(p_warehouse_id, p_product_id, p_quantity, p_reorder_level)`: Atomic inventory level adjustment.
-
----
-
-## 7. Existing API Architecture
-
-- Centralized in `smartlogix/src/services/api.ts` across 8 namespaces:
-  - `api.products`: `list`, `create`, `update`
-  - `api.warehouses`: `list`, `create`, `update`
-  - `api.inventory`: `list`, `getByWarehouse`, `updateStock`, `addStock`
-  - `api.locations`: `list`, `getActive`, `getById`, `create`, `update`, `toggleActive`, `delete`
-  - `api.orders`: `list`, `getById`, `create`, `updateStatus`
-  - `api.vehicles`: `list`, `getById`, `create`, `update`, `updateStatus`, `delete`
-  - `api.distances`: `list`, `save`, `saveBatch`, `generateRoadMatrix`
-  - `api.plans`: `list`, `getById`, `create`, `cancel`, `assignVehicle`, `removeVehicle`, `getAvailableVehicles`, `getEligibleOrders`, `saveRoute`
-- **Extension Rule:** Existing method signatures must not be altered. Future warehouse allocation and optimization methods must be added additively.
-
----
-
-## 8. Existing Map Architecture
-
-- Standardized on `leaflet` + `react-leaflet` with OpenStreetMap base layer.
-- Components:
-  - `RouteMap.tsx`: Visualizes depot and delivery stops with custom DivIcons, numbered stop sequence badges, polyline connections, and auto-fit bounding box.
-  - `MapLocationPicker.tsx`: Modal geocoder and pin placement tool for setting precise coordinates.
-  - `MapWorkspace.tsx`: Comprehensive logistics GIS command center showing all warehouses and delivery points.
-- **Rule:** Future algorithm visualizers (e.g. allocation networks, shortest paths) must reuse this Leaflet mapping infrastructure rather than creating new map engines.
-
----
-
-## 9. Existing Application Routes
-
-All 13 routes configured in `smartlogix/src/App.tsx` verified functional:
-
-1. `/`: Dashboard (`Dashboard.tsx`)
-2. `/map`: Logistics Map Workspace (`MapWorkspace.tsx`)
-3. `/products`: Product Catalog (`Products.tsx`)
-4. `/inventory`: Warehouse Stock Management (`Inventory.tsx`)
-5. `/warehouses`: Facility Directory (`Warehouses.tsx`)
-6. `/orders`: Customer Orders Pipeline (`Orders.tsx`)
-7. `/orders/create`: Order Creation Builder (`CreateOrder.tsx`)
-8. `/locations`: Delivery Locations Directory (`Locations.tsx`)
-9. `/vehicles`: Fleet & Vehicle Management (`Vehicles.tsx`)
-10. `/planning`: Delivery Plan & DAA Optimization (`Planning.tsx`)
-11. `/distance-matrix`: Distance Matrix & ORS Tool (`DistanceMatrix.tsx`)
-12. `/reports`: Analytics & Recharts Reports (`Reports.tsx`)
-13. `/settings`: System Solver Configuration (`Settings.tsx`)
-- Catch-all redirect: `*` -> `/`
-
----
-
-## 10. Existing Warehouse Capabilities
+## 4. Warehouse Capacity Audit
 
 - **Current State:**
-  - Warehouses store identifier, name, code, address, and GIS coordinates (`latitude`, `longitude`).
-  - Warehouses act as the round-trip start and end depot for TSP delivery tours.
-- **Audit Findings:**
-  - **Storage Capacity:** NOT modeled in schema or frontend.
-  - **Restock Allocation:** NOT automated; user manually inputs restock quantity.
-  - **Fulfillment Allocation:** NOT algorithmically optimized; user manually selects warehouse or order builder picks first available.
+  - Database schema column `storage_capacity` (integer, default 10,000, not null, check $> 0$) is present on the `warehouses` table via migration `smartlogix/supabase/migrations/20261003000000_warehouse_storage_capacity.sql`.
+  - Represented in `src/types/database.types.ts`: `storage_capacity: number`.
+  - Modeled and utilized in `src/pages/Warehouses.tsx` (capacity indicators, progress bars, create/edit modal inputs).
+  - Modeled and utilized in `src/pages/Inventory.tsx` (bin packing capacity checks).
+- **Rule for Future Phases:**
+  - **DO NOT** add another capacity field (`capacity`, `max_volume`, `storage_limit`).
+  - Reuse `warehouses.storage_capacity` everywhere storage capacity is needed.
 
 ---
 
-## 11. Existing Delivery Planning Pipeline
+## 5. Restock Allocation Audit
 
-```
-Customer Orders (PENDING / PROCESSING)
-                 ↓
-Warehouse Selection (User Depot Pick)
-                 ↓
-Delivery Plan Creation (create_delivery_plan_atomic RPC)
-                 ↓
-Vehicle Assignment (assign_vehicle_to_delivery_plan RPC - Linear Capacity Sum Check)
-                 ↓
-ORS Road Distance Matrix (Edge Function -> location_distances)
-                 ↓
-DAA Optimization (Branch & Bound TSP OR Greedy Nearest Neighbor in tsp.ts)
-                 ↓
-Saved Route (save_delivery_plan_route RPC)
-                 ↓
-RouteMap Visualization (React-Leaflet Polyline + Sequenced DivIcons)
-```
+- **Current State:**
+  - Dedicated algorithm: `src/algorithms/binPacking.ts` implementing **First Fit Decreasing (FFD)** bin packing.
+  - API method: `api.inventory.applyRestockAllocation(productId, allocations)` in `src/services/api.ts`.
+  - UI integration: Interactive modal in `src/pages/Inventory.tsx` (**"Restock Allocation (DAA)"** button).
+  - Features: Evaluates available capacity across all active warehouses ($\text{storage\_capacity} - \text{currentStock}$), proposes optimal distribution, alerts on capacity overflow, and requires explicit admin review before applying stock additions.
+- **Rule for Future Phases:**
+  - **DO NOT** re-implement Bin Packing or duplicate restock allocation.
+  - Reuse the existing `binPacking.ts` solver and UI modal.
 
 ---
 
-## 12. Build / TypeScript / Lint Verification
+## 6. Customer Fulfillment Selection Audit
 
-- **TypeScript Compiler (`node "./node_modules/typescript/bin/tsc" -b`):**
-  - **Result:** PASSED (Exit code 0, 0 errors).
-- **Production Build (`node "./node_modules/vite/bin/vite.js" build`):**
-  - **Result:** PASSED (Exit code 0 in 4.52s, complete production bundle emitted).
-- **Linter (`node "./node_modules/oxlint/bin/oxlint"`):**
-  - **Result:** PASSED (0 errors, 16 pre-existing non-blocking warnings on React 19 hook dependency patterns).
-
----
-
-## 13. Confirmed Missing Capabilities
-
-The following capabilities are **CONFIRMED NOT PRESENT** in the codebase:
-
-1. **Warehouse Storage Capacity:** No schema column or validation.
-2. **Automated Restock Allocation:** No replenishment optimization algorithm.
-3. **Automated Fulfillment Warehouse Selection:** No multi-warehouse proximity/cost allocation.
-4. **0/1 Knapsack Problem:** Not in codebase (vehicle assignment is a linear sum check).
-5. **Fractional Knapsack Problem:** Not in codebase.
-6. **Bin Packing Problem (FFD / BFD):** Not in codebase.
-7. **Dijkstra's Algorithm:** Not in codebase (road matrix is fetched externally via ORS).
-8. **Floyd-Warshall Algorithm:** Not in codebase.
-9. **Kruskal / Prim MST:** Not in codebase.
-10. **Union-Find Disjoint Set:** Not in codebase.
+- **Current State:**
+  - Dedicated algorithm: `src/algorithms/dijkstra.ts` implementing deterministic Dijkstra shortest path on weighted graphs with non-negative edge weights.
+  - UI integration: In `src/pages/CreateOrder.tsx`, Section 1 features **"Recommend Hub (Dijkstra)"**.
+  - Logic: When clicked, the system verifies on-hand stock across active warehouses for all order items, builds a weighted graph from `location_distances`, computes the shortest road distance to the destination, and ranks candidate warehouses:
+    $$\text{Full Stock Ready} > \text{Reachability} > \text{Shortest Road Distance (km)}$$
+  - The administrator can review candidates and click **"Fulfill From This Hub"** to bind the optimal warehouse depot.
+- **Rule for Future Phases:**
+  - **DO NOT** re-implement Dijkstra or duplicate order fulfillment selection.
+  - Reuse `solveDijkstra` from `src/algorithms/dijkstra.ts`.
 
 ---
 
-## 14. Phase 0 Rules
+## 7. Distance / Graph Infrastructure Audit
 
-For all subsequent phases, the following rules are permanently binding:
-
-1. `src/algorithms/tsp.ts` is **FROZEN**.
-2. Existing Branch and Bound TSP is **FROZEN**.
-3. Existing Greedy Nearest Neighbor is **FROZEN**.
-4. Existing ORS Edge Function is **PRESERVED**.
-5. Existing database RPC signatures and behaviors are **PRESERVED**.
-6. Historical database migrations (`000000` to `000007`) are **PRESERVED** (new migrations must use new files).
-7. All 13 existing application routes are **PRESERVED**.
-8. Existing Leaflet map architecture is **PRESERVED**.
-9. All new algorithms must be strictly **ADDITIVE** and placed in **NEW** dedicated files in `src/algorithms/`.
-10. API service extensions must preserve all existing method contracts.
-11. The established UI design system (`Card`, `Button`, `Badge`, `PageHeader`, `Input`, `Select`) must be reused.
+- **Current State:**
+  - Table `location_distances` stores pairwise distance edges (`origin_id`, `destination_id`, `distance`, `distance_meters`, `distance_source`, `routing_profile`, `duration_seconds`).
+  - API methods: `api.distances.list()`, `api.distances.save()`, `api.distances.saveBatch()`, `api.distances.generateRoadMatrix()`.
+  - Road matrix Edge Function (`supabase/functions/ors-matrix/index.ts`) queries OpenRouteService with persistent caching in `location_distances`.
+  - Distance Matrix UI (`src/pages/DistanceMatrix.tsx`) visualizes pairwise road distances and runs TSP solvers.
+  - Shortest path graph: `solveDijkstra` in `src/algorithms/dijkstra.ts` consumes `location_distances` records.
+- **Rule for Future Phases:**
+  - **DO NOT** create a second distance or routing table.
+  - Reuse `location_distances` for all graph algorithms (Floyd-Warshall, Kruskal, Prim).
 
 ---
 
-## 15. Phase 0 Conclusion
+## 8. Map System Audit
 
-All pre-flight audits, code inspections, database verifications, and build checks have succeeded with zero errors.
+- **Current State:**
+  - Unified on Leaflet and `react-leaflet`.
+  - Components:
+    - `RouteMap.tsx`: Renders warehouse depot, sequenced delivery stops, numbered pins, and polyline routes.
+    - `MapLocationPicker.tsx`: Pin placement and coordinate picker.
+    - `MapWorkspace.tsx`: Multi-facility network overview.
+- **Rule for Future Phases:**
+  - Future algorithm visualizations (e.g. MST edges, multi-pair shortest path lines) must reuse `RouteMap` or Leaflet components.
+  - **DO NOT** create a secondary map engine.
 
-# READY FOR PHASE 1
+---
+
+## 9. Database / RPC Audit
+
+Existing PostgreSQL RPCs verified and strictly preserved:
+1. `create_order_atomic(p_delivery_location_id, p_priority, p_items, p_warehouse_id)`
+2. `update_order_status(p_order_id, p_new_status)`
+3. `create_delivery_plan_atomic(p_warehouse_id, p_order_ids)`
+4. `assign_vehicle_to_delivery_plan(p_plan_id, p_vehicle_id)`
+5. `remove_vehicle_from_delivery_plan(p_plan_id)`
+6. `cancel_delivery_plan(p_plan_id)`
+7. `save_delivery_plan_route(p_plan_id, p_algorithm, p_stops, p_distance, p_time_ms)`
+8. `save_location_distance(p_origin_id, p_destination_id, p_distance, p_symmetric, ...)`
+9. `update_inventory_stock(p_warehouse_id, p_product_id, p_quantity, p_reorder_level)`
+
+**Compatibility Requirement:** Future phases must not alter these RPC signatures or behaviors.
+
+---
+
+## 10. API and Type Audit
+
+- **API Layer (`src/services/api.ts`):**
+  - Contains namespaces: `products`, `warehouses`, `inventory`, `locations`, `orders`, `vehicles`, `distances`, `plans`.
+  - Preserves all method signatures; supports additive extensions.
+- **Types Layer (`src/types/database.types.ts`):**
+  - Contains database entity interfaces and algorithm telemetry structures.
+  - Contains `Warehouse.storage_capacity`.
+  - Contains `BinPackingResult`, `RestockWarehouseCapacity`, `WarehouseAllocationItem`.
+  - Contains `WarehouseFulfillmentCandidate`, `FulfillmentRecommendation`.
+  - Ready for additive extension for upcoming algorithms (e.g., Floyd-Warshall, MST).
+
+---
+
+## 11. Existing Problems / Required Modifications
+
+- **Audit Finding:**
+  - There are **ZERO** build, type, or runtime errors in the codebase.
+  - `tsp.ts`, `binPacking.ts`, and `dijkstra.ts` are cleanly separated and verified.
+  - No code changes are required for Phase 0.
+
+---
+
+## 12. Validation
+
+| Check | Tool / Command | Result | Notes |
+| :--- | :--- | :--- | :--- |
+| **TypeScript** | `node "./node_modules/typescript/bin/tsc" -b` | **PASSED (0 errors)** | Full type check clean |
+| **Production Build** | `node "./node_modules/vite/bin/vite.js" build` | **PASSED (0 errors)** | Built in 4.87s |
+| **Linter** | `node "./node_modules/oxlint/bin/oxlint"` | **PASSED (0 errors)** | 16 pre-existing non-blocking warnings |
+
+---
+
+## 13. Phase Plan Adjustment
+
+Based on the actual repository audit:
+
+1. **Warehouse Capacity (Phase 1):**
+   - **Status:** Already implemented in `20261003000000_warehouse_storage_capacity.sql`, `database.types.ts`, and `Warehouses.tsx`.
+   - **Adjustment:** Treat as established baseline; do not re-create.
+2. **Bin Packing Restock Allocation (Phase 2):**
+   - **Status:** Already implemented in `src/algorithms/binPacking.ts`, `api.ts`, and `Inventory.tsx`.
+   - **Adjustment:** Treat as established baseline; do not re-create.
+3. **Dijkstra Fulfillment Recommendation (Phase 3):**
+   - **Status:** Already implemented in `src/algorithms/dijkstra.ts`, `database.types.ts`, and `CreateOrder.tsx`.
+   - **Adjustment:** Treat as established baseline; do not re-create.
+4. **Remaining DAA Optimization Phases:**
+   - **Floyd–Warshall (All-Pairs Shortest Path):** NOT IMPLEMENTED $\rightarrow$ Implement in designated phase.
+   - **Kruskal / Prim MST & Union-Find (Network Optimization):** NOT IMPLEMENTED $\rightarrow$ Implement in designated phase.
+   - **Fractional / 0-1 Knapsack (Vehicle Dispatch Packing):** NOT IMPLEMENTED $\rightarrow$ Implement in designated phase.
+
+---
+
+## 14. Final Status
+
+# READY FOR NEXT PHASE

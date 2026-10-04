@@ -608,13 +608,35 @@ export const InventoryPage = () => {
                         Proposed Allocation Plan
                       </h4>
                       <p className="text-xs text-brand-text-secondary mt-0.5">
-                        Solver: <span className="font-semibold text-brand-text">{restockProposal.algorithmName}</span> ({restockProposal.executionTimeMs} ms)
+                        Solver: <span className="font-semibold text-brand-text">{restockProposal.algorithmName}</span> ({restockProposal.executionTimeMs} ms) · Complexity: <span className="font-mono font-bold text-brand-text">O(m log m)</span>
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant={restockProposal.unallocatedQuantity === 0 ? 'success' : 'warning'}>
                         {restockProposal.totalAllocated} / {restockProposal.totalRequested} Allocated
                       </Badge>
+                    </div>
+                  </div>
+
+                  {/* DAA Restock Telemetry Badges */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                    <div className="bg-white/80 p-2.5 rounded-lg border border-brand-border/60">
+                      <span className="text-brand-text-secondary text-[11px] block">Warehouses Evaluated</span>
+                      <span className="font-mono font-bold text-brand-text">{restockProposal.warehousesEvaluated} hubs</span>
+                    </div>
+                    <div className="bg-white/80 p-2.5 rounded-lg border border-brand-border/60">
+                      <span className="text-brand-text-secondary text-[11px] block">Hubs Utilized</span>
+                      <span className="font-mono font-bold text-emerald-700">{restockProposal.warehousesUtilized} hubs</span>
+                    </div>
+                    <div className="bg-white/80 p-2.5 rounded-lg border border-brand-border/60">
+                      <span className="text-brand-text-secondary text-[11px] block">Units Allocated</span>
+                      <span className="font-mono font-bold text-brand-primary">{restockProposal.totalAllocated} units</span>
+                    </div>
+                    <div className="bg-white/80 p-2.5 rounded-lg border border-brand-border/60">
+                      <span className="text-brand-text-secondary text-[11px] block">Unallocated Overflow</span>
+                      <span className={`font-mono font-bold ${restockProposal.unallocatedQuantity > 0 ? 'text-amber-700' : 'text-brand-text-muted'}`}>
+                        {restockProposal.unallocatedQuantity} units
+                      </span>
                     </div>
                   </div>
 

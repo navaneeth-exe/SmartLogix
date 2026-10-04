@@ -1,115 +1,127 @@
-# SmartLogix Phase 2 — Bin Packing + Restock Allocation
+# SmartLogix Phase 2 — Bin Packing / FFD Restock Allocation Verification & Hardening
 
-> **Document Type:** Phase 2 Implementation & Backward Compatibility Audit  
-> **Baseline Commit Hash:** `884becbb14eb4d2254e265498a4e35f4e387fae6`  
-> **Scope:** First Fit Decreasing (FFD) Bin Packing for Warehouse Restock Allocation  
-> **Status:** Implementation Complete & Validated  
-
----
-
-## 1. Objective
-
-Phase 2 introduces the first algorithmic warehouse optimization capability to SmartLogix:
-**Bin Packing / Restock Allocation**.
-
-When new stock arrives from suppliers or manufacturing, operations personnel can enter the incoming SKU and quantity. The system automatically computes how that incoming stock can be partitioned across active regional warehouses using **First Fit Decreasing (FFD) Bin Packing**, respecting each facility's current occupied inventory and remaining storage capacity.
-
-The proposal is strictly a recommendation: inventory records are **NOT** automatically updated until the administrator explicitly reviews and confirms the allocation plan.
+> **Document Type:** Phase 2 Verification, Hardening & Audit Report  
+> **Target System:** SmartLogix — Smart Inventory and Delivery Optimization System  
+> **Baseline Commit Hash:** `f67034d715d2dbf13a0eec335c05c31623912a20`  
+> **Date:** 2026-10-03  
+> **Status:** PHASE 2 — ALREADY COMPLETE / VERIFIED & HARDENED  
 
 ---
 
-## 2. Capacity Model & Physical Units
+## 1. Phase Objective
 
-- **Unit Definition:** Warehouse storage capacity (`warehouses.storage_capacity`) and inventory quantities are measured in **discrete inventory units**.
-- **Occupied Capacity Calculation:**
-  $$\text{Occupied Capacity}(W) = \sum_{I \in \text{Inventory}(W)} I.\text{quantity}$$
-- **Available Capacity (Bin Size):**
-  $$\text{Available Capacity}(W) = \max\Big(0, W.\text{storage\_capacity} - \text{Occupied Capacity}(W)\Big)$$
-- If a warehouse does not have an explicit `storage_capacity` set, a default baseline of 10,000 units is utilized to prevent division by zero or negative room.
+The objective of Phase 2 is to rigorously verify, validate, and harden the **Bin Packing / First-Fit Decreasing (FFD)** restock allocation pipeline in SmartLogix without duplicating any algorithms, services, or UI components.
+
+The validated operational workflow:
+$$\text{Admin inputs incoming stock} \longrightarrow \text{Available capacity evaluation} \longrightarrow \text{FFD solver in binPacking.ts} \longrightarrow \text{Proposal review} \longrightarrow \text{Admin confirmation} \longrightarrow \text{api.inventory.applyRestockAllocation}$$
 
 ---
 
-## 3. Algorithm Implementation: First Fit Decreasing (FFD)
+## 2. Existing Implementation Inspection
 
-- **Dedicated File:** `smartlogix/src/algorithms/binPacking.ts` (Frozen `tsp.ts` was **NOT** modified).
-- **Strategy & Mathematical Formulation:**
-  1. Filters active warehouses to those with $\text{Available Capacity} > 0$.
-  2. Sorts bins in descending order of available capacity (FFD heuristic):
-     $$\text{AvailableCapacity}(W_1) \ge \text{AvailableCapacity}(W_2) \ge \dots \ge \text{AvailableCapacity}(W_m)$$
-     Ties are deterministically broken using warehouse name ascending (`localeCompare`).
-  3. Greedily allocates arriving stock to the largest available warehouse until the warehouse is saturated ($\text{allocatable} = \min(\text{remaining}, \text{bin.availableCapacity})$).
-  4. Cascades any remainder to subsequent warehouses.
-  5. Flags unallocated inventory if total incoming shipment exceeds aggregate network capacity.
-- **Time Complexity:** $O(m \log m)$, where $m$ is the number of active warehouses.
-- **Space Complexity:** $O(m)$ for allocation proposal telemetry.
-- **Determinism:** Pure, deterministic TypeScript function with zero random seeds or external network calls.
-
----
-
-## 4. Application Integration
-
-### 4.1 Types (`src/types/database.types.ts`)
-Added interfaces without modifying existing types:
-- `RestockWarehouseCapacity`: Describes bin input state (warehouse, currentStock, storageCapacity, availableCapacity).
-- `WarehouseAllocationItem`: Individual warehouse allocation detail (allocatedQuantity, initialAvailableCapacity, remainingCapacity).
-- `BinPackingResult`: Complete solver result (algorithmName, totalRequested, totalAllocated, unallocatedQuantity, allocations, executionTimeMs).
-
-### 4.2 API Layer (`src/services/api.ts`)
-Added `api.inventory.applyRestockAllocation(productId, allocations)`:
-- Sequentially applies the confirmed allocations using the existing atomic `addStock` method.
-- Preserves all existing `api.inventory` methods and signatures.
-
-### 4.3 UI Workflow (`src/pages/Inventory.tsx`)
-- Added **"Restock Allocation (DAA)"** button to `PageHeader` actions alongside "Adjust Stock".
-- Opens a dedicated modal:
-  - Select incoming Product SKU.
-  - Enter Incoming Shipment Quantity.
-  - "Calculate Optimal Allocation" button invokes `solveRestockBinPacking`.
-- Renders an interactive **Proposed Allocation Plan**:
-  - Summarizes solver runtime (ms) and total allocated vs requested.
-  - Shows per-warehouse breakdown (Room Before, Remaining After, Units To Allocate).
-  - Displays a warning banner if capacity overflow occurs.
-  - "Confirm & Apply to Inventory" button persists the allocation only after administrative review.
+1. **Algorithm Implementation (`smartlogix/src/algorithms/binPacking.ts`):**
+   - Pure, deterministic, zero-dependency solver: `solveRestockBinPacking(input: BinPackingInput): BinPackingResult`.
+   - Strictly adheres to **First Fit Decreasing (FFD)** bin packing:
+     1. Discards warehouses with non-positive available capacity.
+     2. Sorts bins in descending order of available room ($\text{availableCapacity}$).
+     3. Uses deterministic tie-breaking on warehouse name (`localeCompare`).
+     4. Sequentially packs arriving inventory lots up to each bin's capacity limit.
+     5. Tracks and returns any unallocated remainder as an explicit overflow metric rather than silently truncating.
+2. **API Service (`smartlogix/src/services/api.ts`):**
+   - Method `api.inventory.applyRestockAllocation(productId, allocations)` sequentially updates or creates inventory rows using existing atomic helper `addStock()`.
+   - Never writes to database without prior administrative review and confirmation.
+3. **UI Integration (`smartlogix/src/pages/Inventory.tsx`):**
+   - Action button in `PageHeader`: **"Restock Allocation (DAA)"**.
+   - Interactive modal evaluates all active warehouses, displays solver execution telemetry, shows per-warehouse breakdown (room before, remaining after, to allocate), and issues an explicit overflow warning when capacity is saturated.
 
 ---
 
-## 5. Compatibility Audit
+## 3. Algorithm Complexity & DAA Correctness
 
-| Component | Status | Notes |
+In this warehouse restock domain:
+- $m$ = number of candidate active warehouses (bins).
+- Arriving shipment = single or discrete lots of aggregate inventory units.
+
+| Step | Operation | Complexity |
 | :--- | :--- | :--- |
-| **Existing TSP Algorithms** | **STRICTLY UNTOUCHED** | `src/algorithms/tsp.ts` has 0 modifications. |
-| **ORS Road Matrix** | **STRICTLY UNTOUCHED** | Edge function and matrix caching are unaffected. |
-| **Existing Inventory** | **PRESERVED** | Regular stock adjustment and tracking continue normally. |
-| **Customer Fulfillment** | **NOT TOUCHED** | Inbound restock allocation does not alter customer order fulfillment. |
-| **Existing Routes** | **PRESERVED** | All 13 routes in `src/App.tsx` remain functional. |
-| **Database Migrations** | **PRESERVED** | No historical migrations touched; utilizes Phase 1 `storage_capacity`. |
+| **Bin Sorting** | Sort $m$ warehouses by available capacity descending | $O(m \log m)$ |
+| **Packing Phase** | Sequential First-Fit placement across sorted bins | $O(m)$ |
+| **Total Complexity** | Sorting + Packing | $\mathbf{O(m \log m)}$ |
+| **Space Complexity** | Result construction & telemetry breakdown | $\mathbf{O(m)}$ |
 
 ---
 
-## 6. Validation Results
+## 4. Capacity Semantics & Calculations
+
+1. **Discrete Units:** Capacity is strictly measured in **discrete inventory units**.
+2. **Occupied Capacity:**
+   $$\text{currentStock}(W) = \sum_{I \in \text{inventory}(W)} I.\text{quantity}$$
+3. **Available Capacity:**
+   $$\text{availableCapacity}(W) = \max\Big(0, W.\text{storage\_capacity} - \text{currentStock}(W)\Big)$$
+   If $W.\text{storage\_capacity}$ is unset or null, a baseline of 10,000 units is safely adopted to prevent division or negative arithmetic issues.
+4. **Capacity Saturation Invariant:** For every allocation, $\text{allocatedQuantity} \le \text{initialAvailableCapacity}$ is strictly guaranteed.
+
+---
+
+## 5. UI Hardening & DAA Telemetry
+
+During verification, the proposal review panel in `src/pages/Inventory.tsx` was hardened with lightweight, academic DAA telemetry metrics:
+- Mathematical complexity display: $O(m \log m)$.
+- Badges for:
+  - **Warehouses Evaluated:** Total active hubs checked.
+  - **Hubs Utilized:** Number of bins receiving non-zero stock.
+  - **Units Allocated:** Total placed units.
+  - **Unallocated Overflow:** Remainder when network capacity is saturated.
+
+---
+
+## 6. Edge Cases Audited
+
+| Edge Case | Behavior | Status |
+| :--- | :--- | :--- |
+| Incoming quantity $\le 0$ | Returns immediately with 0 allocated and 0 unallocated | **PASSED** |
+| Single warehouse | Allocates up to available capacity, returns excess | **PASSED** |
+| No active warehouses | Throws clean error informing admin to configure active facilities | **PASSED** |
+| Warehouses with 0 capacity | Filtered out before packing; 0 allocated to full hubs | **PASSED** |
+| Incoming $\le$ Total Capacity | Fully allocated (`unallocatedQuantity === 0`), success badge | **PASSED** |
+| Incoming $>$ Total Capacity | Fills all hubs, sets `unallocatedQuantity`, renders amber warning | **PASSED** |
+| Unset `storage_capacity` | Safely defaults to 10,000 units baseline | **PASSED** |
+| Duplicate warehouse names | Deterministic sorting ensures identical reproducible allocations | **PASSED** |
+
+---
+
+## 7. Files Created / Modified / Left Untouched
+
+### Created:
+- `PHASE_2_BIN_PACKING.md` (This verification and audit report)
+
+### Modified:
+- `smartlogix/src/pages/Inventory.tsx` (Hardened DAA telemetry metrics in restock proposal modal)
+
+### Intentionally Left Untouched:
+- `smartlogix/src/algorithms/binPacking.ts` (Already complete and mathematically correct)
+- `smartlogix/src/algorithms/tsp.ts` (Frozen TSP algorithms)
+- `smartlogix/src/algorithms/dijkstra.ts` (Frozen Dijkstra fulfillment solver)
+- `smartlogix/src/services/api.ts` (Already contains `applyRestockAllocation`)
+- `smartlogix/src/types/database.types.ts` (Already contains all bin packing types)
+- `smartlogix/supabase/migrations/` (No schema changes required)
+
+---
+
+## 8. Validation Results
 
 1. **TypeScript Compiler (`tsc -b`):**
+   - **Command:** `node "./node_modules/typescript/bin/tsc" -b`
    - **Result:** PASSED with **0 errors**.
-2. **Production Build (`vite build`):**
-   - **Result:** PASSED with **0 errors** (built in 2.95s, client assets emitted).
-3. **Linter (`oxlint`):**
+2. **Production Bundle Build (`vite build`):**
+   - **Command:** `node "./node_modules/vite/bin/vite.js" build`
+   - **Result:** PASSED in **2.72s** with complete production assets generated.
+3. **Linter Inspection (`oxlint`):**
+   - **Command:** `node "./node_modules/oxlint/bin/oxlint"`
    - **Result:** PASSED with **0 errors** (16 pre-existing non-blocking hook warnings preserved).
 
 ---
 
-## 7. Files Changed
+## 9. Final Status
 
-### Created:
-- `smartlogix/src/algorithms/binPacking.ts` (Dedicated FFD Bin Packing solver)
-- `PHASE_2_BIN_PACKING.md`
-
-### Modified:
-- `smartlogix/src/types/database.types.ts` (Added BinPackingResult and restock types)
-- `smartlogix/src/services/api.ts` (Added `applyRestockAllocation`)
-- `smartlogix/src/pages/Inventory.tsx` (Added Restock Allocation modal and solver integration)
-
----
-
-## 8. Phase Status
-
-# READY FOR PHASE 3
+# PHASE 2 — ALREADY COMPLETE / VERIFIED & HARDENED

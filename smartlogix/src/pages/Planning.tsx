@@ -1299,25 +1299,32 @@ export const Planning: React.FC = () => {
                           <span className="font-bold font-mono text-brand-text">
                             {selectedPlan.vehicle.capacity_unit === 'kg' ? (
                               `${((planRequirements.weightKg / Number(selectedPlan.vehicle.capacity)) * 100).toFixed(1)}%`
-                            ) : (
+                            ) : selectedPlan.vehicle.capacity_unit === 'units' ? (
                               `${((planRequirements.units / Number(selectedPlan.vehicle.capacity)) * 100).toFixed(1)}%`
+                            ) : (
+                              'N/A (Volumetric)'
                             )}
                           </span>
                         </div>
                         <div className="w-full bg-brand-border/60 h-2.5 rounded-full overflow-hidden">
                           <div 
                             className={`h-full rounded-full transition-all duration-300 ${
-                              (planRequirements.weightKg / Number(selectedPlan.vehicle.capacity)) > 1 
+                              ((selectedPlan.vehicle.capacity_unit === 'kg' ? planRequirements.weightKg : planRequirements.units) / Number(selectedPlan.vehicle.capacity)) > 1 
                                 ? 'bg-rose-500' 
                                 : 'bg-brand-primary'
                             }`}
                             style={{ 
-                              width: `${Math.min(100, Math.max(5, (planRequirements.weightKg / Number(selectedPlan.vehicle.capacity)) * 100))}%` 
+                              width: `${Math.min(100, Math.max(5, ((selectedPlan.vehicle.capacity_unit === 'kg' ? planRequirements.weightKg : planRequirements.units) / Number(selectedPlan.vehicle.capacity)) * 100))}%` 
                             }}
                           />
                         </div>
                         <span className="text-[10px] text-brand-text-secondary block">
-                          {planRequirements.weightKg} kg loaded of {selectedPlan.vehicle.capacity} kg limit
+                          {selectedPlan.vehicle.capacity_unit === 'kg'
+                            ? `${planRequirements.weightKg} kg loaded of ${selectedPlan.vehicle.capacity} kg limit`
+                            : selectedPlan.vehicle.capacity_unit === 'units'
+                            ? `${planRequirements.units} units loaded of ${selectedPlan.vehicle.capacity} units limit`
+                            : `${selectedPlan.vehicle.capacity} m³ rated volume (manual load verification)`
+                          }
                         </span>
                       </div>
                     </div>
@@ -1369,8 +1376,11 @@ export const Planning: React.FC = () => {
                       <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
                         {availableVehicles.map(veh => {
                           const isWeightUnit = veh.capacity_unit === 'kg';
+                          const isCountUnit = veh.capacity_unit === 'units';
+                          const isUnsupportedUnit = !isWeightUnit && !isCountUnit;
+
                           const required = isWeightUnit ? planRequirements.weightKg : planRequirements.units;
-                          const hasCapacity = Number(veh.capacity) >= required;
+                          const hasCapacity = !isUnsupportedUnit && Number(veh.capacity) >= required;
                           const isSelected = selectedAssignVehicleId === veh.id;
 
                           return (
@@ -1378,7 +1388,9 @@ export const Planning: React.FC = () => {
                               key={veh.id}
                               onClick={() => hasCapacity && setSelectedAssignVehicleId(veh.id)}
                               className={`p-3 rounded-xl border text-xs transition-all flex items-center justify-between ${
-                                !hasCapacity
+                                isUnsupportedUnit
+                                  ? 'bg-amber-50/50 border-amber-200 opacity-70 cursor-not-allowed'
+                                  : !hasCapacity
                                   ? 'bg-rose-50/50 border-rose-200 opacity-60 cursor-not-allowed'
                                   : isSelected
                                     ? 'bg-brand-soft border-brand-primary cursor-pointer shadow-xs'
@@ -1402,13 +1414,17 @@ export const Planning: React.FC = () => {
                               </div>
 
                               <div className="flex items-center gap-2">
-                                {!hasCapacity ? (
+                                {isUnsupportedUnit ? (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                                    <AlertCircle className="w-3 h-3 text-amber-700" /> Incompatible Unit ({veh.capacity_unit}) — Requires kg or units
+                                  </span>
+                                ) : !hasCapacity ? (
                                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300">
                                     <XCircle className="w-3 h-3" /> Insufficient ({veh.capacity} &lt; {required} {veh.capacity_unit})
                                   </span>
                                 ) : (
                                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                                    <CheckCircle2 className="w-3 h-3" /> Capacity OK
+                                    <CheckCircle2 className="w-3 h-3" /> Capacity OK ({required} / {veh.capacity} {veh.capacity_unit})
                                   </span>
                                 )}
                               </div>

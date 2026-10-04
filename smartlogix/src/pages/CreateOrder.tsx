@@ -556,7 +556,7 @@ export const CreateOrder = () => {
                     <div className="flex flex-wrap items-center justify-between text-[11px] text-brand-text-secondary bg-brand-surface/40 p-2.5 rounded-xl border border-brand-border/40">
                       <span>Destination: <strong className="text-brand-text">{fulfillmentRecommendation.destinationLocation.name}</strong></span>
                       <span>Evaluated: <strong className="text-brand-text font-mono">{fulfillmentRecommendation.candidates.length} hubs</strong> ({fulfillmentRecommendation.edgeCountEvaluated} edges)</span>
-                      <span>Runtime: <strong className="text-brand-text font-mono">{fulfillmentRecommendation.executionTimeMs} ms</strong></span>
+                      <span>Algorithm: <strong className="text-brand-text font-mono">Dijkstra O(V²)</strong> ({fulfillmentRecommendation.executionTimeMs} ms)</span>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -594,6 +594,15 @@ export const CreateOrder = () => {
                                   {cand.shortestDistanceKm !== null ? `${cand.shortestDistanceKm} km` : 'No Route'}
                                 </span>
                               </div>
+
+                              {cand.path && cand.path.length > 1 && (
+                                <div className="flex items-center justify-between text-[11px] text-brand-text-secondary">
+                                  <span>Graph Path:</span>
+                                  <span className="font-mono text-brand-text text-[10px]">
+                                    {cand.path.length - 1} {cand.path.length - 1 === 1 ? 'hop (direct)' : 'hops'}
+                                  </span>
+                                </div>
+                              )}
 
                               {cand.transitEstimateHours !== null && (
                                 <div className="flex items-center justify-between text-[11px] text-brand-text-secondary">
