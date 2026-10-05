@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Card } from '../components/ui/Card';
@@ -158,19 +158,29 @@ export const Locations = () => {
     }
   };
 
-  const filtered = locations.filter(loc => {
-    const matchesSearch = 
-      loc.name.toLowerCase().includes(search.toLowerCase()) ||
-      (loc.address && loc.address.toLowerCase().includes(search.toLowerCase()));
-    
-    if (statusFilter === 'active') return matchesSearch && loc.is_active;
-    if (statusFilter === 'inactive') return matchesSearch && !loc.is_active;
-    return matchesSearch;
-  });
+  const filtered = useMemo(() => {
+    return locations.filter(loc => {
+      const matchesSearch = 
+        loc.name.toLowerCase().includes(search.toLowerCase()) ||
+        (loc.address && loc.address.toLowerCase().includes(search.toLowerCase()));
+      
+      if (statusFilter === 'active') return matchesSearch && loc.is_active;
+      if (statusFilter === 'inactive') return matchesSearch && !loc.is_active;
+      return matchesSearch;
+    });
+  }, [locations, search, statusFilter]);
 
-  const totalCount = locations.length;
-  const activeCount = locations.filter(l => l.is_active).length;
-  const inactiveCount = totalCount - activeCount;
+  const { totalCount, activeCount, inactiveCount } = useMemo(() => {
+    let act = 0;
+    for (const l of locations) {
+      if (l.is_active) act++;
+    }
+    return {
+      totalCount: locations.length,
+      activeCount: act,
+      inactiveCount: locations.length - act
+    };
+  }, [locations]);
 
   return (
     <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">

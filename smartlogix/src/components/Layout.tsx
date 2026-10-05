@@ -1,4 +1,4 @@
-import { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, memo } from 'react';
 import { NavLink, Outlet, Link } from 'react-router-dom';
 import { 
   LayoutGrid, Package, Box, Warehouse, ShoppingCart, 
@@ -17,7 +17,7 @@ interface SidebarItemProps {
   onClick?: () => void;
 }
 
-const SidebarItem = ({ 
+const SidebarItem = React.memo(({ 
   icon: Icon, 
   label, 
   to, 
@@ -98,7 +98,7 @@ const SidebarItem = ({
       </>
     )}
   </NavLink>
-);
+));
 
 export const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile drawer state

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -217,22 +217,38 @@ export const Vehicles = () => {
     }
   };
 
-  const filtered = vehicles.filter(v => {
-    const matchesSearch = 
-      v.registration_number.toLowerCase().includes(search.toLowerCase()) ||
-      v.name.toLowerCase().includes(search.toLowerCase());
+  const filtered = useMemo(() => {
+    return vehicles.filter(v => {
+      const matchesSearch = 
+        v.registration_number.toLowerCase().includes(search.toLowerCase()) ||
+        v.name.toLowerCase().includes(search.toLowerCase());
 
-    const matchesType = typeFilter === 'all' || v.vehicle_type === typeFilter;
-    const matchesStatus = statusFilter === 'all' || v.status === statusFilter;
+      const matchesType = typeFilter === 'all' || v.vehicle_type === typeFilter;
+      const matchesStatus = statusFilter === 'all' || v.status === statusFilter;
 
-    return matchesSearch && matchesType && matchesStatus;
-  });
+      return matchesSearch && matchesType && matchesStatus;
+    });
+  }, [vehicles, search, typeFilter, statusFilter]);
 
-  const totalCount = vehicles.length;
-  const availableCount = vehicles.filter(v => v.status === 'AVAILABLE').length;
-  const onRouteCount = vehicles.filter(v => v.status === 'ON_ROUTE').length;
-  const maintenanceCount = vehicles.filter(v => v.status === 'MAINTENANCE').length;
-  const offDutyCount = vehicles.filter(v => v.status === 'OFF_DUTY').length;
+  const { totalCount, availableCount, onRouteCount, maintenanceCount, offDutyCount } = useMemo(() => {
+    let avail = 0;
+    let onRoute = 0;
+    let maint = 0;
+    let offDuty = 0;
+    for (const v of vehicles) {
+      if (v.status === 'AVAILABLE') avail++;
+      else if (v.status === 'ON_ROUTE') onRoute++;
+      else if (v.status === 'MAINTENANCE') maint++;
+      else if (v.status === 'OFF_DUTY') offDuty++;
+    }
+    return {
+      totalCount: vehicles.length,
+      availableCount: avail,
+      onRouteCount: onRoute,
+      maintenanceCount: maint,
+      offDutyCount: offDuty
+    };
+  }, [vehicles]);
 
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-8 space-y-6 sm:space-y-8 animate-fade-in">

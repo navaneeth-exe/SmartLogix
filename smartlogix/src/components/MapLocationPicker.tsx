@@ -21,43 +21,66 @@ interface MapLocationPickerProps {
   defaultCenter?: [number, number];
 }
 
-// Custom Leaflet Icons
-const createPickerIcon = (type: 'warehouse' | 'location') => {
-  const isWh = type === 'warehouse';
-  const bg = isWh ? '#154734' : '#0284c7';
-  const label = isWh 
-    ? 'WH' 
-    : `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+// Custom Leaflet Icons (Singleton Instances for Performance)
+const whPickerIcon = L.divIcon({
+  className: 'custom-picker-pin',
+  html: `
+    <div style="
+      background: #154734;
+      color: #ffffff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2.5px solid #ffffff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-weight: 800;
+      font-size: 11px;
+      cursor: grab;
+    ">
+      WH
+    </div>
+  `,
+  iconSize: [32, 32],
+  iconAnchor: [16, 16],
+  popupAnchor: [0, -18],
+});
+
+const locPickerIcon = L.divIcon({
+  className: 'custom-picker-pin',
+  html: `
+    <div style="
+      background: #0284c7;
+      color: #ffffff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2.5px solid #ffffff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-weight: 800;
+      font-size: 11px;
+      cursor: grab;
+    ">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
         <circle cx="12" cy="10" r="3"/>
-      </svg>`;
-  
-  return L.divIcon({
-    className: 'custom-picker-pin',
-    html: `
-      <div style="
-        background: ${bg};
-        color: #ffffff;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 2.5px solid #ffffff;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.35);
-        font-family: ui-sans-serif, system-ui, sans-serif;
-        font-weight: 800;
-        font-size: 11px;
-        cursor: grab;
-      ">
-        ${label}
-      </div>
-    `,
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
-    popupAnchor: [0, -18],
-  });
+      </svg>
+    </div>
+  `,
+  iconSize: [32, 32],
+  iconAnchor: [16, 16],
+  popupAnchor: [0, -18],
+});
+
+const createPickerIcon = (type: 'warehouse' | 'location') => {
+  return type === 'warehouse' ? whPickerIcon : locPickerIcon;
 };
 
 // Map Subcomponent: handles clicks to place pin

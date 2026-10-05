@@ -259,8 +259,15 @@ export const InventoryPage = () => {
     return <Badge variant="success">In Stock</Badge>;
   };
 
-  const lowStockCount = inventory.filter(i => i.quantity > 0 && i.quantity <= i.reorder_level).length;
-  const outOfStockCount = inventory.filter(i => i.quantity === 0).length;
+  const { lowStockCount, outOfStockCount } = useMemo(() => {
+    let low = 0;
+    let out = 0;
+    for (const item of inventory) {
+      if (item.quantity === 0) out++;
+      else if (item.quantity <= item.reorder_level) low++;
+    }
+    return { lowStockCount: low, outOfStockCount: out };
+  }, [inventory]);
 
   return (
     <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">

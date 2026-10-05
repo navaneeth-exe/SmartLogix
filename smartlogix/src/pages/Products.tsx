@@ -85,16 +85,18 @@ export const Products = () => {
     return { totalCount, uniqueCatsCount, avgPrice };
   }, [products]);
 
-  const filtered = products.filter(p => {
-    const matchesSearch = 
-      p.name.toLowerCase().includes(search.toLowerCase()) || 
-      p.sku.toLowerCase().includes(search.toLowerCase()) ||
-      (p.description && p.description.toLowerCase().includes(search.toLowerCase()));
-    
-    const matchesCategory = selectedCategory === 'all' || (p.category?.trim() || 'General') === selectedCategory;
+  const filtered = useMemo(() => {
+    return products.filter(p => {
+      const matchesSearch = 
+        p.name.toLowerCase().includes(search.toLowerCase()) || 
+        p.sku.toLowerCase().includes(search.toLowerCase()) ||
+        (p.description && p.description.toLowerCase().includes(search.toLowerCase()));
+      
+      const matchesCategory = selectedCategory === 'all' || (p.category?.trim() || 'General') === selectedCategory;
 
-    return matchesSearch && matchesCategory;
-  });
+      return matchesSearch && matchesCategory;
+    });
+  }, [products, search, selectedCategory]);
 
   return (
     <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8 animate-fade-in">

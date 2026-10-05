@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Card } from '../components/ui/Card';
@@ -99,21 +99,35 @@ export const Orders = () => {
     }
   };
 
-  const filtered = orders.filter(order => {
-    const matchesSearch = 
-      order.order_number.toLowerCase().includes(search.toLowerCase()) ||
-      (order.delivery_location?.name && order.delivery_location.name.toLowerCase().includes(search.toLowerCase()));
+  const filtered = useMemo(() => {
+    return orders.filter(order => {
+      const matchesSearch = 
+        order.order_number.toLowerCase().includes(search.toLowerCase()) ||
+        (order.delivery_location?.name && order.delivery_location.name.toLowerCase().includes(search.toLowerCase()));
 
-    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    const matchesPriority = priorityFilter === 'all' || order.priority === priorityFilter;
+      const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+      const matchesPriority = priorityFilter === 'all' || order.priority === priorityFilter;
 
-    return matchesSearch && matchesStatus && matchesPriority;
-  });
+      return matchesSearch && matchesStatus && matchesPriority;
+    });
+  }, [orders, search, statusFilter, priorityFilter]);
 
-  const totalCount = orders.length;
-  const pendingCount = orders.filter(o => o.status === 'PENDING').length;
-  const inProgressCount = orders.filter(o => o.status === 'PROCESSING' || o.status === 'DISPATCHED').length;
-  const deliveredCount = orders.filter(o => o.status === 'DELIVERED').length;
+  const { totalCount, pendingCount, inProgressCount, deliveredCount } = useMemo(() => {
+    let pending = 0;
+    let inProgress = 0;
+    let delivered = 0;
+    for (const o of orders) {
+      if (o.status === 'PENDING') pending++;
+      else if (o.status === 'PROCESSING' || o.status === 'DISPATCHED') inProgress++;
+      else if (o.status === 'DELIVERED') delivered++;
+    }
+    return {
+      totalCount: orders.length,
+      pendingCount: pending,
+      inProgressCount: inProgress,
+      deliveredCount: delivered
+    };
+  }, [orders]);
 
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-8 space-y-6 sm:space-y-8 animate-fade-in">

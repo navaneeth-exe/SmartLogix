@@ -11,7 +11,7 @@ import React from 'react';
  *   hub markers with pulse beacons, miniature isometric delivery trucks & EV vans
  * - Vignette & atmospheric mist: ensures high contrast & readability for foreground UI panels
  */
-export const ScenicBackground: React.FC = () => {
+export const ScenicBackground: React.FC = React.memo(() => {
   return (
     <div 
       aria-hidden="true"
@@ -325,4 +325,4 @@ export const ScenicBackground: React.FC = () => {
       />
     </div>
   );
-};
+});

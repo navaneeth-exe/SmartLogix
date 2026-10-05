@@ -15,9 +15,20 @@ import {
 } from 'lucide-react';
 import type { DeliveryPlan, RouteStop, Warehouse, DeliveryLocation } from '../types/database.types';
 
-// Create custom DOM DivIcons for stops
+// Create custom DOM DivIcons for stops with memoized cache
+const routeIconCache = new Map<string, L.DivIcon>();
+
+const getRouteIcon = (key: string, factory: () => L.DivIcon): L.DivIcon => {
+  const existing = routeIconCache.get(key);
+  if (existing) return existing;
+  const created = factory();
+  routeIconCache.set(key, created);
+  return created;
+};
+
 const createWarehouseIcon = (label: string = 'WH', isReturn: boolean = false) => {
-  return L.divIcon({
+  const cacheKey = `wh-${label}-${isReturn}`;
+  return getRouteIcon(cacheKey, () => L.divIcon({
     className: 'custom-warehouse-marker',
     html: `
       <div style="
@@ -43,11 +54,12 @@ const createWarehouseIcon = (label: string = 'WH', isReturn: boolean = false) =>
     iconSize: [34, 34],
     iconAnchor: [17, 17],
     popupAnchor: [0, -18],
-  });
+  }));
 };
 
 const createDeliveryStopIcon = (sequence: number) => {
-  return L.divIcon({
+  const cacheKey = `stop-${sequence}`;
+  return getRouteIcon(cacheKey, () => L.divIcon({
     className: 'custom-stop-marker',
     html: `
       <div style="
@@ -72,7 +84,7 @@ const createDeliveryStopIcon = (sequence: number) => {
     iconSize: [30, 30],
     iconAnchor: [15, 15],
     popupAnchor: [0, -16],
-  });
+  }));
 };
 
 // Map Viewport Controller to handle auto-fit bounds and modal resize

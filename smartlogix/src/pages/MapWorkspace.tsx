@@ -62,10 +62,20 @@ import { Input } from '../components/ui/Input';
 
 export type MapIntelligenceMode = 'tsp' | 'dijkstra' | 'floyd' | 'kruskal' | 'bin_packing';
 
-// --- Custom Leaflet DivIcons ---
+// --- Custom Leaflet DivIcons with Memoized Cache ---
+const iconCache = new Map<string, L.DivIcon>();
+
+const getCachedIcon = (key: string, factory: () => L.DivIcon): L.DivIcon => {
+  const existing = iconCache.get(key);
+  if (existing) return existing;
+  const created = factory();
+  iconCache.set(key, created);
+  return created;
+};
 
 const createWarehouseIcon = (isSelected: boolean = false, isDraggable: boolean = false) => {
-  return L.divIcon({
+  const cacheKey = `wh-${isSelected}-${isDraggable}`;
+  return getCachedIcon(cacheKey, () => L.divIcon({
     className: 'custom-wh-marker',
     html: `
       <div style="
@@ -92,70 +102,76 @@ const createWarehouseIcon = (isSelected: boolean = false, isDraggable: boolean =
     iconSize: [34, 34],
     iconAnchor: [17, 17],
     popupAnchor: [0, -18],
-  });
+  }));
 };
 
 const createLocationIcon = (isActive: boolean = true, isSelected: boolean = false, isDraggable: boolean = false) => {
-  const bg = isActive ? '#0284c7' : '#9ca3af';
-  return L.divIcon({
-    className: 'custom-loc-marker',
-    html: `
-      <div style="
-        background: ${bg};
-        color: #ffffff;
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: ${isSelected ? '3px solid #f59e0b' : '2px solid #ffffff'};
-        box-shadow: ${isSelected ? '0 0 12px rgba(245, 158, 11, 0.7)' : '0 3px 8px rgba(0,0,0,0.25)'};
-        cursor: ${isDraggable ? 'move' : 'pointer'};
-        transform: ${isSelected ? 'scale(1.15)' : 'scale(1)'};
-        transition: transform 0.2s ease;
-      ">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-          <circle cx="12" cy="10" r="3"/>
-        </svg>
-      </div>
-    `,
-    iconSize: [28, 28],
-    iconAnchor: [14, 14],
-    popupAnchor: [0, -15],
+  const cacheKey = `loc-${isActive}-${isSelected}-${isDraggable}`;
+  return getCachedIcon(cacheKey, () => {
+    const bg = isActive ? '#0284c7' : '#9ca3af';
+    return L.divIcon({
+      className: 'custom-loc-marker',
+      html: `
+        <div style="
+          background: ${bg};
+          color: #ffffff;
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: ${isSelected ? '3px solid #f59e0b' : '2px solid #ffffff'};
+          box-shadow: ${isSelected ? '0 0 12px rgba(245, 158, 11, 0.7)' : '0 3px 8px rgba(0,0,0,0.25)'};
+          cursor: ${isDraggable ? 'move' : 'pointer'};
+          transform: ${isSelected ? 'scale(1.15)' : 'scale(1)'};
+          transition: transform 0.2s ease;
+        ">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+        </div>
+      `,
+      iconSize: [28, 28],
+      iconAnchor: [14, 14],
+      popupAnchor: [0, -15],
+    });
   });
 };
 
 const createRouteStopIcon = (seq: number, isWarehouse: boolean = false, isSelected: boolean = false) => {
-  const bg = isWarehouse ? '#154734' : '#d97706';
-  return L.divIcon({
-    className: 'custom-stop-marker',
-    html: `
-      <div style="
-        background: ${bg};
-        color: #ffffff;
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: ${isSelected ? '3px solid #3b82f6' : '2px solid #ffffff'};
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        font-family: ui-sans-serif, system-ui, sans-serif;
-        font-weight: 800;
-        font-size: 11px;
-        cursor: pointer;
-        transform: ${isSelected ? 'scale(1.2)' : 'scale(1)'};
-        transition: transform 0.2s ease;
-      ">
-        ${isWarehouse ? 'WH' : seq}
-      </div>
-    `,
-    iconSize: [30, 30],
-    iconAnchor: [15, 15],
-    popupAnchor: [0, -16],
+  const cacheKey = `stop-${seq}-${isWarehouse}-${isSelected}`;
+  return getCachedIcon(cacheKey, () => {
+    const bg = isWarehouse ? '#154734' : '#d97706';
+    return L.divIcon({
+      className: 'custom-stop-marker',
+      html: `
+        <div style="
+          background: ${bg};
+          color: #ffffff;
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: ${isSelected ? '3px solid #3b82f6' : '2px solid #ffffff'};
+          box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+          font-family: ui-sans-serif, system-ui, sans-serif;
+          font-weight: 800;
+          font-size: 11px;
+          cursor: pointer;
+          transform: ${isSelected ? 'scale(1.2)' : 'scale(1)'};
+          transition: transform 0.2s ease;
+        ">
+          ${isWarehouse ? 'WH' : seq}
+        </div>
+      `,
+      iconSize: [30, 30],
+      iconAnchor: [15, 15],
+      popupAnchor: [0, -16],
+    });
   });
 };
 

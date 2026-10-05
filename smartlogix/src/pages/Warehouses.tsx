@@ -138,19 +138,21 @@ export const Warehouses = () => {
     return { totalCount, activeCount, geoMappedCount, totalCapacity };
   }, [warehouses]);
 
-  const filtered = warehouses.filter(w => {
-    const matchesSearch = 
-      w.name.toLowerCase().includes(search.toLowerCase()) || 
-      w.code.toLowerCase().includes(search.toLowerCase()) ||
-      (w.address && w.address.toLowerCase().includes(search.toLowerCase()));
+  const filtered = useMemo(() => {
+    return warehouses.filter(w => {
+      const matchesSearch = 
+        w.name.toLowerCase().includes(search.toLowerCase()) || 
+        w.code.toLowerCase().includes(search.toLowerCase()) ||
+        (w.address && w.address.toLowerCase().includes(search.toLowerCase()));
 
-    const matchesStatus = 
-      statusFilter === 'all' || 
-      (statusFilter === 'active' && w.is_active) || 
-      (statusFilter === 'inactive' && !w.is_active);
+      const matchesStatus = 
+        statusFilter === 'all' || 
+        (statusFilter === 'active' && w.is_active) || 
+        (statusFilter === 'inactive' && !w.is_active);
 
-    return matchesSearch && matchesStatus;
-  });
+      return matchesSearch && matchesStatus;
+    });
+  }, [warehouses, search, statusFilter]);
 
   return (
     <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8 animate-fade-in">
