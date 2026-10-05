@@ -6,7 +6,7 @@ import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
 import { api } from '../services/api';
 import type { Warehouse } from '../types/database.types';
-import { Search, Plus, Edit2, Building2, MapPin, Compass, Radio, Filter, RefreshCw, Layers } from 'lucide-react';
+import { Search, Plus, Edit2, Building2, MapPin, Compass, Radio, Filter, RefreshCw, Layers, X } from 'lucide-react';
 import { MapLocationPicker } from '../components/MapLocationPicker';
 
 export const Warehouses = () => {
@@ -381,7 +381,7 @@ export const Warehouses = () => {
                 onClick={() => setIsModalOpen(false)} 
                 className="w-8 h-8 rounded-lg bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/60 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-all active:scale-95"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
             <form onSubmit={handleSubmit} className="p-5 space-y-4">

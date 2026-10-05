@@ -9,7 +9,7 @@ import { api } from '../services/api';
 import type { Order, OrderStatus, OrderPriority } from '../types/database.types';
 import { 
   ShoppingCart, Plus, Search, Filter, Eye, CheckCircle2, 
-  Clock, Truck, CheckCheck, XCircle, AlertCircle, Building2, MapPin
+  Clock, Truck, CheckCheck, XCircle, AlertCircle, Building2, MapPin, X
 } from 'lucide-react';
 
 export const Orders = () => {
@@ -136,7 +136,7 @@ export const Orders = () => {
             <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
             <span>{successMsg}</span>
           </div>
-          <button onClick={() => setSuccessMsg('')} className="text-emerald-600 hover:text-emerald-800 font-semibold ml-4">✕</button>
+          <button onClick={() => setSuccessMsg('')} className="text-emerald-600 hover:text-emerald-800 font-semibold ml-4"><X className="w-4 h-4" /></button>
         </div>
       )}
 
@@ -146,7 +146,7 @@ export const Orders = () => {
             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
             <span>{error}</span>
           </div>
-          <button onClick={() => setError('')} className="text-red-600 hover:text-red-800 font-semibold ml-4">✕</button>
+          <button onClick={() => setError('')} className="text-red-600 hover:text-red-800 font-semibold ml-4"><X className="w-4 h-4" /></button>
         </div>
       )}
 
@@ -408,7 +408,7 @@ export const Orders = () => {
                 onClick={() => setIsDetailOpen(false)}
                 className="w-8 h-8 rounded-lg bg-white/80 hover:bg-white border border-brand-border/70 flex items-center justify-center text-brand-text-secondary hover:text-brand-text shadow-soft-xs active:scale-95 transition-all"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 

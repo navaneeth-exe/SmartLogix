@@ -14,7 +14,7 @@ import type {
   RestockWarehouseCapacity 
 } from '../types/database.types';
 import { solveRestockBinPacking } from '../algorithms/binPacking';
-import { Search, Plus, Edit2, Box, Filter, Sparkles, CheckCircle2, AlertTriangle, Layers } from 'lucide-react';
+import { Search, Plus, Edit2, Box, Filter, Sparkles, CheckCircle2, AlertTriangle, Layers, X } from 'lucide-react';
 
 export const InventoryPage = () => {
   const [inventory, setInventory] = useState<Inventory[]>([]);
@@ -510,8 +510,9 @@ export const InventoryPage = () => {
               <button 
                 onClick={() => setIsModalOpen(false)} 
                 className="w-8 h-8 rounded-lg bg-white/80 hover:bg-white border border-brand-border/70 flex items-center justify-center text-brand-text-secondary hover:text-brand-text shadow-soft-xs active:scale-95 transition-all"
+                aria-label="Close modal"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
             <form onSubmit={handleSubmit} className="p-5 space-y-4">
@@ -580,8 +581,9 @@ export const InventoryPage = () => {
               <button 
                 onClick={() => setIsRestockModalOpen(false)} 
                 className="w-8 h-8 rounded-lg bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/60 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-all active:scale-95"
+                aria-label="Close modal"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 

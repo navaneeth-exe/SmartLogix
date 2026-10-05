@@ -6,7 +6,7 @@ import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
 import { api } from '../services/api';
 import type { Product } from '../types/database.types';
-import { Search, Plus, Edit2, PackageOpen, Package, Layers, DollarSign, Filter, RefreshCw } from 'lucide-react';
+import { Search, Plus, Edit2, PackageOpen, Package, Layers, DollarSign, Filter, RefreshCw, X } from 'lucide-react';
 
 export const Products = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -304,7 +304,7 @@ export const Products = () => {
                 onClick={() => setIsModalOpen(false)}
                 className="w-8 h-8 rounded-lg bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/60 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-all active:scale-95"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">

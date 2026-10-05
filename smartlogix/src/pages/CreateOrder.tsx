@@ -17,7 +17,7 @@ import type {
 import { 
   ShoppingCart, ArrowLeft, Plus, Trash2, AlertCircle, 
   CheckCircle2, Info, Building2, Package, Layers,
-  Navigation, Sparkles, Check, RefreshCw
+  Navigation, Sparkles, Check, RefreshCw, X
 } from 'lucide-react';
 import { solveDijkstra } from '../algorithms/dijkstra';
 
@@ -537,9 +537,10 @@ export const CreateOrder = () => {
                     <button
                       type="button"
                       onClick={() => setShowRecommendationPanel(false)}
-                      className="text-xs text-brand-text-secondary hover:text-brand-text px-1"
+                      className="text-xs text-brand-text-secondary hover:text-brand-text p-1 rounded-md hover:bg-brand-surface transition-colors"
+                      aria-label="Close recommendation panel"
                     >
-                      ✕
+                      <X className="w-4 h-4" />
                     </button>
                   </div>
                 </div>

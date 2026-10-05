@@ -9,7 +9,7 @@ import { api } from '../services/api';
 import type { DeliveryLocation } from '../types/database.types';
 import { 
   MapPin, Plus, Search, Edit2, CheckCircle2, 
-  XCircle, AlertCircle, Building2, Trash2, Compass
+  XCircle, AlertCircle, Building2, Trash2, Compass, X
 } from 'lucide-react';
 import { MapLocationPicker } from '../components/MapLocationPicker';
 
@@ -199,7 +199,9 @@ export const Locations = () => {
             <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
             <span>{successMsg}</span>
           </div>
-          <button onClick={() => setSuccessMsg('')} className="text-emerald-600 hover:text-emerald-800 font-bold ml-4">✕</button>
+          <button onClick={() => setSuccessMsg('')} aria-label="Dismiss message" className="text-emerald-600 hover:text-emerald-800 font-bold ml-4 p-1 rounded hover:bg-emerald-100 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
@@ -209,7 +211,9 @@ export const Locations = () => {
             <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
             <span>{error}</span>
           </div>
-          <button onClick={() => setError('')} className="text-red-600 hover:text-red-800 font-bold ml-4">✕</button>
+          <button onClick={() => setError('')} aria-label="Dismiss error" className="text-red-600 hover:text-red-800 font-bold ml-4 p-1 rounded hover:bg-rose-100 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
@@ -445,8 +449,9 @@ export const Locations = () => {
               <button 
                 onClick={() => setIsModalOpen(false)} 
                 className="w-8 h-8 rounded-lg bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/60 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-all active:scale-95"
+                aria-label="Close modal"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 

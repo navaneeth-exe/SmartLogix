@@ -2366,14 +2366,14 @@ export const MapWorkspace: React.FC = () => {
                           <optgroup label="Warehouses">
                             {warehouses.map(w => (
                               <option key={w.id} value={w.id}>
-                                🏬 {w.name} ({w.code})
+                                {w.name} ({w.code})
                               </option>
                             ))}
                           </optgroup>
                           <optgroup label="Delivery Destinations">
                             {locations.map(loc => (
                               <option key={loc.id} value={loc.id}>
-                                📍 {loc.name}
+                                {loc.name}
                               </option>
                             ))}
                           </optgroup>
@@ -2394,14 +2394,14 @@ export const MapWorkspace: React.FC = () => {
                           <optgroup label="Delivery Destinations">
                             {locations.map(loc => (
                               <option key={loc.id} value={loc.id}>
-                                📍 {loc.name}
+                                {loc.name}
                               </option>
                             ))}
                           </optgroup>
                           <optgroup label="Warehouses">
                             {warehouses.map(w => (
                               <option key={w.id} value={w.id}>
-                                🏬 {w.name} ({w.code})
+                                {w.name} ({w.code})
                               </option>
                             ))}
                           </optgroup>
@@ -2497,7 +2497,7 @@ export const MapWorkspace: React.FC = () => {
                           <option value="">-- Choose Origin --</option>
                           {graphNodes.map(node => (
                             <option key={node.id} value={node.id}>
-                              {node.type === 'warehouse' ? '🏬' : '📍'} {node.name}
+                              {node.type === 'warehouse' ? `[WH] ${node.name}` : `[LOC] ${node.name}`}
                             </option>
                           ))}
                         </select>
@@ -2516,7 +2516,7 @@ export const MapWorkspace: React.FC = () => {
                           <option value="">-- Choose Destination --</option>
                           {graphNodes.map(node => (
                             <option key={node.id} value={node.id}>
-                              {node.type === 'warehouse' ? '🏬' : '📍'} {node.name}
+                              {node.type === 'warehouse' ? `[WH] ${node.name}` : `[LOC] ${node.name}`}
                             </option>
                           ))}
                         </select>

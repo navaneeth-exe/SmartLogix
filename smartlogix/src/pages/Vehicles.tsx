@@ -13,7 +13,7 @@ import type {
 } from '../types/database.types';
 import { 
   Truck, Plus, Search, Filter, Edit2, Trash2, Eye, 
-  CheckCircle2, AlertCircle, Wrench, XCircle, CheckCheck
+  CheckCircle2, AlertCircle, Wrench, XCircle, CheckCheck, X
 } from 'lucide-react';
 
 export const Vehicles = () => {
@@ -253,7 +253,7 @@ export const Vehicles = () => {
             <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
             <span>{successMsg}</span>
           </div>
-          <button onClick={() => setSuccessMsg('')} className="text-emerald-600 hover:text-emerald-800 font-semibold ml-4">✕</button>
+          <button onClick={() => setSuccessMsg('')} className="text-emerald-600 hover:text-emerald-800 font-semibold ml-4"><X className="w-4 h-4" /></button>
         </div>
       )}
 
@@ -263,7 +263,7 @@ export const Vehicles = () => {
             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
             <span>{error}</span>
           </div>
-          <button onClick={() => setError('')} className="text-red-600 hover:text-red-800 font-semibold ml-4">✕</button>
+          <button onClick={() => setError('')} className="text-red-600 hover:text-red-800 font-semibold ml-4"><X className="w-4 h-4" /></button>
         </div>
       )}
 
@@ -514,7 +514,7 @@ export const Vehicles = () => {
                 onClick={() => setIsFormModalOpen(false)} 
                 className="w-8 h-8 rounded-lg bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/60 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-all active:scale-95"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -644,7 +644,7 @@ export const Vehicles = () => {
                 onClick={() => setIsDetailModalOpen(false)} 
                 className="w-8 h-8 rounded-lg bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/60 flex items-center justify-center text-brand-text-secondary hover:text-brand-text transition-all active:scale-95"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
