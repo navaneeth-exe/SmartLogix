@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, memo } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { NavLink, Outlet, Link } from 'react-router-dom';
 import { 
   LayoutGrid, Package, Box, Warehouse, ShoppingCart, 
