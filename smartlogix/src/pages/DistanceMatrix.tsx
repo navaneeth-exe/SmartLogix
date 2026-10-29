@@ -1000,59 +1000,64 @@ export const DistanceMatrix: React.FC = () => {
       </div>
 
       {/* Algorithm Execution Bar */}
-      <Card className="p-6 bg-gradient-to-r from-brand-sidebar via-brand-dark to-brand-primary text-white shadow-md">
+      <Card className="p-6 border border-brand-border/80 shadow-soft-sm bg-white/95">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-1 text-center md:text-left">
-            <h3 className="text-lg font-bold flex items-center justify-center md:justify-start gap-2">
-              <Cpu className="w-5 h-5 text-brand-soft" />
+            <h3 className="text-lg font-bold text-brand-text flex items-center justify-center md:justify-start gap-2">
+              <Cpu className="w-5 h-5 text-brand-primary" />
               DAA Tour Optimization Engines
             </h3>
-            <p className="text-xs text-brand-sage max-w-xl">
+            <p className="text-xs text-brand-text-secondary max-w-xl">
               Execute Branch and Bound with admissible lower bound pruning alongside the Greedy Nearest-Neighbor heuristic to compare execution efficiency and tour optimality.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Button
+              variant="secondary"
               onClick={() => runAlgorithms('greedy')}
               disabled={runningAlgo || !validation.valid}
-              className="bg-white/10 hover:bg-white/20 text-white border border-white/20 flex items-center gap-2 text-xs font-semibold px-4 py-2.5"
+              className="bg-amber-50 hover:bg-amber-100/90 text-amber-950 border border-amber-300 hover:border-amber-400 shadow-soft-xs flex items-center gap-2 text-xs font-semibold px-4 py-2.5"
             >
-              <Zap className="w-4 h-4 text-amber-300" />
+              <Zap className="w-4 h-4 text-amber-600 fill-amber-500" />
               <span>Run Greedy Heuristic (O(n²))</span>
             </Button>
 
             <Button
+              variant="secondary"
               onClick={() => runAlgorithms('bb')}
               disabled={runningAlgo || !validation.valid || isLocationLimitExceeded}
-              className="bg-white/15 hover:bg-white/25 text-white border border-white/30 flex items-center gap-2 text-xs font-semibold px-4 py-2.5"
+              className="bg-emerald-50 hover:bg-emerald-100/90 text-emerald-950 border border-emerald-300 hover:border-emerald-400 shadow-soft-xs flex items-center gap-2 text-xs font-semibold px-4 py-2.5"
             >
-              <Layers className="w-4 h-4 text-emerald-300" />
+              <Layers className="w-4 h-4 text-emerald-700" />
               <span>Run Branch & Bound (Optimal)</span>
             </Button>
 
             <Button
+              variant="primary"
               onClick={() => runAlgorithms('both')}
               disabled={runningAlgo || !validation.valid || isLocationLimitExceeded}
-              className="bg-white hover:bg-brand-surface text-brand-dark font-bold shadow-md flex items-center gap-2 text-xs px-5 py-2.5 transition-transform active:scale-95"
+              className="bg-brand-primary hover:bg-brand-active text-white font-bold shadow-soft-sm flex items-center gap-2 text-xs px-5 py-2.5 transition-transform active:scale-95"
             >
-              <Play className="w-4 h-4 text-brand-primary fill-brand-primary" />
+              <Play className="w-4 h-4 text-white fill-white" />
               <span>{runningAlgo ? 'Optimizing...' : 'Run Both & Benchmark'}</span>
             </Button>
 
             <Button
+              variant="primary"
               onClick={runFloydWarshall}
               disabled={runningFW || activeLocations.length < 2}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-md flex items-center gap-2 text-xs px-4 py-2.5 transition-transform active:scale-95 border border-emerald-400/40"
+              className="bg-emerald-700 hover:bg-emerald-800 text-white font-semibold shadow-soft-sm flex items-center gap-2 text-xs px-4 py-2.5 transition-transform active:scale-95 border border-emerald-800"
             >
               <Network className="w-4 h-4 text-emerald-100" />
               <span>{runningFW ? 'Solving O(V³)...' : 'Run Floyd-Warshall (All-Pairs O(V³))'}</span>
             </Button>
 
             <Button
+              variant="primary"
               onClick={runKruskal}
               disabled={runningKruskal || activeLocations.length < 2}
-              className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-md flex items-center gap-2 text-xs px-4 py-2.5 transition-transform active:scale-95 border border-indigo-400/40"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-soft-sm flex items-center gap-2 text-xs px-4 py-2.5 transition-transform active:scale-95 border border-indigo-700"
             >
               <GitBranch className="w-4 h-4 text-indigo-100" />
               <span>{runningKruskal ? 'Computing MST...' : "Run Kruskal's MST (O(E log E))"}</span>
