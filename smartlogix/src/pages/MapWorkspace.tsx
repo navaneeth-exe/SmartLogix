@@ -970,8 +970,8 @@ export const MapWorkspace: React.FC = () => {
       {/* MAP VIEW CONTAINER */}
       <div className="flex-1 relative h-full">
         <MapContainer
-          center={[40.7128, -74.0060]}
-          zoom={11}
+          center={[12.9716, 77.5946]}
+          zoom={5}
           style={{ height: '100%', width: '100%' }}
         >
           {/* OpenStreetMap Base Layer */}
@@ -1960,8 +1960,8 @@ export const MapWorkspace: React.FC = () => {
                           size="sm"
                           onClick={() => {
                             setIsEditingPosition(true);
-                            const lat = selectedWarehouse?.latitude || selectedLocation?.latitude || 40.7128;
-                            const lng = selectedWarehouse?.longitude || selectedLocation?.longitude || -74.0060;
+                            const lat = selectedWarehouse?.latitude || selectedLocation?.latitude || 12.9716;
+                            const lng = selectedWarehouse?.longitude || selectedLocation?.longitude || 77.5946;
                             setEditedCoords({ lat: Number(lat), lng: Number(lng) });
                             setFeedback({ type: 'success', text: 'Drag the marker on the map to adjust coordinates, then click Save.' });
                           }}

@@ -143,7 +143,7 @@ export const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
   required = false,
   height = '240px',
   disabled = false,
-  defaultCenter = [40.7128, -74.0060] // New York metropolitan default
+  defaultCenter = [12.9716, 77.5946] // Bengaluru / India default
 }) => {
   const currentCoords: LocationCoordinates | null = useMemo(() => {
     if (value && value.latitude !== null && value.longitude !== null && !isNaN(value.latitude) && !isNaN(value.longitude)) {

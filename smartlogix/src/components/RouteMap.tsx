@@ -146,7 +146,7 @@ export const RouteMap: React.FC<RouteMapProps> = ({
   // 1. Resolve coordinates for every stop in the saved Phase 10 route
   const { plottedStops, missingStops, defaultCenter } = useMemo(() => {
     if (!plan.route_stops || plan.route_stops.length === 0) {
-      return { plottedStops: [], missingStops: [], defaultCenter: [40.7128, -74.0060] as [number, number] };
+      return { plottedStops: [], missingStops: [], defaultCenter: [12.9716, 77.5946] as [number, number] };
     }
 
     // Build lookup maps by stable location ID
@@ -231,7 +231,7 @@ export const RouteMap: React.FC<RouteMapProps> = ({
     });
 
     // Determine initial center
-    let center: [number, number] = [40.7128, -74.0060];
+    let center: [number, number] = [12.9716, 77.5946];
     if (plotted.length > 0) {
       center = [plotted[0].lat, plotted[0].lng];
     } else if (plan.warehouse?.latitude && plan.warehouse?.longitude) {
