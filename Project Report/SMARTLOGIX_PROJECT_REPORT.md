@@ -31,7 +31,7 @@
 **Institution:** Ahalia School of Engineering & Technology, Palakkad, Kerala - 678557  
 **Academic Year:** 2026–2027  
 **Submitted By:** NAVANEETH S (Register No: ATP24CS079)  
-**Project Guide:** **Ms Deepthy P S**, Assistant Professor, Department of CSE  
+**Project Guide:** **Ms. Happy A**, Assistant Professor, Department of CSE  
 **Head of Department:** Dr. S Gunasekaran, Ph.D., Professor & HOD, Department of CSE  
 
 ---
@@ -39,13 +39,13 @@
 ## BONAFIDE CERTIFICATE
 This is to certify that the project work report entitled **"SmartLogix: Smart Inventory & Delivery Optimization System"** submitted by **NAVANEETH S (ATP24CS079)**, B.Tech in Computer Science & Engineering, has been successfully carried out under our supervision and guidance in partial fulfillment of the requirements for the award of the degree of Bachelor of Technology in Computer Science & Engineering, prescribed by APJ Abdul Kalam Technological University, Kerala. It is further certified that this work is a bonafide record of the project carried out during the academic year 2026–2027.
 
-- **Project Guide:** **Ms Deepthy P S**, Assistant Professor, Dept. of CSE
+- **Project Guide:** **Ms. Happy A**, Assistant Professor, Dept. of CSE
 - **Professor & Head of Department:** Dr. S Gunasekaran, Ph.D., Dept. of CSE
 
 ---
 
 ## DECLARATION
-I hereby declare that the project report entitled **"SmartLogix: Smart Inventory & Delivery Optimization System"** submitted for the partial fulfillment of the requirements for the award of the degree of Bachelor of Technology in Computer Science and Engineering, prescribed by APJ Abdul Kalam Technological University, Kerala, is a bonafide work done by me under the guidance of Asst. Prof. **Ms Deepthy P S**, Department of Computer Science & Engineering. The submission represents original conceptualization, algorithmic design, and engineering implementation in my own words. Where ideas, algorithms, maps, or code libraries of others have been included, they have been adequately and accurately cited and acknowledged.
+I hereby declare that the project report entitled **"SmartLogix: Smart Inventory & Delivery Optimization System"** submitted for the partial fulfillment of the requirements for the award of the degree of Bachelor of Technology in Computer Science and Engineering, prescribed by APJ Abdul Kalam Technological University, Kerala, is a bonafide work done by me under the guidance of Asst. Prof. **Ms. Happy A**, Department of Computer Science & Engineering. The submission represents original conceptualization, algorithmic design, and engineering implementation in my own words. Where ideas, algorithms, maps, or code libraries of others have been included, they have been adequately and accurately cited and acknowledged.
 
 | **Place : PALAKKAD** | **Signature of Student** |
 | :--- | :--- |
@@ -55,21 +55,22 @@ I hereby declare that the project report entitled **"SmartLogix: Smart Inventory
 
 **COUNTERSIGNED**
 
-**Ms Deepthy P S**  
+**Ms. Happy A**  
 Assistant Professor  
 Department of CSE
 
 ---
 
 ## ACKNOWLEDGEMENT
-First and foremost, I thank **GOD ALMIGHTY** for divine grace and wisdom throughout this project.  
-I express my sincere gratitude to **Dr. P R Suresh, Ph.D.**, Principal, Ahalia School of Engineering and Technology, for steadfast institutional support.  
-I extend deep gratitude to **Dr. Krishna Kumar Kishor, Ph.D.**, Vice Principal, for extending the computing infrastructure required for the analysis of the algorithms.  
-I convey my sincere thanks and appreciation to **Dr. S. Gunasekaran, Ph.D.**, Professor and Head of the Department of Computer Science and Engineering, for his encouraging guidance and continuous academic inspiration.  
-I express my deepest and most respectful gratitude to my esteemed Project Guide, **Ms Deepthy P S**, Assistant Professor, Department of CSE, for her meticulous guidance, intellectual scrutiny, technical insights, and constant encouragement.  
-I also thank faculty mentor **Mr. Nandu S Nair** and all faculty and technical staff of the CSE Department.  
-Finally, I am indebted to my beloved **Parents** and **Peers** for their moral encouragement and blessings.
-
+First and foremost, we would like to thank the **GOD ALMIGHTY** for his infinite grace and help, without which this project would not have reached its completion.  
+We wish to express our sincere gratitude to **Dr. P R Suresh, Ph.D.**, Principal, Ahalia School of Engineering and Technology for his timely support throughout the course of this project.  
+We extend our sincere thanks to **Dr. Krishna Kumar Kishor, Ph.D.**, Vice Principal, for extending all facilities.  
+We express our sincere and heartfelt gratitude to **Dr. S. Gunasekaran, Ph.D.**, Professor and Head of the Department, Department of Computer Science and Engineering for his help and excellent encouragements through the project.  
+We express our deepest, heartiest and sincere thanks to our Project Guide **Ms. Happy A**, Assistant Professor, for her exhilarating supervision, timely suggestions and encouragement during all phases of this work.  
+We take this opportunity to thank **Dr. Reshmi B**, our mentor who had been always there with us.  
+Also, we would like to thank all the Teaching faculty members and Supporting Staff of our department.  
+We would like to convey our gratitude to our **Parents** whose prayers and blessings were always with us.  
+Last but not least we would like to thank our **Friends** and others who directly or indirectly helped us in successful completion of this work.
 ---
 
 ## INSTITUTION & DEPARTMENT VISION AND MISSION
