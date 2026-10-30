@@ -51,3 +51,4 @@ with zipfile.ZipFile(doc_path, 'w', compression=zipfile.ZIP_DEFLATED) as zout:
         zout.writestr(name, data)
 
 print("Saved compacted Chapter 6 docx successfully!")
+
