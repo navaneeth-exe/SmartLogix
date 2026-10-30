@@ -92,3 +92,4 @@ if __name__ == '__main__':
     for p in DOCX_PATHS:
         update_toc_bold(p)
     print("\nAll docx Table of Contents updated successfully!")
+
