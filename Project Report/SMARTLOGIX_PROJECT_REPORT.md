@@ -76,21 +76,19 @@ Last but not least we would like to thank our **Friends** and others who directl
 ## INSTITUTION & DEPARTMENT VISION AND MISSION
 
 ### INSTITUTION VISION
-To be a premier institution in engineering and technology education, nurturing globally competent, ethical, and socially responsible professionals committed to sustainable innovation and excellence.
+Grow as a center of learning and research, transforming students to professionals with knowledge, skill, competence, commitment, confidence through decisive learning and contribute to the sustainable development of the society.
 
 ### INSTITUTION MISSION
-1. To provide high-quality technical education through dynamic academic curricula and hands-on laboratory experiences.
-2. To foster a culture of research, entrepreneurial spirit, and multidisciplinary problem-solving addressing real-world challenges.
-3. To instill strong moral values, leadership qualities, and environmental consciousness among future engineering graduates.
+1. To instil technical expertise in order to address current and emerging challenges in the quest for creating sustainable and high-quality livelihoods.
+2. To foster a culture of research, innovation, and entrepreneurship through determined learning.
+3. To promote an environment that supports the welfare of society through ethical and professional conduct.
 
 ### DEPARTMENT VISION
-To produce computing professionals of superior technical competence, creative analytical capability, and social integrity capable of leading software engineering, artificial intelligence, and applied computational sciences.
+To develop computer science engineers with knowledge, computing skills and empowering them to excel in their profession through performance based learning contributing to sustainability, well-being of the society and professional ethics.
 
 ### DEPARTMENT MISSION
-1. To impart comprehensive foundations in software development, algorithmic design, cloud computing, and database management systems.
-2. To encourage experiential project-based learning and pair programming on industrial and research challenges.
-3. To promote continuous professional development, ethical computing standards, and collaboration with modern software engineering ecosystems.
-
+1. To implement effective outcome-based education that fosters the development of competent and skilled graduates, empowering them to promote and adopt sustainable practices.
+2. To provide students with opportunities to engage in advancements in computer science and engineering through interdisciplinary research, collaborative projects that encourage innovation and entrepreneurship.
 ---
 
 ## ABSTRACT
