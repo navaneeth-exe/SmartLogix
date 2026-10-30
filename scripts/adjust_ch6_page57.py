@@ -47,3 +47,4 @@ with zipfile.ZipFile(doc_path, 'w', compression=zipfile.ZIP_DEFLATED) as zout:
         zout.writestr(name, data)
 
 print("Saved updated docx with balanced Chapter 6 spacing!")
+
